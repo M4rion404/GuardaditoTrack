@@ -1,0 +1,121 @@
+/* Ajuste global */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
+.contenedor-principal {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  background-color: #2278b5;
+  flex-wrap: wrap;
+}
+
+.panel-izquierdo {
+  width: 60%;
+  justify-content: center;
+  text-align: center;
+  background-color: rgb(246, 246, 246);
+  color: white;
+  padding-top: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.panel-derecho {
+  width: 40%;
+  min-width: 300px;
+  max-width: 1000px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;     
+  box-shadow: -20px 0px 40px rgba(0, 0, 50, 0.2);
+  padding: 2rem;
+}
+
+.img-logo-fintrack img {
+  width: clamp(100px, 20vw, 300px);
+  height: auto;
+  width: auto;
+}
+
+/* Contenido */
+.contenido-principal {
+  max-width: 80%;
+}
+
+.titulo-principal {
+  font-size: clamp(2rem, 5vw, 3rem);
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+  font-weight: bold;
+  color: #2278b5;
+  box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.05);
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.light {
+  font-weight: 200;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.descripcion-principal-contenedor {
+  width: 100%;
+}
+
+.descripcion-principal {
+  margin-top: auto;
+  padding-left: 80px;
+  padding-right: 80px;
+  padding-bottom: 2rem;
+  font-size: clamp(1rem, 1.125vw, 1.5rem);
+  font-weight: 500;
+  text-align: center;
+  color: rgb(246, 246, 246);
+}
+
+
+/* Botón */
+
+.grupo-botones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  max-width: 400px; /* opcional, para limitar el tamaño del grupo */
+  margin: 0 auto;
+}
+
+
+.boton {
+  background-color: #2278b5;
+  color: white;
+  padding: 0.5rem 2rem;
+  display: inline-flex;
+  align-items: center;
+
+  gap: 5px;
+  font-size: large;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+  align-self: flex-end;
+}
+
+.boton:hover {
+  background-color: #2258b5;
+}
+
+.icono {
+  transform: translateX(10px);
+}

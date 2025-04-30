@@ -1,0 +1,95 @@
+/* src/components/Categorias/Categorias.css */
+.contenedor-categorias {
+    padding: 2rem;
+    animation: fadeIn 0.8s ease-in;
+  }
+  
+  .boton-regresar {
+    background-color: #007bff;
+    color: white;
+    padding: 8px 16px;
+    margin-bottom: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .boton-regresar:hover {
+    background-color: #0056b3;
+  }
+  
+  .bienvenida-categorias h1 {
+    color: #333;
+    font-size: 2rem;
+  }
+  
+  .bienvenida-categorias p {
+    color: #666;
+    margin-bottom: 2rem;
+  }
+  
+  .pasos-categorias {
+    margin-bottom: 2rem;
+    background: #e7f3ff;
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+  
+  .pasos-categorias h2 {
+    margin-bottom: 1rem;
+  }
+  
+  .pasos-categorias ul {
+    list-style-type: disc;
+    padding-left: 20px;
+  }
+  
+  .formulario-categoria {
+    background: #f9f9f9;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  
+  .formulario-categoria input, .formulario-categoria textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+  
+  .formulario-categoria button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    background-color: #28a745;
+    color: white;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+  }
+  
+  .formulario-categoria button:hover {
+    background-color: #218838;
+  }
+  
+  .lista-categorias {
+    background: #f0f8ff;
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+  
+  .lista-categorias ul {
+    padding-left: 20px;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px);}
+    to { opacity: 1; transform: translateY(0);}
+  }
+  

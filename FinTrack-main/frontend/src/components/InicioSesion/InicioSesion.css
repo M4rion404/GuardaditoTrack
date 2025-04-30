@@ -1,0 +1,172 @@
+.container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  font-family: 'Poppins', sans-serif;
+}
+
+.left-panel {
+  flex: 6;
+  background-color: #7ac6f8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.illustration {
+  background-color: white;
+  max-width: 60%;
+  max-height: 80%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 80%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, .3);
+}
+
+img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.right-panel {
+  flex: 4;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+h1 {
+  font-size: 28px;
+  margin: 0; 
+}
+
+.form {
+  width: 100%;
+  max-width: 400px;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ccc;
+  padding: 8px 0;
+}
+
+.input-group input {
+  border: none;
+  outline: none;
+  flex: 1;
+  margin-left: 10px;
+  font-size: 16px;
+}
+
+.icon {
+  color: #666;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.checkbox-group input[type="checkbox"] {
+  margin-right: 8px;
+  width: auto;
+  flex: 0;
+}
+
+.checkbox-group label {
+  margin: 0;
+  flex: 1;
+}
+
+.login-button {
+  width: 100%;
+  background-color: #2278b5;
+  color: white;
+  font-size: 18px;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #2258b5;
+}
+
+.links {
+  text-align: center;
+  font-size: 14px;
+}
+
+.links a {
+  color: #333;
+  text-decoration: none;
+}
+
+.links a:hover {
+  text-decoration: underline;
+}
+
+.boton-clase {
+  direction: ltr;
+  padding: 8px 16px;
+  background-color: #2278b5;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  margin-right: auto;
+  transition: background-color 0.3s ease;
+  font-size: 14px; 
+}
+
+.boton-clase:hover {
+  background-color: #2258b5;
+}
+
+.bienvenido {
+  text-align: center;
+}
+
+.right-panel-titulo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 40px;
+  width: 100%;
+}
+
+.titulo-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.boton-clase {
+  position: absolute;
+  left: 0;
+}
+
+h1 {
+  margin: 0 auto; 
+}
