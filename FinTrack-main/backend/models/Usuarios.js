@@ -20,10 +20,7 @@ const UsuarioSchema = new mongoose.Schema({
   notificacion: { type: Boolean, default: false },
 
   tipo_divisa: [DivisaSchema],
-  Categorias: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Categoria'
-  }],
+  Categorias: [CategoriaSchema],
   Presupuestos: [PresupuestoSchema],
   Transacciones: [TransaccionSchema],
   Movimientos: [MovimientoSchema]
@@ -38,4 +35,3 @@ UsuarioSchema.pre('save', async function (next) {
 });
 
 module.exports = mongoose.model('Usuario', UsuarioSchema);
-
