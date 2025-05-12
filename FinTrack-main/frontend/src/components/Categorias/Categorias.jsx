@@ -1,121 +1,200 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import './Categorias.css';
+import { FaPlus, FaChevronUp, FaTags, FaListUl, FaTrash, FaEdit } from 'react-icons/fa';
 import axios from 'axios';
 
 const Categorias = () => {
-  const [categorias, setCategorias] = useState([]);
-  const [titulo, setTitulo] = useState('');
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [nuevaCategoria, setNuevaCategoria] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
+  const [categoriasGuardadas, setCategoriasGuardadas] = useState([]);
+  const [editandoId, setEditandoId] = useState(null);
+  const [cargando, setCargando] = useState(true);
 
+  // Simulación de usuario autenticado
+  const idUsuario = '1234567890abcdef'; // Reemplaza con el ID real desde contexto o localStorage
+  const API_URL = 'http://localhost:3000/api/categorias';
+
+  // Obtener categorías guardadas
   useEffect(() => {
+    const fetchCategorias = async () => {
+      try {
+        setCargando(true);
+        const res = await axios.get(`${API_URL}/${idUsuario}`);
+        setCategoriasGuardadas(res.data);
+      } catch (err) {
+        console.error('Error al obtener categorías:', err);
+        setError('Error al cargar las categorías');
+      } finally {
+        setCargando(false);
+      }
+    };
+
     fetchCategorias();
   }, []);
 
-  const fetchCategorias = async () => {
-    try {
-      const res = await axios.get('http://localhost:3000/api/categorias');
-      setCategorias(res.data);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-      setError('Error al cargar las categorías');
-    }
+  const toggleFormulario = () => {
+    setMostrarFormulario(!mostrarFormulario);
+    setEditandoId(null);
+    setNuevaCategoria('');
+    setDescripcion('');
+    setError('');
   };
 
-  const crearCategoria = async () => {
-    if (!titulo.trim()) {
-      setError('El título es requerido');
+  const handleGuardarCategoria = async () => {
+    if (!nuevaCategoria.trim()) {
+      setError('Debes ingresar un nombre para la nueva categoría');
       return;
     }
 
-    setIsSubmitting(true);
-    setError('');
-
     try {
+      setCargando(true);
       const categoriaData = {
-        Titulo: titulo, // Note the capital T to match backend expectation
-        Descripcion: descripcion // Capital D if backend expects it
+        nombre: nuevaCategoria.trim(),
+        descripcion: descripcion.trim()
       };
 
-      const response = await axios.post('http://localhost:3000/api/categorias', categoriaData, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      console.log('Category created:', response.data);
-      setTitulo('');
-      setDescripcion('');
-      await fetchCategorias(); // Refresh the list
-    } catch (error) {
-      console.error('Error creating category:', error);
-      if (error.response?.data?.detalles) {
-        setError(error.response.data.detalles);
+      let res;
+      if (editandoId) {
+        // Actualizar categoría existente
+        res = await axios.put(`${API_URL}/${idUsuario}/${editandoId}`, categoriaData);
+        setCategoriasGuardadas(categoriasGuardadas.map(cat => 
+          cat._id === editandoId ? res.data : cat
+        ));
       } else {
-        setError('Error al crear la categoría');
+        // Crear nueva categoría
+        res = await axios.post(`${API_URL}/${idUsuario}`, categoriaData);
+        setCategoriasGuardadas([...categoriasGuardadas, res.data]);
       }
+
+      setNuevaCategoria('');
+      setDescripcion('');
+      setError('');
+      setMostrarFormulario(false);
+      setEditandoId(null);
+    } catch (err) {
+      console.error('Error al guardar categoría:', err);
+      setError(err.response?.data?.message || 'Error al guardar la categoría');
     } finally {
-      setIsSubmitting(false);
+      setCargando(false);
+    }
+  };
+
+  const handleEditarCategoria = (categoria) => {
+    setEditandoId(categoria._id);
+    setNuevaCategoria(categoria.nombre);
+    setDescripcion(categoria.descripcion);
+    setMostrarFormulario(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleEliminarCategoria = async (id) => {
+    if (!window.confirm('¿Estás seguro de eliminar esta categoría?')) return;
+
+    try {
+      setCargando(true);
+      await axios.delete(`${API_URL}/${idUsuario}/${id}`);
+      setCategoriasGuardadas(categoriasGuardadas.filter(cat => cat._id !== id));
+    } catch (err) {
+      console.error('Error al eliminar categoría:', err);
+      setError('Error al eliminar la categoría');
+    } finally {
+      setCargando(false);
     }
   };
 
   return (
-    <div className="contenedor-categorias">
-      <button className="boton-regresar" onClick={() => navigate('/Home')}>⬅ Regresar</button>
-
-      <div className="bienvenida-categorias">
-        <h1>¡Gestión de Categorías!</h1>
-        <p>Organiza tu información financiera creando categorías personalizadas.</p>
+    <div className="brine-wrapper">
+      {/* Encabezado */}
+      <div className="brine-header">
+        <button onClick={() => window.history.back()}>&larr; Regresar</button>
+        <h1><FaTags style={{ marginRight: '10px' }} />Gestión de Categorías Financieras</h1>
+        <p>Administra tus categorías para un mejor control de tus finanzas personales</p>
       </div>
 
-      <section className="pasos-categorias">
+      {/* Mensaje de error general */}
+      {error && <div className="error-message">{error}</div>}
+
+      {/* Introducción */}
+      <div className="brine-intro">
         <h2>¿Qué puedes hacer aquí?</h2>
+        <p>Esta sección te permite crear nuevas categorías, organizar tus finanzas y visualizar rápidamente tus registros.</p>
         <ul>
-          <li>Crear categorías para tus gastos o ingresos.</li>
-          <li>Organizar mejor tus finanzas.</li>
-          <li>Clasificar transacciones de manera eficiente.</li>
+          <li>Crear una nueva categoría personalizada.</li>
+          <li>Gestionar las categorías que ya creaste.</li>
         </ul>
-      </section>
-
-      <div className="formulario-categoria">
-        <h2>Crear Nueva Categoría</h2>
-        {error && <div className="error-message">{error}</div>}
-        <input 
-          type="text" 
-          placeholder="Título" 
-          value={titulo} 
-          onChange={(e) => setTitulo(e.target.value)} 
-          disabled={isSubmitting}
-        />
-        <textarea 
-          placeholder="Descripción" 
-          value={descripcion} 
-          onChange={(e) => setDescripcion(e.target.value)} 
-          disabled={isSubmitting}
-        />
-        <button 
-          onClick={crearCategoria} 
-          disabled={isSubmitting || !titulo.trim()}
-        >
-          {isSubmitting ? 'Creando...' : 'Crear Categoría'}
-        </button>
       </div>
 
-      <div className="lista-categorias">
-        <h2>Categorías Registradas</h2>
-        {categorias.length > 0 ? (
-          <ul>
-            {categorias.map((cat) => (
-              <li key={cat._id || cat.id}>
-                <strong>{cat.Titulo || cat.titulo || cat.nombre}</strong> - {cat.Descripcion || cat.descripcion}
+      {/* Formulario */}
+      <div className="brine-form-section">
+        <div className="brine-form-toggle" onClick={toggleFormulario}>
+          {mostrarFormulario ? (
+            <><FaChevronUp /> Ocultar formulario</>
+          ) : (
+            <><FaPlus /> {editandoId ? 'Editando categoría' : 'Crear nueva categoría'}</>
+          )}
+        </div>
+
+        <div className={`brine-form-container ${mostrarFormulario ? 'active fadeIn' : ''}`}>
+          <input
+            type="text"
+            placeholder="Nombre de la nueva categoría"
+            value={nuevaCategoria}
+            onChange={(e) => setNuevaCategoria(e.target.value)}
+            disabled={cargando}
+          />
+          <textarea
+            placeholder="Descripción (opcional)"
+            rows={3}
+            value={descripcion}
+            onChange={(e) => setDescripcion(e.target.value)}
+            disabled={cargando}
+          ></textarea>
+
+          {error && <p className="error-message">{error}</p>}
+          <button 
+            onClick={handleGuardarCategoria}
+            disabled={cargando}
+          >
+            {cargando ? 'Procesando...' : editandoId ? 'Actualizar categoría' : 'Guardar categoría'}
+          </button>
+        </div>
+      </div>
+
+      {/* Categorías guardadas */}
+      <div className="brine-categorias-section">
+        <h3><FaListUl style={{ marginRight: '8px' }} />Categorías que has creado</h3>
+        
+        {cargando && categoriasGuardadas.length === 0 ? (
+          <p>Cargando categorías...</p>
+        ) : categoriasGuardadas.length === 0 ? (
+          <p>Aún no has creado categorías.</p>
+        ) : (
+          <ul className="fadeIn">
+            {categoriasGuardadas.map((cat) => (
+              <li key={cat._id}>
+                <div>
+                  <strong>{cat.nombre}</strong><br />
+                  <small>{cat.descripcion || 'Sin descripción'}</small>
+                </div>
+                <div className="category-actions">
+                  <button 
+                    onClick={() => handleEditarCategoria(cat)}
+                    disabled={cargando}
+                  >
+                    <FaEdit />
+                  </button>
+                  <button 
+                    onClick={() => handleEliminarCategoria(cat._id)}
+                    disabled={cargando}
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
-        ) : (
-          <p>No hay categorías registradas.</p>
         )}
       </div>
     </div>

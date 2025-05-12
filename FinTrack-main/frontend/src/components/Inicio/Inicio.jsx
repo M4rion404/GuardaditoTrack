@@ -16,19 +16,19 @@ const Inicio = () => {
           </div>
           <ul className="barra-navegacion-lista">
             <li>
-              <Link to="/" className="boton-Presupuestos">
+              <Link to="/presupuestos" className="boton-Presupuestos">
               Presupuestos
               </Link>
             </li>
-            <li><Link to="/" className="boton-Transacciones">
+            <li><Link to="/transacciones" className="boton-Transacciones">
               Transacciones
               </Link>
             </li>
-            <li><Link to="/" className="boton-Metas">
+            <li><Link to="/metasH" className="boton-Metas">
               Metas y ahorros
               </Link>
             </li>
-            <li><Link to="/c" className="boton-Salud">
+            <li><Link to="/saludF" className="boton-Salud">
               Salud Financiera
               </Link>
             </li>

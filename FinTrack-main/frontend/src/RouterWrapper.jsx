@@ -6,6 +6,11 @@ import PaginaPrincipal from "./components/PaginaPrincipal/PaginaPricipal";
 import InicioSesion from "./components/InicioSesion/InicioSesion";
 import RegUsuario from "./components/RegistroUsuario/RegistroUsuario";
 import Inicio from "./components/Inicio/Inicio";
+import Categorias from "./components/Categorias/Categorias";
+import Presupuestos from "./components/Presupuestos/Presupuestos";
+import Transacciones from "./components/Transacciones/Transacciones";
+import MetasAhorro from "./components/MetasAhorro/MetasAhorro";
+import SaludFinanciera from "./components/SaludFinanciera/SaludFinanciera";
 import RouteWrapper from "./RouteWrapper";
 
 
@@ -35,6 +40,11 @@ const RouterWrapper = () => {
                 <Route path="/Login" element={ <RouteWrapper> <InicioSesion rutaAnterior={rutaAnterior}/> </RouteWrapper> } />
                 <Route path="/SignUp" element={ <RouteWrapper> <RegUsuario rutaAnterior={rutaAnterior} /> </RouteWrapper>}/>
                 <Route path="/Home" element={ <RouteWrapper> <Inicio rutaAnterior={rutaAnterior} /> </RouteWrapper>}/>
+                <Route path="/Categorias" element={ <RouteWrapper> <Categorias rutaAnterior={rutaAnterior} /> </RouteWrapper>}/>
+                <Route path="/Presupuestos" element={ <RouteWrapper> <Presupuestos rutaAnterior={rutaAnterior} /> </RouteWrapper>}/>
+                <Route path="/Transacciones" element={ <RouteWrapper> <Transacciones rutaAnterior={rutaAnterior} /> </RouteWrapper>}/>
+                <Route path="/MetasAhorro" element={ <RouteWrapper> <MetasAhorro rutaAnterior={rutaAnterior} /> </RouteWrapper>}/>
+                <Route path="/SaludFinanciera" element={ <RouteWrapper> <SaludFinanciera rutaAnterior={rutaAnterior} /> </RouteWrapper>}/>
 
             </Routes>
         </AnimatePresence>
