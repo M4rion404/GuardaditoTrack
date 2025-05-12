@@ -5,4 +5,4 @@ const DivisaSchema = new mongoose.Schema({
   nombre: { type: String, required: true },
 });
 
-module.exports = DivisaSchema; // embebido
+module.exports = DivisaSchema; 

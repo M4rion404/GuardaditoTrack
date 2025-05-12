@@ -28,6 +28,7 @@ exports.crearCategoria = async (req, res) => {
 exports.obtenerCategorias = async (req, res) => {
   
   const idUsuario = req.params.idUsuario;
+  
   try {
     
     const usuario = await Usuario.findById(idUsuario);
@@ -38,6 +39,7 @@ exports.obtenerCategorias = async (req, res) => {
   } catch (error) {
     res.status(500).json({ mensaje: 'Error al obtener categorías', error: error.message });
   }
+  
 };
   
 exports.obtenerCategoriaPorId = async (req, res) => {

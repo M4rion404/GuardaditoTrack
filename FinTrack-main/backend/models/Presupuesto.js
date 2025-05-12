@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const PresupuestoSchema = new mongoose.Schema({
-  id_presupuesto: { type: mongoose.Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId() },
   titulo: { type: String, required: true },
   descripcion: { type: String },
   monto_limite: { type: Number, required: true },

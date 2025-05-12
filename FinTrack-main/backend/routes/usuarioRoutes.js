@@ -8,6 +8,6 @@ const Usuario = require('../models/Usuarios');
 router.post('/', usuarioController.crearUsuario);
 router.post('/login', usuarioController.iniciarSesion);
 
-// Ruta para Admin 
+// Ruta para Admin (Listar todos los usuarios)
 router.get('/', usuarioController.obtenerUsuarios);
 module.exports = router;
