@@ -36,6 +36,7 @@ exports.iniciarSesion = async (req, res) => {
   const { email, contraseña } = req.body;
 
   try {
+    
     const usuario = await Usuario.findOne({ email });
     const esValida = usuario ? await bcrypt.compare(contraseña, usuario.contraseña) : false;
 
@@ -113,19 +114,6 @@ exports.cerrarSesion = (req, res) => {
   res.clearCookie('token');
   res.json({ mensaje: 'Sesión cerrada correctamente' });
 }; // CERRAR SESIÓN
-
-function verificarToken(req, res, next) {
-  const token = req.cookies.token;
-  if (!token) return res.status(403).json({ mensaje: 'Token requerido' });
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.usuario = decoded;
-    next();
-  } catch (err) {
-    res.status(401).json({ mensaje: 'Token inválido o expirado' });
-  }
-}; // VERIFICAR TOKEN
 
 exports.obtenerUsuarios = async (req, res) => {
   try {
