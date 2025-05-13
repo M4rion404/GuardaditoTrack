@@ -1,7 +1,9 @@
+//InicioSesion.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { FaEnvelope, FaLock, FaAngleLeft } from 'react-icons/fa';
 import auditoriaLogin from '../../assets/AuditoriaFinancieraLogin.jpg';
+import axios from "axios";
 import { motion } from "framer-motion";
 import '../InicioSesion/InicioSesion.css';
 
@@ -14,6 +16,8 @@ const InicioSesion = () => {
   const manejadorInicioSesion = async (e) => {
     e.preventDefault();
 
+    
+
     try {
       const respuesta = await fetch('http://localhost:3000/api/usuarios/login', {  // Ajusta el puerto si es necesario
         method: 'POST',
@@ -24,11 +28,24 @@ const InicioSesion = () => {
       });
 
       const datos = await respuesta.json();
+      console.log("Respuesta del backend: ", datos)
 
       if (respuesta.ok) {
-        localStorage.setItem('token', datos.token);
+        /* localStorage.setItem('token', datos.token);
         localStorage.setItem('usuario', JSON.stringify(datos.usuario));
-        navigate('/Home');
+        navigate('/Home'); */
+
+        localStorage.setItem('token', datos.token);
+localStorage.setItem('usuario', JSON.stringify(datos.usuario));
+
+if (datos.usuario && datos.usuario.id) {
+  localStorage.setItem('userId', datos.usuario.id); // ← Esto es CLAVE
+} else {
+  console.warn("El ID del usuario no se encontró en la respuesta");
+}
+
+navigate('/Home');
+
       } else {
         alert(datos.mensaje || 'Error al iniciar sesión');
       }
@@ -38,6 +55,7 @@ const InicioSesion = () => {
       alert('Error de conexión');
     }
   };
+
 
   return (
     <div className="container">

@@ -82,7 +82,7 @@ conectarDB()
 // Usar las rutas para manejar las solicitudes
 app.use('/api/gastos', gastoRoutes);
 app.use('/api/usuarios', usuarioRoutes);
-app.use('/api/transacciones', transaccionRoutes);
+app.use('/api/usuarios', transaccionRoutes);
 app.use('/api/presupuestos', presRoute);
 app.use('/api/movimientos', movRoute);
 app.use('/api/categorias', catRoute);
