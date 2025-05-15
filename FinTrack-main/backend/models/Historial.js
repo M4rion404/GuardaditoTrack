@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const historialSchema = new mongoose.Schema({
-  tipo: { type: String, enum: ['presupuesto', 'transaccion', 'categoria', 'movimiento'], required: true },
+  tipo: { type: String, enum: ['presupuesto', 'transaccion', 'categoria'], required: true },
   accion: { type: String, required: true },
   fecha: { type: Date, default: Date.now },
   datos_antes: { type: Object, default: {} },

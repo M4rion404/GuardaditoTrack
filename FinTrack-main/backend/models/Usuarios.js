@@ -17,12 +17,14 @@ const UsuarioSchema = new mongoose.Schema({
   apellido_materno: { type: String },
   numero_telefono: { type: String },
   notificacion: { type: Boolean, default: false },
+  rol: { type: String, enum: ["Cliente", "Administración"], required: true },
 
   tipo_divisa: [DivisaSchema],
   Categorias: [CategoriaSchema],
   Presupuestos: [PresupuestoSchema],
   Transacciones: [TransaccionSchema],
   Historial: [HistorialSchema]
+  
 });
 
 // Encriptar contraseña

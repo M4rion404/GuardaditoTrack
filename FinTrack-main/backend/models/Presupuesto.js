@@ -11,6 +11,7 @@ const PresupuestoSchema = new mongoose.Schema({
   dinero_gastado: { type: Number, require: true },
   
   categoria_asociada: { type: mongoose.Schema.Types.ObjectId },
+  divisa_asociada: { type: mongoose.Schema.Types.ObjectId },
   fecha_creacion: { type: Date, default: Date.now },
 });
 
