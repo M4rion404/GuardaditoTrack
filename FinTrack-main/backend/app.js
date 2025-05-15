@@ -14,6 +14,7 @@ const presRoute = require('./routes/presRoutes');
 const movRoute = require('./routes/movRoutes');
 const catRoute = require('./routes/catRoutes');
 const divRoute = require('./routes/divRoutes');
+const historialRoutes = require('./routes/historialRoutes');
 
 /* Crear la aplicación de Express */ 
 const app = express();
@@ -37,6 +38,7 @@ app.use('/api/presupuestos', presRoute);
 app.use('/api/movimientos', movRoute);
 app.use('/api/categorias', catRoute);
 app.use('/api/divisas', divRoute);
+app.use('/api/historial', historialRoutes);
 
 /* Iniciar el servidor */
 app.listen(PORT, () => { console.log('🚀 Servidor corriendo en http://localhost:${PORT}');});

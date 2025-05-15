@@ -8,6 +8,7 @@ const CategoriaSchema = require('./Categoria');
 const PresupuestoSchema = require('./Presupuesto');
 const TransaccionSchema = require('./Transaccion');
 const MovimientoSchema = require('./Movimiento');
+const HistorialSchema = require('./Historial');
 
 const UsuarioSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
@@ -23,7 +24,8 @@ const UsuarioSchema = new mongoose.Schema({
   Categorias: [CategoriaSchema],
   Presupuestos: [PresupuestoSchema],
   Transacciones: [TransaccionSchema],
-  Movimientos: [MovimientoSchema]
+  Movimientos: [MovimientoSchema],
+  Historial: [HistorialSchema]
 });
 
 // Encriptar contraseña

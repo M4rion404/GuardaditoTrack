@@ -30,7 +30,7 @@ const Transacciones = () => {
 
 
     try {
-      const response = await fetch(`http://localhost:3000/api/usuarios/${userId}/transacciones`, {
+      const response = await fetch(`http://localhost:3000/api/transacciones/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         }
@@ -89,7 +89,7 @@ const Transacciones = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:3000/api/usuarios/${userId}/transacciones`,
+        `http://localhost:3000/api/transacciones/${userId}`,
         formData,{
           headers:{
             Authorization: `Bearer ${token}`,
@@ -128,7 +128,7 @@ const Transacciones = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:3000/api/usuarios/${userId}/transacciones/${id}`,
+        `http://localhost:3000/api/transacciones/${userId}/${id}`,
         updateData, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -176,7 +176,7 @@ const Transacciones = () => {
     try {
       console.log("Eliminando transaccion con ID:", id);
       const response = await axios.delete(
-        `http://localhost:3000/api/usuarios/${userId}/transacciones/${id}`,
+        `http://localhost:3000/api/transacciones/${userId}/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

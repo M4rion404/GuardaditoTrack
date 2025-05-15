@@ -17,15 +17,18 @@ const Presupuestos = () => {
   const fetchPresupuestos = async () => {
     setLoading(true);
     setError(null);
+
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId")
   
     try {
-      const token = localStorage.getItem("token");
+      
       if (!token) {
         console.error("Token no encontrado en localStorage. Por favor, inicie sesión.");
         return;
       }
   
-      const response = await fetch("http://localhost:3000/api/presupuestos", {
+      const response = await fetch(`http://localhost:3000/api/presupuestos/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -57,8 +60,14 @@ const Presupuestos = () => {
   
 
   useEffect(() => {
-    fetchPresupuestos();
-  }, []);
+  const userId = localStorage.getItem("userId");
+  if (userId) {
+    fetchPresupuestos(); // Solo llama si hay userId
+  } else {
+    console.error("No hay userId en localStorage. Redirige al login o espera a que el usuario inicie sesión.");
+    setError("Debes iniciar sesión para ver tus presupuestos.");
+  }
+}, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -78,6 +87,8 @@ const handleLogout = () => {
     setLoading(true);
     setError(null);
 
+    const userId = localStorage.getItem("userId")
+
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -85,11 +96,12 @@ const handleLogout = () => {
         return;
       }
       const response = await axios.post(
-        "http://localhost:3000/api/presupuestos",
+        `http://localhost:3000/api/presupuestos/${userId}`,
         formData, {headers: { Authorization: `Bearer ${token}` }}
       );
       console.log("Presupuesto creado:", response.data);
-      setPresupuestos((p) => [...p, response.data]);
+      //setPresupuestos((p) => [...p, response.data]);
+      fetchPresupuestos();
       setFormData({
         titulo: "",
         descripcion: "",
@@ -108,6 +120,7 @@ const handleLogout = () => {
   const handleUpdate = async (id, updateData) => {
     setLoading(true);
     setError(null);
+    const userId = localStorage.getItem("userId")
 
     try {
       const token = localStorage.getItem("token");
@@ -116,14 +129,15 @@ const handleLogout = () => {
         return;
       }
       const response = await axios.put(
-        `http://localhost:3000/api/presupuestos/${id}`,
+        `http://localhost:3000/api/presupuestos/${userId}/${id}`,
         updateData, {headers: { Authorization: `Bearer ${token}` }}
       );
 
       console.log("Presupuesto actualizado:", response.data);
-      setPresupuestos((prev) =>
+      /* setPresupuestos((prev) =>
         prev.map((p) => (p._id === id ? response.data : p))
-      );
+      ); */
+      fetchPresupuestos();
 
       setFormData({
         titulo: "",
@@ -146,6 +160,8 @@ const handleLogout = () => {
     setLoading(true);
     setError(null);
 
+    const userId = localStorage.getItem("userId")
+
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -154,11 +170,12 @@ const handleLogout = () => {
       }
       console.log("Eliminando presupuesto con ID:", id);
       const response = await axios.delete(
-        `http://localhost:3000/api/presupuestos/${id}`,
+        `http://localhost:3000/api/presupuestos/${userId}/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       console.log("Presupuesto eliminado:", response.data);
-      setPresupuestos((prev) => prev.filter((p) => p._id !== id));
+      /* setPresupuestos((prev) => prev.filter((p) => p._id !== id)); */
+      fetchPresupuestos();
 
       if (presupuestoSeleccionado?._id === id) {
         setFormData({

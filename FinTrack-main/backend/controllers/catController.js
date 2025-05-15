@@ -18,8 +18,23 @@ exports.crearCategoria = async (req, res) => {
       { $push: { Categorias: nuevaCategoria } },
       { new: true }
     );
+
+    //Ingreso al historial
+    await Usuario.findByIdAndUpdate(idUsuario, {
+          $push: {
+            Historial: {
+              $each: [{
+                accion: 'Creación de Categoria',
+                tipo: 'categoria',
+                datos_despues: nuevaCategoria
+              }],
+              $sort: { fecha: -1 },
+              $slice: 150
+            }
+          }
+        });
+
     res.status(200).json(usuarioActualizado);
-    
   } catch (error) {
     res.status(500).json({ mensaje: "Error interno", detalles: error.message });
   }
@@ -28,7 +43,6 @@ exports.crearCategoria = async (req, res) => {
 exports.obtenerCategorias = async (req, res) => {
   
   const idUsuario = req.params.idUsuario;
-  
   try {
     
     const usuario = await Usuario.findById(idUsuario);
@@ -39,7 +53,6 @@ exports.obtenerCategorias = async (req, res) => {
   } catch (error) {
     res.status(500).json({ mensaje: 'Error al obtener categorías', error: error.message });
   }
-  
 };
   
 exports.obtenerCategoriaPorId = async (req, res) => {
@@ -84,10 +97,29 @@ exports.actualizarCategoria = async (req, res) => {
       return res.status(404).json({ mensaje: 'Categoría no encontrada' });
     }
 
+    // Definir los datos antes de la actualizacion
+    const datosAntes = {
+      Titulo: usuario.Categorias[index].Titulo,
+      Descripcion: usuario.Categorias[index].Descripcion
+
+  }
+
     usuario.Categorias[index].Titulo = datosActualizados.Titulo ?? usuario.Categorias[index].Titulo;
     usuario.Categorias[index].Descripcion = datosActualizados.Descripcion ?? usuario.Categorias[index].Descripcion;
 
     await usuario.save();
+
+   // Agregar el historial (registro de actualización)
+       await Usuario.findByIdAndUpdate(idUsuario, {
+         $push: {
+           Historial: {
+             accion: 'Actualizacion de Categoria',
+             tipo: 'categoria',
+             datos_antes: datosAntes,
+             datos_despues: usuario.Categorias[index],
+           },
+         },
+       });
 
     res.status(200).json({ mensaje: 'Categoría actualizada correctamente', categoria: usuario.Categorias[index] });
 
@@ -105,6 +137,10 @@ exports.eliminarCategoria = async (req, res) => {
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
     }
 
+    const categoriaEliminada = usuario.Categorias.find(
+      c => c._id.toString() === idCategoria
+    )
+
     const categoriasAntes = usuario.Categorias.length;
     usuario.Categorias = usuario.Categorias.filter(cat => cat._id.toString() !== idCategoria);
 
@@ -113,6 +149,18 @@ exports.eliminarCategoria = async (req, res) => {
     }
     
     await usuario.save();
+
+    await Usuario.findByIdAndUpdate(idUsuario, {
+          $push: {
+            Historial: {
+              accion: 'Eliminacion de Categoria',
+              tipo: 'categoria',
+              datos_antes: categoriaEliminada,
+              datos_despues: {}, // Datos después de la eliminación (vacío)
+            },
+          },
+        });
+
     res.status(200).json({ mensaje: 'Categoría eliminada correctamente' });
 
   } catch (error) {

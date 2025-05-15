@@ -15,6 +15,20 @@ exports.crearPresupuesto = async (req, res) => {
     usuarioExiste.Presupuestos.push(nuevoPresupuesto);
     await usuarioExiste.save();
 
+    await Usuario.findByIdAndUpdate(idUsuario, {
+      $push:{
+        Historial: {
+          $each: [{
+            accion: 'Creación de Presupuesto',
+            tipo: 'presupuesto',
+            datos_despues: nuevoPresupuesto
+          }],
+          $sort: { fecha: -1 },
+          $slice: 150
+        }
+      }
+    });
+
     res.status(200).json({ mensaje: 'Presupuesto creado exitosamente', presupuesto: nuevoPresupuesto });
   } catch (error) {
     res.status(500).json({ mensaje: 'Error al crear presupuesto', error: error.message });
@@ -75,6 +89,14 @@ exports.actualizarPresupuesto = async (req, res) => {
       return res.status(404).json({ mensaje: 'Presupuesto no encontrado' });
     }
 
+    const datosAntes = {
+      titulo: usuario.Presupuestos[index].titulo,
+      descripcion: usuario.Presupuestos[index].descripcion,
+      monto_limite: usuario.Presupuestos[index].monto_limite,
+      monto_gastado: usuario.Presupuestos[index].monto_gastado,
+      categoria_asociada: usuario.Presupuestos[index].categoria_asociada
+    }
+
     // Actualización condicional usando el operador nullish coalescing (??)
     usuario.Presupuestos[index].titulo = datosActualizados.titulo ?? usuario.Presupuestos[index].titulo;
     usuario.Presupuestos[index].descripcion = datosActualizados.descripcion ?? usuario.Presupuestos[index].descripcion;
@@ -83,6 +105,17 @@ exports.actualizarPresupuesto = async (req, res) => {
     usuario.Presupuestos[index].categoria_asociada = datosActualizados.categoria_asociada ?? usuario.Presupuestos[index].categoria_asociada;
 
     await usuario.save();
+
+    await Usuario.findByIdAndUpdate(idUsuario, {
+      $push: {
+        Historial: {
+          accion: 'Actualizacion de Presupuesto',
+          tipo: 'presupuesto',
+          datos_antes: datosAntes,
+          datos_despues: usuario.Presupuestos[index]
+        },
+      },
+    });
 
     res.status(200).json({ mensaje: 'Presupuesto actualizado correctamente', presupuesto: usuario.Presupuestos[index] });
   } catch (error) {
@@ -99,6 +132,11 @@ exports.eliminarPresupuesto = async (req, res) => {
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
     }
 
+    //Buscar el presupuesto antes de eliminarlo
+    const presupuestoEliminado = usuario.Presupuestos.find(
+      p => p._id.toString() === idPresupuesto
+    );
+
     const presupuestosAntes = usuario.Presupuestos.length;
     usuario.Presupuestos = usuario.Presupuestos.filter(p => p._id.toString() !== idPresupuesto);
 
@@ -107,6 +145,18 @@ exports.eliminarPresupuesto = async (req, res) => {
     }
 
     await usuario.save();
+
+    await Usuario.findByIdAndUpdate(idUsuario, {
+          $push: {
+            Historial: {
+              accion: 'Eliminacion de Presupuesto',
+              tipo: 'presupuesto',
+              datos_antes: presupuestoEliminado,
+              datos_despues: {}, // Datos después de la eliminación (vacío)
+            },
+          },
+        });
+
     res.status(200).json({ mensaje: 'Presupuesto eliminado correctamente' });
   } catch (error) {
     res.status(500).json({ mensaje: 'Error al eliminar presupuesto', error: error.message });

@@ -1,0 +1,109 @@
+.historial-container {
+  padding: 1rem;
+  max-width: 768px;
+  margin: 0 auto;
+  font-family: sans-serif;
+  background-color: #fefefe;
+}
+
+.historial-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.historial-filter {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filtro-label {
+  margin-right: 0.5rem;
+  font-weight: 600;
+}
+
+.filtro-select {
+  padding: 0.3rem 0.6rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background: white;
+}
+
+.historial-loading,
+.historial-error,
+.historial-vacio {
+  color: #666;
+  font-style: italic;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.historial-error {
+  color: #d00;
+}
+
+.historial-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.historial-item {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.historial-item:hover {
+  background: #f9f9f9;
+}
+
+.historial-accion {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.historial-info {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.historial-tipo {
+  align-self: flex-start;
+  background: #eef2ff;
+  color: #3730a3;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  text-transform: capitalize;
+  margin-top: 0.5rem;
+}
+
+.historial-detalles {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  background: #f9f9f9;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.cambios-lista {
+  padding-left: 1rem;
+  margin-top: 0.5rem;
+}
+
+.cambios-lista li {
+  list-style-type: disc;
+  margin-left: 1rem;
+}

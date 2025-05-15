@@ -1,8 +1,8 @@
 // Importar el modelo de Usuario
+const auth = require('../middleware/authMiddleware');
 const Usuario = require('../models/Usuarios');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const JWT_SECRET = process.env.SECRET_KEY; 
 
 const validarEmail = (email) => {
   const regex = /\S+@\S+\.\S+/;
@@ -47,47 +47,9 @@ exports.iniciarSesion = async (req, res) => {
       });
     }
 
-
-    /* 
-     *
-     *  FIRMAR TOKEN
-     *    Crea una cadena combinando:
-     *      - Id del usuario (la cadena de Mongo) ---> id: usuario._id
-     *      - Su correo electrónico ---> email: usuario.email
-     *      - La clave secreta (La cadena Hexadecimal de 64 caracteres guardada en el .env) ---> JWT_SECRET
-     *      - Un tiempo de vida de 3 minutos ---> expiresIn: '3m'
-     * 
-    */
-    const token = jwt.sign(
-      { id: usuario._id, email: usuario.email },
-      JWT_SECRET,
-      { expiresIn: '3m' }
-    );
-
-    /*
-     *
-     *  Se puede considerar la respuesta para el Navegador. 
-     * 
-     *  CREAR COOKIE
-     *    Se crea un archivo que el navegador utilizará para guardar 
-     *    la info del usuario de manera temporal, este archivo contiene:
-     *      - Nombre: token
-     *      - Token firmado: token formado con el idUsuario, email y la variable del .env
-     *      - Instrucciones adicionales para el comportamiento del doc como:
-     *        1.- httpOnly: Evita que puedan acceder a los datos a través de JS desde el frontend (Ataques XSS)
-     *        2.- secure: Indica si se esta utilizando conexión HTTPS
-     *        3.- sameSite: Evita que la cookie se enviada a otros dominios, que solo funcione en el frontend (Ataques CSRF)
-     *        4.- maxAge: En milisegundos establece por cuanto tiempo se le considera válida la Cookie
-     *
-     * 
-     */
-    res.cookie('token', token, {
-      httpOnly: true, 
-      secure: false,        
-      sameSite: 'Strict', 
-      maxAge: 2 * 60 * 60 * 1000 
-    });
-
+    const token = auth.firmarToken ({ id: usuario._id, email: usuario.email });
+    auth.crearCookie (res, token);
+    
     /*
      *
      * Respuesta para el frontend, para corroborar

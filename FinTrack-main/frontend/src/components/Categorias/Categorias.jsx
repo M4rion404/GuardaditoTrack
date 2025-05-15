@@ -13,8 +13,9 @@ const Categorias = () => {
   const [cargando, setCargando] = useState(true);
 
   // Simulación de usuario autenticado
-  const idUsuario = '1234567890abcdef'; // Reemplaza con el ID real desde contexto o localStorage
+  //const idUsuario = '1234567890abcdef'; // Reemplaza con el ID real desde contexto o localStorage
   const API_URL = 'http://localhost:3000/api/categorias';
+  const idUsuario = localStorage.getItem("userId"); // IDuser automatica
 
   // Obtener categorías guardadas
   useEffect(() => {
@@ -51,8 +52,8 @@ const Categorias = () => {
     try {
       setCargando(true);
       const categoriaData = {
-        nombre: nuevaCategoria.trim(),
-        descripcion: descripcion.trim()
+        Titulo: nuevaCategoria.trim(),
+        Descripcion: descripcion.trim()
       };
 
       let res;
@@ -64,7 +65,8 @@ const Categorias = () => {
         ));
       } else {
         // Crear nueva categoría
-        res = await axios.post(`${API_URL}/${idUsuario}`, categoriaData);
+        res = await axios.post(`${API_URL}/${idUsuario}/`, categoriaData);
+        //res = await axios.post(`http://localhost:3000/api/categorias/${idUsuario}`, categoriaData);
         setCategoriasGuardadas([...categoriasGuardadas, res.data]);
       }
 
@@ -83,8 +85,8 @@ const Categorias = () => {
 
   const handleEditarCategoria = (categoria) => {
     setEditandoId(categoria._id);
-    setNuevaCategoria(categoria.nombre);
-    setDescripcion(categoria.descripcion);
+    setNuevaCategoria(categoria.Titulo);
+    setDescripcion(categoria.Descripcion);
     setMostrarFormulario(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -175,8 +177,8 @@ const Categorias = () => {
             {categoriasGuardadas.map((cat) => (
               <li key={cat._id}>
                 <div>
-                  <strong>{cat.nombre}</strong><br />
-                  <small>{cat.descripcion || 'Sin descripción'}</small>
+                  <strong>{cat.Titulo}</strong><br />
+                  <small>{cat.Descripcion || 'Sin descripción'}</small>
                 </div>
                 <div className="category-actions">
                   <button 
