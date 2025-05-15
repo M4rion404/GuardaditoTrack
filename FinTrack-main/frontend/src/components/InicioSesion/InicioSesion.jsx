@@ -16,10 +16,10 @@ const InicioSesion = () => {
   const manejadorInicioSesion = async (e) => {
     e.preventDefault();
 
-    
+
 
     try {
-      const respuesta = await fetch('http://localhost:3000/api/usuarios/login', {  // Ajusta el puerto si es necesario
+      const respuesta = await fetch("http://localhost:3000/api/usuarios/login", {  // Ajusta el puerto si es necesario
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -36,15 +36,15 @@ const InicioSesion = () => {
         navigate('/Home'); */
 
         localStorage.setItem('token', datos.token);
-localStorage.setItem('usuario', JSON.stringify(datos.usuario));
+        localStorage.setItem('usuario', JSON.stringify(datos.usuario));
 
-if (datos.usuario && datos.usuario.id) {
-  localStorage.setItem('userId', datos.usuario.id); // ← Esto es CLAVE
-} else {
-  console.warn("El ID del usuario no se encontró en la respuesta");
-}
+        if (datos.usuario && datos.usuario.id) {
+          localStorage.setItem('userId', datos.usuario.id); // ← Esto es CLAVE
+        } else {
+          console.warn("El ID del usuario no se encontró en la respuesta");
+        }
 
-navigate('/Home');
+        navigate('/Home');
 
       } else {
         alert(datos.mensaje || 'Error al iniciar sesión');
@@ -81,9 +81,9 @@ navigate('/Home');
 
           <div className="input-group">
             <FaEnvelope className="icon" />
-            <input 
-              type="email" 
-              placeholder="Correo electrónico" 
+            <input
+              type="email"
+              placeholder="Correo electrónico"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -92,9 +92,9 @@ navigate('/Home');
 
           <div className="input-group">
             <FaLock className="icon" />
-            <input 
-              type="password" 
-              placeholder="Contraseña" 
+            <input
+              type="password"
+              placeholder="Contraseña"
               value={contraseña}
               onChange={(e) => setContraseña(e.target.value)}
               required

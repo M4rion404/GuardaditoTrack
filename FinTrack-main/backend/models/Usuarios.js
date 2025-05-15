@@ -7,7 +7,6 @@ const DivisaSchema = require('./Divisa');
 const CategoriaSchema = require('./Categoria');
 const PresupuestoSchema = require('./Presupuesto');
 const TransaccionSchema = require('./Transaccion');
-const MovimientoSchema = require('./Movimiento');
 const HistorialSchema = require('./Historial');
 
 const UsuarioSchema = new mongoose.Schema({
@@ -17,14 +16,12 @@ const UsuarioSchema = new mongoose.Schema({
   apellido_paterno: { type: String },
   apellido_materno: { type: String },
   numero_telefono: { type: String },
-  monto_inicial: { type: Number },
   notificacion: { type: Boolean, default: false },
 
   tipo_divisa: [DivisaSchema],
   Categorias: [CategoriaSchema],
   Presupuestos: [PresupuestoSchema],
   Transacciones: [TransaccionSchema],
-  Movimientos: [MovimientoSchema],
   Historial: [HistorialSchema]
 });
 

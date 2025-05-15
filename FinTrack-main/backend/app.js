@@ -41,4 +41,4 @@ app.use('/api/divisas', divRoute);
 app.use('/api/historial', historialRoutes);
 
 /* Iniciar el servidor */
-app.listen(PORT, () => { console.log('🚀 Servidor corriendo en http://localhost:${PORT}');});
+app.listen(PORT, () => { console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);});

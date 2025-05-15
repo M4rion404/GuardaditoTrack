@@ -1,5 +1,5 @@
 // Importar el modelo de Usuario
-const auth = require('../middleware/authMiddleware');
+const auth = require('../auth/auth');
 const Usuario = require('../models/Usuarios');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');

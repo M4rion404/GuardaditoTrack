@@ -47,7 +47,7 @@ const RouterWrapper = () => {
                 <Route path="/Transacciones" element={ <RouteWrapper> <Transacciones rutaAnterior={rutaAnterior} /> </RouteWrapper>}/>
                 <Route path="/MetasAhorro" element={ <RouteWrapper> <MetasAhorro rutaAnterior={rutaAnterior} /> </RouteWrapper>}/>
                 <Route path="/SaludFinanciera" element={ <RouteWrapper> <SaludFinanciera rutaAnterior={rutaAnterior} /> </RouteWrapper>}/>
-                <Route path="/Historial" element={ <RouterWrapper> <Historial rutaAnterior={rutaAnterior} /> </RouterWrapper> }/>
+                <Route path="/Historial" element={ <RouteWrapper> <Historial rutaAnterior={rutaAnterior} /> </RouteWrapper> }/>
 
             </Routes>
         </AnimatePresence>
