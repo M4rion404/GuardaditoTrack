@@ -7,7 +7,7 @@ const authToken = process.env.AUTH_TOKEN;
 const numeroOrigen = process.env.NUMERO_ORIGEN;
 
 // Creación del objeto para enviar mensajes
-const client = twilio("ACe877370a90814315e92a799955d1f5fa", "c46004bd8d64509eeb7d90c3a0edbf3e");
+const client = twilio(accountSid, authToken);
 
 
 async function enviarSMS(numeroDestino, nombreUsuario) {
@@ -21,7 +21,7 @@ async function enviarSMS(numeroDestino, nombreUsuario) {
     })
     .then(message => console.log('Mensaje enviado:', message.sid) )
     .catch(error => console.error('Error:', error.message) );
-    
+
   } catch (error) {
     console.error('Error al enviar SMS:', error);
     throw error;
