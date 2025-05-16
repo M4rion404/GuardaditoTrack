@@ -35,7 +35,7 @@ function RouteWrapper({ children, rutaAnterior }) {
       animate={animacion.animate}
       exit={animacion.exit}
       transition={{ duration: 0.5 }}
-      style={{ position: 'absolute', width: '100%' }}
+      style={{ width: '100%' }}
     >
       {children}
     </motion.div>

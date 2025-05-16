@@ -644,6 +644,7 @@ const exportarPDF = () => {
             onChange={(e) => setBusqueda(e.target.value)}
           />
         </div>
+        
         <div className="Filtros">
           <select
             value={filtroCategoria}

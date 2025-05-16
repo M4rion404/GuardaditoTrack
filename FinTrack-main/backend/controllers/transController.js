@@ -115,6 +115,8 @@ exports.actualizarTransaccion = async (req, res) => {
       metodo_pago: usuario.Transacciones[index].metodo_pago,
       monto: usuario.Transacciones[index].monto,
       estado: usuario.Transacciones[index].estado,
+      divisa_asociada: usuario.Transacciones[index].divisa_asociada,
+      presupuesto_asociado: usuario.Transacciones[index].presupuesto_asociado
     };
 
     // Actualizacion de la transaccion
@@ -124,6 +126,8 @@ exports.actualizarTransaccion = async (req, res) => {
     usuario.Transacciones[index].metodo_pago = datosActualizados.metodo_pago ?? usuario.Transacciones[index].metodo_pago;
     usuario.Transacciones[index].monto = datosActualizados.monto ?? usuario.Transacciones[index].monto;
     usuario.Transacciones[index].estado = datosActualizados.estado ?? usuario.Transacciones[index].estado;
+    usuario.Transacciones[index].divisa_asociada = datosActualizados.divisa_asociada ?? usuario.Transacciones[index].divisa_asociada;
+    usuario.Transacciones[index].presupuesto_asociado = datosActualizados.presupuesto_asociado ?? usuario.Transacciones[index].presupuesto_asociado;
 
 
     await usuario.save();
