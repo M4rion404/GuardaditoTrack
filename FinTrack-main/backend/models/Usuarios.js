@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 // Importar subdocumentos
-const DivisaSchema = require('./Divisa');
+const {DivisaSchema} = require('./Divisa');
 const CategoriaSchema = require('./Categoria');
 const PresupuestoSchema = require('./Presupuesto');
 const TransaccionSchema = require('./Transaccion');
@@ -17,7 +17,7 @@ const UsuarioSchema = new mongoose.Schema({
   apellido_materno: { type: String },
   numero_telefono: { type: String },
   notificacion: { type: Boolean, default: false },
-  rol: { type: String, enum: ["Cliente", "Administrador"] },
+  rol: { type: String, enum: ["Cliente", "Administrador"], default: "Cliente" },
 
   tipo_divisa: [DivisaSchema],
   Categorias: [CategoriaSchema],

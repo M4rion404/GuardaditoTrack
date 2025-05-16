@@ -5,4 +5,6 @@ const DivisaSchema = new mongoose.Schema({
   nombre: { type: String, required: true },
 });
 
-module.exports = DivisaSchema; 
+const Divisa = mongoose.model('Divisa', DivisaSchema);
+
+module.exports = { Divisa, DivisaSchema };

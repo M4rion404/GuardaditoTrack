@@ -92,17 +92,24 @@ exports.actualizarPresupuesto = async (req, res) => {
     const datosAntes = {
       titulo: usuario.Presupuestos[index].titulo,
       descripcion: usuario.Presupuestos[index].descripcion,
-      monto_limite: usuario.Presupuestos[index].monto_limite,
-      monto_gastado: usuario.Presupuestos[index].monto_gastado,
-      categoria_asociada: usuario.Presupuestos[index].categoria_asociada
+      meta_ahorro: usuario.Presupuestos[index].meta_ahorro,
+      monto_inicial: usuario.Presupuestos[index].monto_inicial,
+      dinero_ahorrado: usuario.Presupuestos[index].dinero_ahorrado,
+      dinero_gastado: usuario.Presupuestos[index].dinero_gastado,
+      categoria_asociada: usuario.Presupuestos[index].categoria_asociada,
+      divisa_asociada: usuario.Presupuestos[index].divisa_asociada,
     }
 
     // Actualización condicional usando el operador nullish coalescing (??)
     usuario.Presupuestos[index].titulo = datosActualizados.titulo ?? usuario.Presupuestos[index].titulo;
     usuario.Presupuestos[index].descripcion = datosActualizados.descripcion ?? usuario.Presupuestos[index].descripcion;
-    usuario.Presupuestos[index].monto_limite = datosActualizados.monto_limite ?? usuario.Presupuestos[index].monto_limite;
-    usuario.Presupuestos[index].monto_gastado = datosActualizados.monto_gastado ?? usuario.Presupuestos[index].monto_gastado;
+    usuario.Presupuestos[index].meta_ahorro = datosActualizados.meta_ahorro ?? usuario.Presupuestos[index].meta_ahorro;
+    usuario.Presupuestos[index].monto_inicial = datosActualizados.monto_inicial ?? usuario.Presupuestos[index].monto_inicial;
+    usuario.Presupuestos[index].dinero_ahorrado = datosActualizados.dinero_ahorrado ?? usuario.Presupuestos[index].dinero_ahorrado;
+    usuario.Presupuestos[index].dinero_gastado = datosActualizados.dinero_gastado ?? usuario.Presupuestos[index].dinero_gastado;
     usuario.Presupuestos[index].categoria_asociada = datosActualizados.categoria_asociada ?? usuario.Presupuestos[index].categoria_asociada;
+    usuario.Presupuestos[index].divisa_asociada = datosActualizados.divisa_asociada ?? usuario.Presupuestos[index].divisa_asociada;
+    
 
     await usuario.save();
 

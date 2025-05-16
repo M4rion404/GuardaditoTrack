@@ -1,4 +1,4 @@
-const Divisa = require('../models/Divisa');
+const {Divisa} = require('../models/Divisa');
 
 exports.crearDivisa = async (req, res) => {
   try {
