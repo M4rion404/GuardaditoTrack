@@ -29,7 +29,8 @@ exports.crearUsuario = async (req, res) => {
     const nuevoUsuario = new Usuario(req.body);
     await nuevoUsuario.save();
     
-    res.status(201).json(nuevoUsuario);
+    console.log('Enviando SMS a:', numero_telefono, nombres);
+    
     
     // Si regresan un True se envía a Whatsapp, si no al correo
     // msj 
@@ -37,7 +38,7 @@ exports.crearUsuario = async (req, res) => {
     //   : await enviarEmail(email, nombres);
     
     await enviarSMS(numero_telefono, nombres) 
-    await enviarEMAIL(email, nombres, "FinTrack: Registro éxitoso","");
+    // res.status(201).json(nuevoUsuario);
   
   } catch (error) {
     res.status(400).json({ mensaje: 'Error al crear usuario', error });

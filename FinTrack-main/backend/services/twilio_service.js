@@ -11,7 +11,10 @@ const client = twilio(accountSid, authToken);
 
 
 async function enviarSMS(numeroDestino, nombreUsuario) {
-  return client.messages.create({
+  
+  
+  try {
+    return client.messages.create({
     body: `🔥 FinTrack te da la bienvenida 🔥\n\n${nombreUsuario}, nos alegra tenerte con nosotros.\n\n` +
       `📊 Con FinTrack podrás:\n` +
       `- Registrar metas de ahorro y presupuestos\n` +
@@ -21,7 +24,14 @@ async function enviarSMS(numeroDestino, nombreUsuario) {
     
     from: numeroOrigen,
     to: numeroDestino
-  });
+    });
+  } catch (error) {
+    console.error('Error al enviar SMS:', error);
+    throw error;
+  }
+
+  
+  
 }
 
 module.exports = { enviarSMS };
