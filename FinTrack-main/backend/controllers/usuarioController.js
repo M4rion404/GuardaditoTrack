@@ -3,6 +3,9 @@ const auth = require('../auth/auth');
 const Usuario = require('../models/Usuarios');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const { enviarSMS } = require('../services/twilio_service');
+const { enviarEMAIL } = require('../services/mailJet_service');
+
 
 const validarEmail = (email) => {
   const regex = /\S+@\S+\.\S+/;
@@ -10,7 +13,7 @@ const validarEmail = (email) => {
 }; // VALIDAR EMAIL
 
 exports.crearUsuario = async (req, res) => {
-  const { email, contraseña, nombres } = req.body;
+  const { email, contraseña, nombres, numero_telefono, msj } = req.body;
 
   /* Validaciones */
   if (!email || !contraseña || !nombres) { return res.status(400).json({ mensaje: 'Faltan campos obligatorios' });}
@@ -25,7 +28,16 @@ exports.crearUsuario = async (req, res) => {
 
     const nuevoUsuario = new Usuario(req.body);
     await nuevoUsuario.save();
+    
     res.status(201).json(nuevoUsuario);
+    
+    // Si regresan un True se envía a Whatsapp, si no al correo
+    // msj 
+    //   ? await enviarSMS(numero_telefono, nombres) 
+    //   : await enviarEmail(email, nombres);
+    
+    await enviarSMS(numero_telefono, nombres) 
+    await enviarEMAIL(email, nombres, "FinTrack: Registro éxitoso","");
   
   } catch (error) {
     res.status(400).json({ mensaje: 'Error al crear usuario', error });

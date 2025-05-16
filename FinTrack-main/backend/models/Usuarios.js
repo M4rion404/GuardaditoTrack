@@ -17,7 +17,7 @@ const UsuarioSchema = new mongoose.Schema({
   apellido_materno: { type: String },
   numero_telefono: { type: String },
   notificacion: { type: Boolean, default: false },
-  rol: { type: String, enum: ["Cliente", "Administración"], required: true },
+  rol: { type: String, enum: ["Cliente", "Administrador"] },
 
   tipo_divisa: [DivisaSchema],
   Categorias: [CategoriaSchema],

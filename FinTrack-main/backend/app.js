@@ -1,17 +1,16 @@
 /* Importar Módulos necesarios */
+require('dotenv').config();
 const express = require('express');
 const conectarDB = require('./config/db');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-require('dotenv').config();
 
 /* Importar rutas */
 const gastoRoutes = require('./routes/gastosRoute');  
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const transaccionRoutes = require('./routes/transRoutes');
 const presRoute = require('./routes/presRoutes');
-const movRoute = require('./routes/movRoutes');
 const catRoute = require('./routes/catRoutes');
 const divRoute = require('./routes/divRoutes');
 const historialRoutes = require('./routes/historialRoutes');
@@ -35,7 +34,6 @@ app.use('/api/gastos', gastoRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/transacciones', transaccionRoutes);
 app.use('/api/presupuestos', presRoute);
-app.use('/api/movimientos', movRoute);
 app.use('/api/categorias', catRoute);
 app.use('/api/divisas', divRoute);
 app.use('/api/historial', historialRoutes);
