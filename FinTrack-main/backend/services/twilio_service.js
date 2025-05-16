@@ -7,7 +7,7 @@ const authToken = process.env.AUTH_TOKEN;
 const numeroOrigen = process.env.NUMERO_ORIGEN;
 
 // Creación del objeto para enviar mensajes
-const client = twilio(accountSid, authToken);
+const client = twilio("ACe877370a90814315e92a799955d1f5fa", "c46004bd8d64509eeb7d90c3a0edbf3e");
 
 
 async function enviarSMS(numeroDestino, nombreUsuario) {
@@ -15,16 +15,13 @@ async function enviarSMS(numeroDestino, nombreUsuario) {
   
   try {
     return client.messages.create({
-    body: `🔥 FinTrack te da la bienvenida 🔥\n\n${nombreUsuario}, nos alegra tenerte con nosotros.\n\n` +
-      `📊 Con FinTrack podrás:\n` +
-      `- Registrar metas de ahorro y presupuestos\n` +
-      `- Acceder a contenido que mejorará tus habilidades financieras\n` +
-      `- Usar el historial para seguir todos tus movimientos a lo largo del tiempo\n\n` +
-      `¡Gracias por confiar en nosotros! 🚀`,
+    body: `FinTrack te da la bienvenida ${nombreUsuario}, nos alegra tenerte con nosotros.`,
+    from: "+17432564072",
+    to: "+523111021664"
+    })
+    .then(message => console.log('Mensaje enviado:', message.sid) )
+    .catch(error => console.error('Error:', error.message) );
     
-    from: numeroOrigen,
-    to: numeroDestino
-    });
   } catch (error) {
     console.error('Error al enviar SMS:', error);
     throw error;
