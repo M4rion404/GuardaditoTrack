@@ -8,7 +8,14 @@ import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { FaFilePdf, FaEye } from "react-icons/fa";
-import { FaPlus, FaEdit, FaTrash, FaSyncAlt, FaSearch, FaTimes } from "react-icons/fa";
+import {
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaSyncAlt,
+  FaSearch,
+  FaTimes,
+} from "react-icons/fa";
 import { FaTags } from "react-icons/fa";
 
 Chart.register(ArcElement, Tooltip, Legend);
@@ -54,7 +61,6 @@ const IconVer = () => (
     <FaEye style={{ color: "#1976d2" }} />
   </span>
 );
-
 
 const initialForm = {
   titulo: "",
@@ -476,7 +482,7 @@ const Presupuestos = () => {
     setLoading(false);
   };
 
-  // Filtros y paginación
+  /* // Filtros y paginación
   const presupuestosFiltrados = presupuestos.filter((p) => {
     const coincideBusqueda =
       p.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -496,6 +502,45 @@ const Presupuestos = () => {
     paginaActual * ITEMS_PER_PAGE
   );
 
+  const irAPagina = (numPagina) => {
+    if (numPagina < 1 || numPagina > totalPaginas) return;
+    setPaginaActual(numPagina);
+  }; */
+
+// Filtrar presupuestos y divisas usados en transacciones
+  const categoriasUsadas = categorias.filter((c) =>
+    presupuestos.some((p) => p.categoria_asociada === c._id)
+  );
+
+  const divisasUsadas = divisas.filter((d) =>
+    presupuestos.some((p) => p.divisa_asociada === d._id)
+  );
+
+
+  // Filtro principal de transacciones
+  const presupuestosFiltrados = presupuestos.filter((p) => {
+    const coincideCategoria = filtroCategoria
+      ? p.categoria_asociada === filtroCategoria
+      : true;
+
+    const coincideDivisa = filtroDivisa
+      ? p.divisa_asociada === filtroDivisa
+      : true;
+
+    return coincideCategoria && coincideDivisa;
+  });
+
+  // Paginación
+  const totalPaginas = Math.ceil(
+    presupuestosFiltrados.length / ITEMS_PER_PAGE
+  );
+
+  const presupuestosPaginados = presupuestosFiltrados.slice(
+    (paginaActual - 1) * ITEMS_PER_PAGE,
+    paginaActual * ITEMS_PER_PAGE
+  );
+
+  // Ir a página específica
   const irAPagina = (numPagina) => {
     if (numPagina < 1 || numPagina > totalPaginas) return;
     setPaginaActual(numPagina);
@@ -520,46 +565,44 @@ const Presupuestos = () => {
       },
     ],
   };
-const exportarPDF = () => {
-  const doc = new jsPDF();
+  const exportarPDF = () => {
+    const doc = new jsPDF();
 
-  const columnas = [
-    "Título",
-    "Descripción",
-    "Meta Ahorro",
-    "Monto Inicial",
-    "Dinero Ahorrado",
-    "Dinero Gastado",
-    "Categoría",
-    "Divisa",
-    "Fecha",
-  ];
+    const columnas = [
+      "Título",
+      "Descripción",
+      "Meta Ahorro",
+      "Monto Inicial",
+      "Dinero Ahorrado",
+      "Dinero Gastado",
+      "Categoría",
+      "Divisa",
+      "Fecha",
+    ];
 
-  // filas: cada presupuesto es un array con sus datos
-  const filas = presupuestosFiltrados.map((p) => [
-    p.titulo || "",
-    p.descripcion || "",
-    `$${Number(p.meta_ahorro || 0).toFixed(2)}`,
-    `$${Number(p.monto_inicial || 0).toFixed(2)}`,
-    `$${Number(p.dinero_ahorrado || 0).toFixed(2)}`,
-    `$${Number(p.dinero_gastado || 0).toFixed(2)}`,
-    obtenerNombreCategoria(p.categoria_asociada) || "",
-    obtenerNombreDivisa(p.divisa_asociada) || "",
-    p.fecha_creacion
-      ? new Date(p.fecha_creacion).toLocaleDateString()
-      : "",
-  ]);
+    // filas: cada presupuesto es un array con sus datos
+    const filas = presupuestosFiltrados.map((p) => [
+      p.titulo || "",
+      p.descripcion || "",
+      `$${Number(p.meta_ahorro || 0).toFixed(2)}`,
+      `$${Number(p.monto_inicial || 0).toFixed(2)}`,
+      `$${Number(p.dinero_ahorrado || 0).toFixed(2)}`,
+      `$${Number(p.dinero_gastado || 0).toFixed(2)}`,
+      obtenerNombreCategoria(p.categoria_asociada) || "",
+      obtenerNombreDivisa(p.divisa_asociada) || "",
+      p.fecha_creacion ? new Date(p.fecha_creacion).toLocaleDateString() : "",
+    ]);
 
-  doc.text("Listado de Presupuestos", 14, 15);
+    doc.text("Listado de Presupuestos", 14, 15);
 
-  autoTable(doc, {
-    startY: 20,
-    head: [columnas],
-    body: filas,
-  });
+    autoTable(doc, {
+      startY: 20,
+      head: [columnas],
+      body: filas,
+    });
 
-  doc.save("presupuestos.pdf");
-};
+    doc.save("presupuestos.pdf");
+  };
 
   return (
     <div className="presupuestos-tabla-container">
@@ -594,7 +637,11 @@ const exportarPDF = () => {
       <PresupuestoResumen presupuestos={presupuestos} />
 
       <div className="acciones-superiores">
-        <button className="btn-icon-crear" onClick={abrirModalCrear} title="Crear">
+        <button
+          className="btn-icon-crear"
+          onClick={abrirModalCrear}
+          title="Crear"
+        >
           <IconCrear /> Crear
         </button>
         <button
@@ -644,14 +691,14 @@ const exportarPDF = () => {
             onChange={(e) => setBusqueda(e.target.value)}
           />
         </div>
-        
+
         <div className="Filtros">
           <select
             value={filtroCategoria}
             onChange={(e) => setFiltroCategoria(e.target.value)}
           >
             <option value="">Todas las categorías</option>
-            {categorias.map((cat) => (
+            {categoriasUsadas.map((cat) => (
               <option key={cat._id} value={cat._id}>
                 {cat.Titulo}
               </option>
@@ -662,7 +709,7 @@ const exportarPDF = () => {
             onChange={(e) => setFiltroDivisa(e.target.value)}
           >
             <option value="">Todas las divisas</option>
-            {divisas.map((div) => (
+            {divisasUsadas.map((div) => (
               <option key={div._id} value={div._id}>
                 {div.nombre}
               </option>

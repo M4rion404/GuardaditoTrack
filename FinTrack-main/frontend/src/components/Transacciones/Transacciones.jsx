@@ -48,7 +48,13 @@ const limpiarDatos = (data) => ({
 
 const validarCampos = (data) => {
   // Validación de campos requeridos
-  if (!data.titulo || !data.accion || !data.metodo_pago || !data.monto || !data.estado) {
+  if (
+    !data.titulo ||
+    !data.accion ||
+    !data.metodo_pago ||
+    !data.monto ||
+    !data.estado
+  ) {
     return "Por favor, complete todos los campos obligatorios.";
   }
   // Validar acción
@@ -326,18 +332,14 @@ const Transacciones = () => {
 
   // Helpers
   const obtenerNombrePresupuesto = (id) => {
-  const presupuesto = presupuestos.find((p) => p._id === id);
-  return presupuesto?.titulo || "Sin Presupuesto";
-};
+    const presupuesto = presupuestos.find((p) => p._id === id);
+    return presupuesto?.titulo || "Sin Presupuesto";
+  };
 
-
-
-const obtenerNombreDivisa = (id) => {
+  const obtenerNombreDivisa = (id) => {
     const divisa = divisas.find((d) => d._id === id);
     return divisa?.divisa || "Sin divisa";
   };
-
-
 
   // Modal handlers
   const abrirModalCrear = () => {
@@ -364,26 +366,25 @@ const obtenerNombreDivisa = (id) => {
   };
 
   const abrirModalVer = (transaccion) => {
-  if (!transaccion) return;
-  setTransaccionSeleccionada(transaccion);
-  setFormData({
-    titulo: transaccion.titulo || "",
-    descripcion: transaccion.descripcion || "",
-    accion: transaccion.accion || "",
-    metodo_pago: transaccion.metodo_pago || "",
-    monto: transaccion.monto || "",
-    estado: transaccion.estado || "",
-    divisa_asociada:
-      transaccion.divisa_asociada?._id || transaccion.divisa_asociada || "",
-    presupuesto_asociado:
-      transaccion.presupuesto_asociado?._id ||
-      transaccion.presupuesto_asociado ||
-      "",
-  });
-  setModalMode("ver");
-  setModalOpen(true);
-};
-
+    if (!transaccion) return;
+    setTransaccionSeleccionada(transaccion);
+    setFormData({
+      titulo: transaccion.titulo || "",
+      descripcion: transaccion.descripcion || "",
+      accion: transaccion.accion || "",
+      metodo_pago: transaccion.metodo_pago || "",
+      monto: transaccion.monto || "",
+      estado: transaccion.estado || "",
+      divisa_asociada:
+        transaccion.divisa_asociada?._id || transaccion.divisa_asociada || "",
+      presupuesto_asociado:
+        transaccion.presupuesto_asociado?._id ||
+        transaccion.presupuesto_asociado ||
+        "",
+    });
+    setModalMode("ver");
+    setModalOpen(true);
+  };
 
   const cerrarModal = () => {
     setModalOpen(false);
@@ -430,61 +431,60 @@ const obtenerNombreDivisa = (id) => {
     }
   };
 
-const handleUpdate = async (e) => {
-  e.preventDefault();
-  setError(null);
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setError(null);
 
-  if (!transaccionSeleccionada) {
-    console.error("No hay transacción seleccionada");
-    setError("Debe seleccionar una transacción para actualizar");
-    return;
-  }
+    if (!transaccionSeleccionada) {
+      console.error("No hay transacción seleccionada");
+      setError("Debe seleccionar una transacción para actualizar");
+      return;
+    }
 
-  console.log("Transacción seleccionada:", transaccionSeleccionada);
+    console.log("Transacción seleccionada:", transaccionSeleccionada);
 
-  const validacion = validarCampos(formData);
-  if (validacion) {
-    setError(validacion);
-    return;
-  }
+    const validacion = validarCampos(formData);
+    if (validacion) {
+      setError(validacion);
+      return;
+    }
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
+    try {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
 
-    if (!token || !userId) throw new Error("Sesión inválida. Por favor, inicia sesión.");
+      if (!token || !userId)
+        throw new Error("Sesión inválida. Por favor, inicia sesión.");
 
-    console.log("ID transacción seleccionada:", transaccionSeleccionada._id);
+      console.log("ID transacción seleccionada:", transaccionSeleccionada._id);
 
-    const dataLimpia = limpiarDatos(formData);
+      const dataLimpia = limpiarDatos(formData);
 
-    await axios.put(
-      `http://localhost:3000/api/transacciones/${userId}/${transaccionSeleccionada._id}`,
-      dataLimpia,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+      await axios.put(
+        `http://localhost:3000/api/transacciones/${userId}/${transaccionSeleccionada._id}`,
+        dataLimpia,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    await Swal.fire({
-      icon: "success",
-      title: "Transacción actualizada!",
-      text: "Los cambios se guardaron correctamente.",
-      timer: 1500,
-      showConfirmButton: false,
-    });
+      await Swal.fire({
+        icon: "success",
+        title: "Transacción actualizada!",
+        text: "Los cambios se guardaron correctamente.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
 
-    fetchTransacciones();
-    cerrarModal();
-  } catch (err) {
-    console.error(err);
-    setError("Error al actualizar la transacción");
-  } finally {
-    setLoading(false);
-  }
-};
-
-
+      fetchTransacciones();
+      cerrarModal();
+    } catch (err) {
+      console.error(err);
+      setError("Error al actualizar la transacción");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (!transaccionSeleccionada) return;
@@ -516,7 +516,7 @@ const handleUpdate = async (e) => {
     setLoading(false);
   };
 
-  // Filtros y paginación
+  /* // Filtros y paginación
   const transaccionesFiltrados = transacciones.filter((t) => {
     const coincideBusqueda =
       t.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -538,6 +538,44 @@ const handleUpdate = async (e) => {
     paginaActual * ITEMS_PER_PAGE
   );
 
+  const irAPagina = (numPagina) => {
+    if (numPagina < 1 || numPagina > totalPaginas) return;
+    setPaginaActual(numPagina);
+  }; */
+
+  // Filtrar presupuestos y divisas usados en transacciones
+  const presupuestosUsados = presupuestos.filter((p) =>
+    transacciones.some((t) => t.presupuesto_asociado === p._id)
+  );
+
+  const divisasUsadas = divisas.filter((d) =>
+    transacciones.some((t) => t.divisa_asociada === d._id)
+  );
+
+  // Filtro principal de transacciones
+  const transaccionesFiltrados = transacciones.filter((t) => {
+    const coincidePresupuesto = filtroPresupuesto
+      ? t.presupuesto_asociado === filtroPresupuesto
+      : true;
+
+    const coincideDivisa = filtroDivisa
+      ? t.divisa_asociada === filtroDivisa
+      : true;
+
+    return coincidePresupuesto && coincideDivisa;
+  });
+
+  // Paginación
+  const totalPaginas = Math.ceil(
+    transaccionesFiltrados.length / ITEMS_PER_PAGE
+  );
+
+  const transaccionesPaginadas = transaccionesFiltrados.slice(
+    (paginaActual - 1) * ITEMS_PER_PAGE,
+    paginaActual * ITEMS_PER_PAGE
+  );
+
+  // Ir a página específica
   const irAPagina = (numPagina) => {
     if (numPagina < 1 || numPagina > totalPaginas) return;
     setPaginaActual(numPagina);
@@ -667,20 +705,21 @@ const handleUpdate = async (e) => {
             onChange={(e) => setFiltroPresupuesto(e.target.value)}
           >
             <option value="">Todos los presupuestos</option>
-            {presupuestos.map((pres) => (
-              <option key={pres._id} value={pres._id}>
-                {pres.titulo}
+            {presupuestosUsados.map((p) => (
+              <option key={p._id} value={p._id}>
+                {p.titulo}
               </option>
             ))}
           </select>
+
           <select
             value={filtroDivisa}
             onChange={(e) => setFiltroDivisa(e.target.value)}
           >
             <option value="">Todas las divisas</option>
-            {divisas.map((div) => (
-              <option key={div._id} value={div._id}>
-                {div.nombre}
+            {divisasUsadas.map((d) => (
+              <option key={d._id} value={d._id}>
+                {d.nombre}
               </option>
             ))}
           </select>
@@ -703,36 +742,39 @@ const handleUpdate = async (e) => {
         </thead>
         <tbody>
           {transaccionesPaginadas.map((transaccion) => {
-
-  return (
-    <tr
-      key={transaccion._id}
-      onClick={() => setTransaccionSeleccionada(transaccion)}
-      style={{
-        cursor: "pointer",
-        backgroundColor:
-          transaccionSeleccionada?._id === transaccion._id
-            ? "#e0f7fa"
-            : "transparent",
-      }}
-    >
-      <td>{transaccion.titulo}</td>
-      <td>{transaccion.descripcion}</td>
-      <td>{transaccion.accion}</td>
-      <td>{transaccion.metodo_pago}</td>
-      <td>${Number(transaccion.monto || 0).toFixed(2)}</td>
-      <td>{transaccion.estado}</td>
-      <td>{obtenerNombreDivisa(transaccion.divisa_asociada) ?? "-"}</td>
-      <td>{obtenerNombrePresupuesto(transaccion.presupuesto_asociado) ?? "-"}</td>
-      <td>
-        {transaccion.fecha
-          ? new Date(transaccion.fecha).toLocaleDateString()
-          : ""}
-      </td>
-    </tr>
-  );
-})}
-
+            return (
+              <tr
+                key={transaccion._id}
+                onClick={() => setTransaccionSeleccionada(transaccion)}
+                style={{
+                  cursor: "pointer",
+                  backgroundColor:
+                    transaccionSeleccionada?._id === transaccion._id
+                      ? "#e0f7fa"
+                      : "transparent",
+                }}
+              >
+                <td>{transaccion.titulo}</td>
+                <td>{transaccion.descripcion}</td>
+                <td>{transaccion.accion}</td>
+                <td>{transaccion.metodo_pago}</td>
+                <td>${Number(transaccion.monto || 0).toFixed(2)}</td>
+                <td>{transaccion.estado}</td>
+                <td>
+                  {obtenerNombreDivisa(transaccion.divisa_asociada) ?? "-"}
+                </td>
+                <td>
+                  {obtenerNombrePresupuesto(transaccion.presupuesto_asociado) ??
+                    "-"}
+                </td>
+                <td>
+                  {transaccion.fecha
+                    ? new Date(transaccion.fecha).toLocaleDateString()
+                    : ""}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
@@ -832,7 +874,7 @@ const handleUpdate = async (e) => {
 
                   <p>
                     <strong>Presupuesto:</strong>{" "}
-                     {transaccionSeleccionada?.presupuesto_asociado
+                    {transaccionSeleccionada?.presupuesto_asociado
                       ? obtenerNombrePresupuesto(
                           transaccionSeleccionada.presupuesto_asociado
                         )
