@@ -516,34 +516,6 @@ const Transacciones = () => {
     setLoading(false);
   };
 
-  /* // Filtros y paginación
-  const transaccionesFiltrados = transacciones.filter((t) => {
-    const coincideBusqueda =
-      t.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      t.descripcion?.toLowerCase().includes(busqueda.toLowerCase());
-    const coincidePresupuesto = filtroPresupuesto
-      ? t.presupuesto_asociado === filtroPresupuesto
-      : true;
-    const coincideDivisa = filtroDivisa
-      ? t.divisa_asociada === filtroDivisa
-      : true;
-    return coincideBusqueda && coincidePresupuesto && coincideDivisa;
-  });
-
-  const totalPaginas = Math.ceil(
-    transaccionesFiltrados.length / ITEMS_PER_PAGE
-  );
-  const transaccionesPaginadas = transaccionesFiltrados.slice(
-    (paginaActual - 1) * ITEMS_PER_PAGE,
-    paginaActual * ITEMS_PER_PAGE
-  );
-
-  const irAPagina = (numPagina) => {
-    if (numPagina < 1 || numPagina > totalPaginas) return;
-    setPaginaActual(numPagina);
-  }; */
-
-  // Filtrar presupuestos y divisas usados en transacciones
   const presupuestosUsados = presupuestos.filter((p) =>
     transacciones.some((t) => t.presupuesto_asociado === p._id)
   );

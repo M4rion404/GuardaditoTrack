@@ -482,32 +482,7 @@ const Presupuestos = () => {
     setLoading(false);
   };
 
-  /* // Filtros y paginación
-  const presupuestosFiltrados = presupuestos.filter((p) => {
-    const coincideBusqueda =
-      p.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      p.descripcion?.toLowerCase().includes(busqueda.toLowerCase());
-    const coincideCategoria = filtroCategoria
-      ? p.categoria_asociada === filtroCategoria
-      : true;
-    const coincideDivisa = filtroDivisa
-      ? p.divisa_asociada === filtroDivisa
-      : true;
-    return coincideBusqueda && coincideCategoria && coincideDivisa;
-  });
-
-  const totalPaginas = Math.ceil(presupuestosFiltrados.length / ITEMS_PER_PAGE);
-  const presupuestosPaginados = presupuestosFiltrados.slice(
-    (paginaActual - 1) * ITEMS_PER_PAGE,
-    paginaActual * ITEMS_PER_PAGE
-  );
-
-  const irAPagina = (numPagina) => {
-    if (numPagina < 1 || numPagina > totalPaginas) return;
-    setPaginaActual(numPagina);
-  }; */
-
-// Filtrar presupuestos y divisas usados en transacciones
+// Filtrar categorias y divisas usados en presupuestos
   const categoriasUsadas = categorias.filter((c) =>
     presupuestos.some((p) => p.categoria_asociada === c._id)
   );
@@ -517,7 +492,7 @@ const Presupuestos = () => {
   );
 
 
-  // Filtro principal de transacciones
+  // Filtro principal de presupuestos
   const presupuestosFiltrados = presupuestos.filter((p) => {
     const coincideCategoria = filtroCategoria
       ? p.categoria_asociada === filtroCategoria

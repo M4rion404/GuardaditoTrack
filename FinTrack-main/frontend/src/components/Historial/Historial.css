@@ -2,19 +2,20 @@
   padding: 1rem;
   max-width: 768px;
   margin: 0 auto;
-  font-family: sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #fefefe;
 }
 
 .historial-title {
-  font-size: 1.5rem;
+  font-size: 1.7rem;
   font-weight: bold;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   text-align: center;
+  color: #333;
 }
 
 .historial-filter {
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -26,10 +27,11 @@
 }
 
 .filtro-select {
-  padding: 0.3rem 0.6rem;
-  border-radius: 5px;
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
   border: 1px solid #ccc;
   background: white;
+  font-size: 1rem;
 }
 
 .historial-loading,
@@ -57,9 +59,9 @@
   background: #fff;
   border: 1px solid #ddd;
   padding: 0.75rem;
-  margin-bottom: 0.5rem;
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin-bottom: 0.8rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
   cursor: pointer;
   transition: background 0.2s ease;
 }
@@ -70,19 +72,20 @@
 
 .historial-accion {
   font-weight: 600;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.3rem;
+  color: #111827;
 }
 
 .historial-info {
-  font-size: 0.85rem;
-  color: #555;
+  font-size: 0.9rem;
+  color: #4b5563;
 }
 
 .historial-tipo {
   align-self: flex-start;
   background: #eef2ff;
   color: #3730a3;
-  padding: 0.2rem 0.5rem;
+  padding: 0.25rem 0.6rem;
   border-radius: 6px;
   font-size: 0.8rem;
   text-transform: capitalize;
@@ -91,19 +94,75 @@
 
 .historial-detalles {
   margin-top: 1rem;
-  font-size: 0.9rem;
-  background: #f9f9f9;
-  padding: 0.75rem;
-  border-radius: 6px;
-  border: 1px solid #ddd;
+  background: #f3f4f6;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 0.95rem;
+  color: #1f2937;
+}
+
+.historial-detalles h4,
+.historial-detalles h5 {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.historial-detalles ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.historial-detalles li {
+  margin-bottom: 0.4rem;
+  line-height: 1.5;
+}
+
+.historial-detalles strong {
+  color: #2563eb;
 }
 
 .cambios-lista {
-  padding-left: 1rem;
-  margin-top: 0.5rem;
+  background: #fff;
+  padding: 0.75rem;
+  border-left: 4px solid #3b82f6;
+  border-radius: 6px;
+  list-style: none;
 }
 
 .cambios-lista li {
-  list-style-type: disc;
-  margin-left: 1rem;
+  margin-bottom: 0.5rem;
+  padding: 0.25rem 0;
+  border-bottom: 1px dashed #d1d5db;
+}
+
+.paginacion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.paginacion button {
+  padding: 0.4rem 0.8rem;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.paginacion button:disabled {
+  background-color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.paginacion span {
+  font-weight: 500;
+  color: #374151;
 }

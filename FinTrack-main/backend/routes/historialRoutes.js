@@ -3,11 +3,10 @@ const router = express.Router();
 const Historial = require('../models/Historial');
 const Usuario = require('../models/Usuarios');
 
-
-// Ruta GET completa: http://localhost:3000/api/historial/idUsuario
+// Ruta GET completa: http://localhost:3000/api/historial/:idUsuario?tipo=transaccion
 router.get("/:idUsuario", async (req, res) => {
   const { idUsuario } = req.params;
-  console.log("Solicitando historial del usuario:", idUsuario);
+  const { tipo } = req.query;
 
   try {
     const usuario = await Usuario.findById(idUsuario);
@@ -22,7 +21,13 @@ router.get("/:idUsuario", async (req, res) => {
       return res.status(200).json([]);
     }
 
-    const historialOrdenado = [...usuario.Historial].sort(
+    let historial = [...usuario.Historial];
+
+    if (tipo && tipo !== "todos") {
+      historial = historial.filter(item => item.tipo === tipo);
+    }
+
+    const historialOrdenado = historial.sort(
       (a, b) => new Date(b.fecha) - new Date(a.fecha)
     );
 
