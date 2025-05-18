@@ -11,8 +11,8 @@ const client = twilio(accountSid, authToken);
 
 
 async function enviarSMS(numeroDestino, nombreUsuario) {
-  
-  
+
+
   try {
     return client.messages.create({
     body: `FinTrack te da la bienvenida ${nombreUsuario}, nos alegra tenerte con nosotros.`,
@@ -27,8 +27,8 @@ async function enviarSMS(numeroDestino, nombreUsuario) {
     throw error;
   }
 
-  
-  
+
+
 }
 
 module.exports = { enviarSMS };

@@ -1,27 +1,50 @@
 // src/components/Inicio/Inicio.jsx
 import React, { useEffect } from "react";
+import { Link } from "react-router-dom";
+import { FaUser } from "react-icons/fa";
+import AOS from "aos";
+import "aos/dist/aos.css";
+import Footer from "../Footer/Footer";
+
 import logoFintrack from "../../assets/FintrackBlanco.png";
 import seccionAzul from "../../assets/seccionazul.png";
 import "./Inicio.css";
-import { FaUser } from "react-icons/fa";
-import { Link } from "react-router-dom";
+
+const HeroSection = ({ title, texts }) => (
+  <section className="hero">
+    <div className="hero-contenido" data-aos="fade-up">
+      <h1 className="hero-titulo">{title}</h1>
+      <div className="hero-textos">
+        {texts.map((t, i) => (
+          <p key={i}>{t}</p>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+const InfoSection = ({ title, text, imageSrc, color = "azul" }) => (
+  <section className={`seccion-${color}`}>
+    <div className={`texto-${color}`} data-aos="fade-up">
+      <h2>{title}</h2>
+      <p>{text}</p>
+    </div>
+    <div className={`imagen-${color}`} data-aos="fade-up">
+      <img src={imageSrc} alt="Ilustración" />
+    </div>
+  </section>
+);
 
 const Inicio = () => {
-  console.log("Inicio cargado");
   useEffect(() => {
-  const handleScroll = () => {
-    document.querySelectorAll(".hero-imagen, .imagen-azul, .scroll-anim").forEach((el) => {
-      const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight - 100) {
-        el.classList.add("visible");
-      }
-    });
-  };
-  window.addEventListener("scroll", handleScroll);
-  handleScroll();
-  return () => window.removeEventListener("scroll", handleScroll);
-}, []);
+    AOS.init({ duration: 1000, once: true });
+  }, []);
 
+  const textoHero = [
+    "Bienvenido a Fintrack",
+    "La plataforma que te ayuda a tomar el control de tus finanzas personales.",
+    "Aquí podrás planificar, visualizar y optimizar tus ingresos y gastos con facilidad."
+  ];
 
   return (
     <div className="contenedor-inicio">
@@ -45,75 +68,38 @@ const Inicio = () => {
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="hero">
-        <div className="hero-imagen">
-          <img src={seccionAzul} alt="Imagen representativa" />
-        </div>
-        <div className="hero-texto">
-          <h1>FINTRACK</h1>
-          <p>Tu página web de Finanzas Personales</p>
-          <p>Gestiona tus finanzas con eficiencia y claridad.</p>
-          <p>Presupuestos, transacciones, metas de ahorro y salud financiera en un solo lugar.</p>
-        </div>
-      </section>
+      {/* Sección 1: Introducción */}
+      <HeroSection
+        title="FINTRACK"
+        texts={textoHero}
+      />
 
-      {/* Sección azul */}
-      <section className="seccion-azul">
-        <div className="texto-azul">
-          <h2>¿Qué puedes hacer aquí?</h2>
-          <p>
-            Administra tu dinero con facilidad. Crea presupuestos,
-            registra transacciones, fija metas de ahorro y mejora tu salud financiera.
-          </p>
-        </div>
+      {/* Sección 2: ¿Qué puedes hacer aquí? */}
+      <InfoSection
+        title="¿Qué puedes hacer aquí?"
+        text="Desde registrar tus ingresos y gastos hasta crear presupuestos mensuales, fijar metas de ahorro, evaluar tu salud financiera y analizar tu comportamiento económico. Todo desde una interfaz intuitiva y poderosa."
+        imageSrc={seccionAzul}
+        color="azul"
+      />
 
-        <div className="imagen-azul">
-          <img src={seccionAzul} alt="Finanzas organizadas" />
-        </div>
-      </section>
+      {/* Sección 3: Más beneficios */}
+      <InfoSection
+        title="Beneficios de usar Fintrack"
+        text="Obtén una visión clara de tu economía, toma mejores decisiones financieras, recibe sugerencias personalizadas y accede a reportes visuales que te ayudarán a mejorar tu bienestar financiero día a día."
+        imageSrc={seccionAzul}
+        color="roja"
+      />
 
-         {/* Sección Roja */}
-      <section className="seccion-roja">
-        <div className="texto-rojo">
-          <h2>¿Qué chucha podemos hacer aqui hacer aquí?</h2>
-          <p>
-            BLAH BLAH BALH BLAH BLAH BLAH BLAH BLAH BLAH BLAH
-          </p>
-        </div>
-
-        <div className="imagen-ROJA">
-          <img src={seccionAzul} alt="Finanzas organizadas" />
-        </div>
-      </section>
-
-      {/* Sección Testimonios */}
-<section className="seccion-testimonios scroll-anim">
-  <div className="texto-testimonios">
-    <h2>Testimonios de nuestros usuarios</h2>
-    <p>"Fintrack me ayudó a organizar mis finanzas como nunca antes." - Ana G.</p>
-    <p>"Gracias a Fintrack, logré ahorrar para mi primer auto." - Luis P.</p>
-    <p>"Muy fácil de usar y con todo lo que necesito." - Carla R.</p>
-  </div>
-</section>
-
-{/* Sección Contacto */}
-<section className="seccion-contacto scroll-anim">
-  <div className="contenido-contacto">
-    <h2>Contáctanos</h2>
-    <p>¿Tienes preguntas o sugerencias? ¡Escríbenos!</p>
-    <form className="formulario-contacto">
-      <input type="text" placeholder="Tu nombre" required />
-      <input type="email" placeholder="Tu correo electrónico" required />
-      <textarea placeholder="Tu mensaje" rows="5" required></textarea>
-      <button type="submit">Enviar</button>
-    </form>
-  </div>
-</section>
-
+      {/* Sección 4: Contacto y derechos */}
+      <InfoSection
+        title="Contáctanos y más información"
+        text="¿Tienes dudas, sugerencias o necesitas ayuda? Escríbenos a soporte@fintrack.com. Todos los derechos reservados © 2025 Fintrack. Tu privacidad es nuestra prioridad."
+        imageSrc={seccionAzul}
+        color="azul"
+      />
+      <Footer />
     </div>
   );
 };
 
 export default Inicio;
-

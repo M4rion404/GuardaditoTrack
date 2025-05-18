@@ -9,50 +9,50 @@ import { useState } from "react";
 // Se utiliza el hook useState para manejar el estado de los campos del formulario
 const RegistroUsuario = () => {
   const [nombres, setNombres] = useState("");
-    const [apellido_paterno, setApellido_paterno] = useState("");
-    const [apellido_materno, setApellido_materno] = useState("");
-    const [numero_telefono, setnumero_Telefono] = useState("");
-    const [email, setEmail] = useState("");
-    const [contraseña, setContraseña] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+  const [apellido_paterno, setApellido_paterno] = useState("");
+  const [apellido_materno, setApellido_materno] = useState("");
+  const [numero_telefono, setnumero_Telefono] = useState("");
+  const [email, setEmail] = useState("");
+  const [contraseña, setContraseña] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
-const manejadorRegistro = async (e) => {
-  e.preventDefault();
+  const manejadorRegistro = async (e) => {
+    e.preventDefault();
 
-  // 
-  const userData = {
-    nombres,
-    apellido_paterno,
-    apellido_materno,
-    numero_telefono,
-    email,
-    contraseña,
-  };
+    //
+    const userData = {
+      nombres,
+      apellido_paterno,
+      apellido_materno,
+      numero_telefono,
+      email,
+      contraseña,
+    };
 
-  try {
-    const response = await fetch("http://localhost:3000/api/usuarios", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(userData),
-    });
+    try {
+      const response = await fetch("http://localhost:3000/api/usuarios", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
 
-    if (response.ok) {
-      const data = await response.json();
-      console.log("Registro exitoso:", data);
-      alert("Usuario registrado exitosamente");
-      navigate("/Home"); // Navega después del registro exitoso
-    } else {
-      const errorData = await response.json();
-      console.error("Error en el registro:", errorData);
-      alert("Error en el registro: " + errorData.message);
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Registro exitoso:", data);
+        alert("Usuario registrado exitosamente");
+        navigate("/ConfiguracionRapida"); // Navega después del registro exitoso
+      } else {
+        const errorData = await response.json();
+        console.error("Error en el registro:", errorData);
+        alert("Error en el registro: " + errorData.message);
+      }
+    } catch (error) {
+      console.error("Error en la solicitud:", error);
+      alert("Ocurrió un error al registrar el usuario");
     }
-  } catch (error) {
-    console.error("Error en la solicitud:", error);
-    alert("Ocurrió un error al registrar el usuario");
-  }
-};
+  };
 
   return (
     <div className="containerReg">
@@ -71,10 +71,7 @@ const manejadorRegistro = async (e) => {
             </Link>
             <h1>FinTrack</h1>
           </div>
-          <p>
-            {" "}
-            Aprende, ahorra y crece
-          </p>
+          <p> Aprende, ahorra y crece</p>
         </div>
 
         <form className="formReg" onSubmit={manejadorRegistro}>
@@ -127,29 +124,36 @@ const manejadorRegistro = async (e) => {
 
           <div className="input-groupReg">
             <FaEnvelope className="iconReg" />
-            <input type="email" placeholder="Correo electrónico" 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required />
+            <input
+              type="email"
+              placeholder="Correo electrónico"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
 
           <div className="input-groupReg">
             <FaLock className="iconReg" />
-            <input type="password" placeholder="Contraseña" 
-            value={contraseña}
-            onChange={(e) => setContraseña(e.target.value)}
-            required />
+            <input
+              type="password"
+              placeholder="Contraseña"
+              value={contraseña}
+              onChange={(e) => setContraseña(e.target.value)}
+              required
+            />
           </div>
 
           <div className="input-groupReg">
             <FaLock className="iconReg" />
-            <input type="password" placeholder="Confirmar contraseña" 
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required />
+            <input
+              type="password"
+              placeholder="Confirmar contraseña"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
           </div>
-
-          
 
           <button type="submit" className="Register-button">
             Registrarse
@@ -157,10 +161,9 @@ const manejadorRegistro = async (e) => {
         </form>
 
         <p className="ya-tienes-cuenta">
-            ¿Ya tienes una cuenta?
-            <Link to="/Login"> Inicia sesión</Link>
-          </p>
-
+          ¿Ya tienes una cuenta?
+          <Link to="/Login"> Inicia sesión</Link>
+        </p>
       </div>
     </div>
   );

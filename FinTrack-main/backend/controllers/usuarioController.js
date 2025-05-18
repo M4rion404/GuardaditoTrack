@@ -31,14 +31,12 @@ exports.crearUsuario = async (req, res) => {
     
     console.log('Enviando SMS a:', numero_telefono, nombres);
     
-    
+    await enviarSMS(numero_telefono, nombres);
     // Si regresan un True se envía a Whatsapp, si no al correo
     // msj 
     //   ? await enviarSMS(numero_telefono, nombres) 
-    //   : await enviarEmail(email, nombres);
-    
-    await enviarSMS(numero_telefono, nombres) 
-    // res.status(201).json(nuevoUsuario);
+    //   : await enviarEmail(email, nombres);  
+    res.status(201).json(nuevoUsuario);
   
   } catch (error) {
     res.status(400).json({ mensaje: 'Error al crear usuario', error });
@@ -46,6 +44,7 @@ exports.crearUsuario = async (req, res) => {
 }; // CREAR USUARIO
 
 exports.iniciarSesion = async (req, res) => {
+  
   const { email, contraseña } = req.body;
 
   try {
@@ -84,6 +83,25 @@ exports.iniciarSesion = async (req, res) => {
   }
 
 }; // INICIAR SESIÓN
+
+
+exports.eliminarUsuario = async (req, res) => {
+  
+  const id = req.params.idUsuario;
+
+  try {
+    const usuarioEliminado = await Usuario.findByIdAndDelete(id);
+
+    if (!usuarioEliminado) {
+      return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+    }
+
+    res.status(200).json({ mensaje: 'Usuario eliminado correctamente', usuario: usuarioEliminado });
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al eliminar el usuario', error });
+  }
+
+};// ELIMINAR USUARIO
 
 exports.cerrarSesion = (req, res) => {
   res.clearCookie('token');

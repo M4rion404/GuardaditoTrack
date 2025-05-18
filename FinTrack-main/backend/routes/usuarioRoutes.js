@@ -8,6 +8,7 @@ const { verificarCookie } = require('../auth/auth');
 // Rutas Registro e Inicio de Sesión
 router.post('/', usuarioController.crearUsuario);
 router.post('/login', usuarioController.iniciarSesion);
+router.delete('/:idUsuario', usuarioController.eliminarUsuario);
 
 // Ruta para Admin 
 router.get('/', usuarioController.obtenerUsuarios);

@@ -12,6 +12,7 @@ import Transacciones from "./components/Transacciones/Transacciones";
 import MetasAhorro from "./components/MetasAhorro/MetasAhorro";
 import SaludFinanciera from "./components/SaludFinanciera/SaludFinanciera";
 import Historial from "./components/Historial/Historial";
+import ConfiguracionRapida from "./components/ConfiguracionRapida/ConfiguracionRapida";
 
 import RouteWrapper from "./RouteWrapper";
 
@@ -38,7 +39,6 @@ const RouterWrapper = () => {
                         </RouteWrapper>
                     } 
                 />
-                {/* Aqui modifique y agregue la ruta de registro de usuario */}
                 <Route path="/Login" element={ <RouteWrapper> <InicioSesion rutaAnterior={rutaAnterior}/> </RouteWrapper> } />
                 <Route path="/SignUp" element={ <RouteWrapper> <RegUsuario rutaAnterior={rutaAnterior} /> </RouteWrapper>}/>
                 <Route path="/Home" element={ <RouteWrapper> <Inicio rutaAnterior={rutaAnterior} /> </RouteWrapper>}/>
@@ -48,6 +48,7 @@ const RouterWrapper = () => {
                 <Route path="/MetasAhorro" element={ <RouteWrapper> <MetasAhorro rutaAnterior={rutaAnterior} /> </RouteWrapper>}/>
                 <Route path="/SaludFinanciera" element={ <RouteWrapper> <SaludFinanciera rutaAnterior={rutaAnterior} /> </RouteWrapper>}/>
                 <Route path="/Historial" element={ <RouteWrapper> <Historial rutaAnterior={rutaAnterior} /> </RouteWrapper> }/>
+                <Route path="/ConfiguracionRapida" element={ <RouteWrapper> <ConfiguracionRapida rutaAnterior={rutaAnterior} /> </RouteWrapper> }/>
 
             </Routes>
         </AnimatePresence>
