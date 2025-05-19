@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
 const opcionesDivisa = [
@@ -12,6 +13,8 @@ const opcionesVerificacion = [
 ];
 
 const VentanaConfiguracion = ({ onClose }) => {
+  const navigate = useNavigate();
+  
   // Cargar usuario desde localStorage
   const usuarioLocal = JSON.parse(localStorage.getItem("usuario")) || {};
 
@@ -20,12 +23,13 @@ const VentanaConfiguracion = ({ onClose }) => {
     apellido_paterno: usuarioLocal.apellido_paterno || "",
     apellido_materno: usuarioLocal.apellido_materno || "",
     notificacion: usuarioLocal.notificacion || false,
-    divisa: usuarioLocal.divisa || [], // arreglo de objetos { divisa, nombre }
-    tipo_verificacion: usuarioLocal.tipo_verificacion || "",
+    divisa: usuarioLocal.tipo_divisa || [], // Cambiar de divisa a tipo_divisa
+    tipo_verificacion: usuarioLocal.verificacion || "", // Cambiar de tipo_verificacion a verificacion
   });
 
   const [hoverGuardar, setHoverGuardar] = useState(false);
   const [hoverCerrar, setHoverCerrar] = useState(false);
+  const [hoverCerrarSesion, setHoverCerrarSesion] = useState(false);
   const [guardando, setGuardando] = useState(false);
 
   const handleChange = (e) => {
@@ -49,6 +53,18 @@ const VentanaConfiguracion = ({ onClose }) => {
       nuevaListaDivisas = nuevaListaDivisas.filter((d) => d.divisa !== value);
     }
 
+    // Asegurar que siempre haya al menos una divisa seleccionada
+    if (nuevaListaDivisas.length === 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Atención",
+        text: "Debe seleccionar al menos una divisa",
+        timer: 2000,
+        showConfirmButton: false
+      });
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       divisa: nuevaListaDivisas,
@@ -56,50 +72,100 @@ const VentanaConfiguracion = ({ onClose }) => {
   };
 
   const handleGuardar = async () => {
+    // Validación: al menos una divisa debe estar seleccionada
+    if (formData.divisa.length === 0) {
+      Swal.fire({
+        icon: "error",
+        title: "Error de validación",
+        text: "Debe seleccionar al menos una divisa",
+        confirmButtonText: "OK"
+      });
+      return;
+    }
+
+    // Validación: debe haber un método de verificación seleccionado
+    if (!formData.tipo_verificacion || formData.tipo_verificacion === "") {
+      Swal.fire({
+        icon: "error",
+        title: "Error de validación",
+        text: "Debe seleccionar un método de verificación",
+        confirmButtonText: "OK"
+      });
+      return;
+    }
+
     setGuardando(true);
 
     // Refrescar usuarioLocal para asegurarnos de tener datos actualizados
-    const usuarioLocalActual = JSON.parse(localStorage.getItem("usuario")) || {};
+    const usuarioLocal = JSON.parse(localStorage.getItem("usuario")) || {};
 
-    const datosAEnviar = {};
-
-    Object.keys(formData).forEach((key) => {
-      const valorNuevo = formData[key];
-      const valorViejo = usuarioLocalActual[key];
-
-      if (
-        (typeof valorNuevo === "string" && valorNuevo.trim() !== "" && JSON.stringify(valorNuevo) !== JSON.stringify(valorViejo)) ||
-        (typeof valorNuevo === "boolean" && valorNuevo !== valorViejo) ||
-        (Array.isArray(valorNuevo) && JSON.stringify(valorNuevo) !== JSON.stringify(valorViejo))
-      ) {
-        datosAEnviar[key] = valorNuevo;
-      } else {
-        datosAEnviar[key] = valorViejo;
-      }
-    });
+    // Preparar datos para enviar
+    const datosAEnviar = {
+      nombres: formData.nombres.trim() || usuarioLocal.nombres,
+      apellido_paterno: formData.apellido_paterno.trim() || usuarioLocal.apellido_paterno,
+      apellido_materno: formData.apellido_materno.trim() || usuarioLocal.apellido_materno,
+      notificacion: formData.notificacion,
+      divisa: formData.divisa, // El controlador lo mapeará a tipo_divisa
+      tipo_verificacion: formData.tipo_verificacion // El controlador lo mapeará a verificacion
+    };
 
     try {
-      const res = await fetch(`http://localhost:3000/api/usuarios/${usuarioLocalActual._id}/ActualizarUsuario`, {
+      const res = await fetch(`http://localhost:3000/api/usuarios/${usuarioLocal._id}/ActualizarUsuario`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosAEnviar),
       });
 
       if (!res.ok) {
-        throw new Error(`Error en la petición: ${res.statusText}`);
+        const errorData = await res.json();
+        throw new Error(errorData.error || `Error en la petición: ${res.statusText}`);
       }
 
       const data = await res.json();
 
       // Actualizar localStorage con los datos nuevos recibidos del servidor
       localStorage.setItem("usuario", JSON.stringify(data.usuario));
-      Swal.fire({ icon:"success", title:"Usuario actualizado", text: "Los datos del usuario se han actualizado correctamente.", timer:1500, showConfirmButton: false });
+      
+      Swal.fire({ 
+        icon: "success", 
+        title: "Usuario actualizado", 
+        text: "Los datos del usuario se han actualizado correctamente.", 
+        timer: 1500, 
+        showConfirmButton: false 
+      });
+      
       onClose();
     } catch (error) {
-      Swal.fire({ title: "Lo sentimos, ha ocurrido un error", text: "Parece que la conexión con el servidor ha fallado", icon: "warning", timer:1500, confirmButtonText: false, cancelButtonText: false});
+      console.error("Error:", error);
+      Swal.fire({ 
+        title: "Error al actualizar", 
+        text: error.message || "Ha ocurrido un error al actualizar los datos", 
+        icon: "error", 
+        confirmButtonText: "OK"
+      });
     }
 
     setGuardando(false);
+  };
+
+  const handleCerrarSesion = () => {
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Se cerrará tu sesión actual",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Sí, cerrar sesión",
+      cancelButtonText: "Cancelar"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Limpiar localStorage
+        localStorage.removeItem("usuario");
+        localStorage.clear();
+        
+        // Navegar a la página de inicio
+        navigate("/");
+      }
+    });
   };
 
   const botonGuardarStyle = {
@@ -117,6 +183,8 @@ const VentanaConfiguracion = ({ onClose }) => {
     transition: "background-color 0.3s ease, box-shadow 0.3s ease",
     userSelect: "none",
     opacity: guardando ? 0.6 : 1,
+    flex: "1",
+    marginRight: "10px"
   };
 
   const botonCerrarStyle = {
@@ -133,6 +201,26 @@ const VentanaConfiguracion = ({ onClose }) => {
       : "0 2px 6px rgba(108,117,125,0.4)",
     transition: "background-color 0.3s ease, box-shadow 0.3s ease",
     userSelect: "none",
+    flex: "1",
+    marginLeft: "10px"
+  };
+
+  const botonCerrarSesionStyle = {
+    backgroundColor: hoverCerrarSesion ? "#c82333" : "#dc3545",
+    color: "white",
+    border: "none",
+    padding: "10px 20px",
+    fontSize: "1rem",
+    fontWeight: "600",
+    borderRadius: "6px",
+    cursor: "pointer",
+    boxShadow: hoverCerrarSesion
+      ? "0 4px 12px rgba(200,35,51,0.7)"
+      : "0 2px 6px rgba(220,53,69,0.4)",
+    transition: "background-color 0.3s ease, box-shadow 0.3s ease",
+    userSelect: "none",
+    marginBottom: "10px",
+    width: "100%"
   };
 
   return (
@@ -204,7 +292,7 @@ const VentanaConfiguracion = ({ onClose }) => {
         </label>
 
         <fieldset style={{ marginBottom: "10px" }} disabled={guardando}>
-          <legend>Divisa:</legend>
+          <legend>Divisa (seleccione al menos una):</legend>
           {opcionesDivisa.map(({ divisa, nombre }) => (
             <label
               key={divisa}
@@ -247,30 +335,48 @@ const VentanaConfiguracion = ({ onClose }) => {
           </select>
         </label>
 
-        <div
-          style={{
-            marginTop: "auto",
-            display: "flex",
-            justifyContent: "space-between",
-          }}
-        >
+        <label style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
+          <input
+            type="checkbox"
+            name="notificacion"
+            checked={formData.notificacion}
+            onChange={handleChange}
+            disabled={guardando}
+            style={{ marginRight: "8px" }}
+          />
+          Recibir notificaciones
+        </label>
+
+        <div style={{ marginTop: "auto" }}>
+          <div style={{ display: "flex", marginBottom: "10px" }}>
+            <button
+              style={botonGuardarStyle}
+              onClick={handleGuardar}
+              onMouseEnter={() => setHoverGuardar(true)}
+              onMouseLeave={() => setHoverGuardar(false)}
+              disabled={guardando}
+            >
+              {guardando ? "Guardando..." : "Guardar"}
+            </button>
+            <button
+              style={botonCerrarStyle}
+              onClick={onClose}
+              onMouseEnter={() => setHoverCerrar(true)}
+              onMouseLeave={() => setHoverCerrar(false)}
+              disabled={guardando}
+            >
+              Cerrar
+            </button>
+          </div>
+          
           <button
-            style={botonGuardarStyle}
-            onClick={handleGuardar}
-            onMouseEnter={() => setHoverGuardar(true)}
-            onMouseLeave={() => setHoverGuardar(false)}
+            style={botonCerrarSesionStyle}
+            onClick={handleCerrarSesion}
+            onMouseEnter={() => setHoverCerrarSesion(true)}
+            onMouseLeave={() => setHoverCerrarSesion(false)}
             disabled={guardando}
           >
-            {guardando ? "Guardando..." : "Guardar"}
-          </button>
-          <button
-            style={botonCerrarStyle}
-            onClick={onClose}
-            onMouseEnter={() => setHoverCerrar(true)}
-            onMouseLeave={() => setHoverCerrar(false)}
-            disabled={guardando}
-          >
-            Cerrar
+            Cerrar Sesión
           </button>
         </div>
       </aside>

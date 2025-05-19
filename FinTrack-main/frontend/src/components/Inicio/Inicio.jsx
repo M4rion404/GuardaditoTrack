@@ -22,6 +22,9 @@ import logoFintrack from "../../assets/FintrackBlanco.png";
 import seccionAzul from "../../assets/seccionazul.png";
 import VentanaConfiguracion from "../VentanaConfiguracion/VentanaConfiguracion";
 import "./Inicio.css";
+import PerroMelon from "../../assets/perro-melon.png";
+import Leon from "../../assets/Leon.jpg";
+import BillsPirata from "../../assets/billspirata.png"
 
 
 
@@ -318,7 +321,7 @@ const Inicio = () => {
             <div className="testimonial-card p-6 rounded-lg shadow-md bg-gray-50">
               <div className="flex items-center mb-4">
                 <img
-                  src="../../assets/perro-melon.png"
+                  src= {PerroMelon}
                   alt="User Avatar"
                   className="w-12 h-12 rounded-full"
                 />
@@ -344,7 +347,7 @@ const Inicio = () => {
             <div className="testimonial-card p-6 rounded-lg shadow-md bg-gray-50">
               <div className="flex items-center mb-4">
                 <img
-                  src="/api/placeholder/50/50"
+                  src={Leon}
                   alt="User Avatar"
                   className="w-12 h-12 rounded-full"
                 />
@@ -370,7 +373,7 @@ const Inicio = () => {
             <div className="testimonial-card p-6 rounded-lg shadow-md bg-gray-50">
               <div className="flex items-center mb-4">
                 <img
-                  src="/api/placeholder/50/50"
+                  src={BillsPirata}
                   alt="User Avatar"
                   className="w-12 h-12 rounded-full"
                 />

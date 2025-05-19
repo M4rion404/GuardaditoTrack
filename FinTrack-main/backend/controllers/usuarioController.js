@@ -165,18 +165,64 @@ exports.actualizarUsuario = async (req, res) => {
     const { idUsuario } = req.params;
     const updates = req.body;
 
-    // Actualiza todo el documento reemplazando los campos con el contenido de `updates`
-    const usuarioActualizado = await Usuario.findByIdAndUpdate(
-      idUsuario,
-      updates,
-      { new: true, runValidators: true, overwrite: true }
-    );
+    if (!updates || Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: "No se proporcionaron datos para actualizar" });
+    }
 
-    if (!usuarioActualizado) {
+    const usuarioActual = await Usuario.findById(idUsuario);
+    if (!usuarioActual) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
-    res.json({ message: "Usuario actualizado correctamente", usuario: usuarioActualizado });
+
+    const datosActualizados = {};
+
+
+    ['nombres', 'apellido_paterno', 'apellido_materno'].forEach(campo => {
+      if (updates[campo] !== undefined) {
+        datosActualizados[campo] = updates[campo].trim() || usuarioActual[campo];
+      }
+    });
+
+    // Campo booleano (notificacion)
+    if (updates.notificacion !== undefined) {
+      datosActualizados.notificacion = updates.notificacion;
+    }
+
+    // Mapear divisa a tipo_divisa (según tu esquema)
+    if (updates.divisa !== undefined && Array.isArray(updates.divisa)) {
+      if (updates.divisa.length === 0) {
+        // Si no hay divisas seleccionadas, mantener al menos una del usuario actual
+        datosActualizados.tipo_divisa = usuarioActual.tipo_divisa.length > 0 
+          ? [usuarioActual.tipo_divisa[0]] 
+          : [{ divisa: "USD", nombre: "Dólar estadounidense" }];
+      } else {
+        datosActualizados.tipo_divisa = updates.divisa;
+      }
+    }
+
+    // Mapear tipo_verificacion a verificacion (según tu esquema)
+    if (updates.tipo_verificacion !== undefined) {
+      if (updates.tipo_verificacion === "") {
+        // Si no se selecciona verificación, mantener la actual
+        datosActualizados.verificacion = usuarioActual.verificacion;
+      } else {
+        datosActualizados.verificacion = updates.tipo_verificacion;
+      }
+    }
+
+    // Actualizar el usuario con los nuevos datos
+    const usuarioActualizado = await Usuario.findByIdAndUpdate(
+      idUsuario,
+      { $set: datosActualizados },
+      { new: true, runValidators: true }
+    );
+
+    res.json({ 
+      message: "Usuario actualizado correctamente", 
+      usuario: usuarioActualizado 
+    });
+
   } catch (error) {
     console.error("Error actualizando usuario:", error);
     res.status(500).json({ error: "Error en el servidor" });

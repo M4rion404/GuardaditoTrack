@@ -311,19 +311,23 @@ const Transacciones = () => {
 
   // Fetch divisas
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const fetchDivisas = async () => {
-      try {
-        const res = await axios.get("http://localhost:3000/api/divisas", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setDivisas(res.data);
-      } catch (error) {
-        // No setError aquí para no mostrar error si no hay divisas
-      }
-    };
-    fetchDivisas();
-  }, []);
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+
+  const fetchDivisas = async () => {
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/divisas/${userId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setDivisas(res.data); // aquí tú decides si usar setTipoDivisa, setDivisasUsuario, etc.
+    } catch (error) {
+      console.error("Error al cargar divisas:", error);
+    }
+  };
+
+  fetchDivisas();
+}, []);
 
   useEffect(() => {
     fetchTransacciones();
