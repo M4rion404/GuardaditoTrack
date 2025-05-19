@@ -492,18 +492,22 @@ const Presupuestos = () => {
   );
 
 
-  // Filtro principal de presupuestos
   const presupuestosFiltrados = presupuestos.filter((p) => {
-    const coincideCategoria = filtroCategoria
-      ? p.categoria_asociada === filtroCategoria
-      : true;
+  const coincideCategoria = filtroCategoria
+    ? p.categoria_asociada === filtroCategoria
+    : true;
 
-    const coincideDivisa = filtroDivisa
-      ? p.divisa_asociada === filtroDivisa
-      : true;
+  const coincideDivisa = filtroDivisa
+    ? p.divisa_asociada === filtroDivisa
+    : true;
 
-    return coincideCategoria && coincideDivisa;
-  });
+  const coincideBusqueda = busqueda
+    ? p.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      p.descripcion?.toLowerCase().includes(busqueda.toLowerCase())
+    : true;
+
+  return coincideCategoria && coincideDivisa && coincideBusqueda;
+});
 
   // Paginación
   const totalPaginas = Math.ceil(

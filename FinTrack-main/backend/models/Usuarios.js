@@ -18,6 +18,7 @@ const UsuarioSchema = new mongoose.Schema({
   numero_telefono: { type: String },
   notificacion: { type: Boolean, default: false },
   rol: { type: String, enum: ["Cliente", "Administrador"], default: "Cliente" },
+  verificacion: { type: String, enum: ["email", "sms", "configuracion_pendiente"], default: "configuracion_pendiente" },
 
   tipo_divisa: [DivisaSchema],
   Categorias: [CategoriaSchema],

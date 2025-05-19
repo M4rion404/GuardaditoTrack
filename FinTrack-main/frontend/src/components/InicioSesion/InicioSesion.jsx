@@ -37,9 +37,9 @@ const InicioSesion = () => {
 
         localStorage.setItem('token', datos.token);
         localStorage.setItem('usuario', JSON.stringify(datos.usuario));
-
-        if (datos.usuario && datos.usuario.id) {
-          localStorage.setItem('userId', datos.usuario.id); // ← Esto es CLAVE
+        localStorage.setItem('userId', datos.usuario._id);
+        if (datos.usuario && datos.usuario._id) {
+          localStorage.setItem('userId', datos.usuario._id); // ← Esto es CLAVE
         } else {
           console.warn("El ID del usuario no se encontró en la respuesta");
         }

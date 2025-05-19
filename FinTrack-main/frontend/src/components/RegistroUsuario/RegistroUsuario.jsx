@@ -4,9 +4,9 @@ import { FaEnvelope, FaLock, FaAngleLeft } from "react-icons/fa";
 import RegistroImg from "../../assets/RegistroImagen.avif";
 import "../RegistroUsuario/RegistroUsuario.css";
 import { useState } from "react";
+import Swal from "sweetalert2";
 
 // Proceso para registrar un nuevo usuario
-// Se utiliza el hook useState para manejar el estado de los campos del formulario
 const RegistroUsuario = () => {
   const [nombres, setNombres] = useState("");
   const [apellido_paterno, setApellido_paterno] = useState("");
@@ -16,10 +16,10 @@ const RegistroUsuario = () => {
   const [contraseña, setContraseña] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
-  const manejadorRegistro = async (e) => {
-    e.preventDefault();
 
-    //
+  const manejadorRegistro = async (e) => {
+
+    e.preventDefault();
     const userData = {
       nombres,
       apellido_paterno,
@@ -41,16 +41,19 @@ const RegistroUsuario = () => {
       if (response.ok) {
         const data = await response.json();
         console.log("Registro exitoso:", data);
-        alert("Usuario registrado exitosamente");
-        navigate("/ConfiguracionRapida"); // Navega después del registro exitoso
+
+        // Guarda los datos del usuario en localStorage
+        localStorage.setItem("usuarioRegistrado", JSON.stringify(data));
+        Swal.fire({ icon:"success", title:"Bienvenido a FinTrack", text: "La cuenta ha sido generada correctamente.", timer:1500, showConfirmButton: false });
+        navigate("/ConfiguracionRapida");
       } else {
         const errorData = await response.json();
         console.error("Error en el registro:", errorData);
-        alert("Error en el registro: " + errorData.message);
+        Swal.fire({ title: "Lo sentimos, ha ocurrido un error", text: "Parece que la conexión con el servidor ha fallado", icon: "warning", timer:1500, confirmButtonText: false, cancelButtonText: false});
       }
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      alert("Ocurrió un error al registrar el usuario");
+      Swal.fire({ title: "Lo sentimos, ha ocurrido un error", text: "Parece que la conexión con el servidor ha fallado", icon: "warning", timer:1500, confirmButtonText: false, cancelButtonText: false});
     }
   };
 

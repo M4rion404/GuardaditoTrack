@@ -534,7 +534,12 @@ const Transacciones = () => {
       ? t.divisa_asociada === filtroDivisa
       : true;
 
-    return coincidePresupuesto && coincideDivisa;
+      const coincideBusqueda = busqueda
+    ? t.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      t.descripcion?.toLowerCase().includes(busqueda.toLowerCase())
+    : true;
+
+    return coincidePresupuesto && coincideDivisa && coincideBusqueda;
   });
 
   // Paginación

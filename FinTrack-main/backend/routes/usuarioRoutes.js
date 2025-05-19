@@ -9,6 +9,8 @@ const { verificarCookie } = require('../auth/auth');
 router.post('/', usuarioController.crearUsuario);
 router.post('/login', usuarioController.iniciarSesion);
 router.delete('/:idUsuario', usuarioController.eliminarUsuario);
+router.patch('/:idUsuario/ConfiguracionRapida', usuarioController.actualizarPreferencias);
+router.patch('/:idUsuario/ActualizarUsuario', usuarioController.actualizarUsuario);
 
 // Ruta para Admin 
 router.get('/', usuarioController.obtenerUsuarios);

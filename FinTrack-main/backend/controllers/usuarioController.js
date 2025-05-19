@@ -4,7 +4,7 @@ const Usuario = require('../models/Usuarios');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { enviarSMS } = require('../services/twilio_service');
-const { enviarEMAIL } = require('../services/mailJet_service');
+const { enviarCorreo } = require('../services/mailJet_service');
 
 
 const validarEmail = (email) => {
@@ -13,7 +13,8 @@ const validarEmail = (email) => {
 }; // VALIDAR EMAIL
 
 exports.crearUsuario = async (req, res) => {
-  const { email, contraseña, nombres, numero_telefono, msj } = req.body;
+  
+  const { email, contraseña, nombres, numero_telefono, verificacion } = req.body;
 
   /* Validaciones */
   if (!email || !contraseña || !nombres) { return res.status(400).json({ mensaje: 'Faltan campos obligatorios' });}
@@ -31,7 +32,13 @@ exports.crearUsuario = async (req, res) => {
     
     console.log('Enviando SMS a:', numero_telefono, nombres);
     
-    await enviarSMS(numero_telefono, nombres);
+    
+    if(verificacion == "sms"){
+      await enviarSMS(numero_telefono, nombres);
+    }else {
+      await enviarCorreo(email, "Bienvenido a Fintrack" ,nombres);
+    }
+    // await enviarEmail(email, "Registro éxitoso", nombres);  
     // Si regresan un True se envía a Whatsapp, si no al correo
     // msj 
     //   ? await enviarSMS(numero_telefono, nombres) 
@@ -44,12 +51,11 @@ exports.crearUsuario = async (req, res) => {
 }; // CREAR USUARIO
 
 exports.iniciarSesion = async (req, res) => {
-  
   const { email, contraseña } = req.body;
 
   try {
-    
     const usuario = await Usuario.findOne({ email });
+
     const esValida = usuario ? await bcrypt.compare(contraseña, usuario.contraseña) : false;
 
     if (!usuario || !esValida) {
@@ -59,30 +65,22 @@ exports.iniciarSesion = async (req, res) => {
       });
     }
 
-    const token = auth.firmarToken ({ id: usuario._id, email: usuario.email });
-    auth.crearCookie (res, token);
-    
-    /*
-     *
-     * Respuesta para el frontend, para corroborar
-     * si la información que se envió es la 
-     * deseada.
-     * 
-    */
+    const token = auth.firmarToken({ id: usuario._id, email: usuario.email });
+    auth.crearCookie(res, token);
+
+    // Elimina la contraseña del objeto antes de enviarlo (buena práctica)
+    const usuarioSinContraseña = usuario.toObject(); // Convierte a objeto plano
+    delete usuarioSinContraseña.contraseña;
+
     res.json({
       mensaje: 'Inicio de sesión exitoso',
-      usuario: {
-        id: usuario._id,
-        nombres: usuario.nombres,
-        email: usuario.email
-      }
+      usuario: usuarioSinContraseña
     });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-
-}; // INICIAR SESIÓN
+}; // INICIAR SESION
 
 
 exports.eliminarUsuario = async (req, res) => {
@@ -116,3 +114,72 @@ exports.obtenerUsuarios = async (req, res) => {
     res.status(500).json({ mensaje: 'Error al obtener usuarios', error });
   }
 }; // OBTENER USUARIOS
+
+exports.actualizarPreferencias = async (req, res) => {
+  const { idUsuario } = req.params;
+  const { tipo_divisa, verificacion } = req.body;
+
+  
+  if (!Array.isArray(tipo_divisa) || tipo_divisa.length === 0) {
+    return res.status(400).json({ mensaje: 'Debes proporcionar al menos una divisa' });
+  }
+
+  const divisasValidas = tipo_divisa.every(div =>
+    div.divisa && div.nombre
+  );
+
+  if (!divisasValidas) {
+    return res.status(400).json({ mensaje: 'Cada divisa debe tener los campos "divisa" y "nombre"' });
+  }
+
+  if (!['sms', 'email'].includes(verificacion)) {
+    return res.status(400).json({ mensaje: 'El tipo de verificación debe ser "sms" o "email"' });
+  }
+
+  try {
+    const usuario = await Usuario.findById(idUsuario);
+    if (!usuario) {
+      return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+    }
+
+    usuario.tipo_divisa = tipo_divisa;
+    usuario.verificacion = verificacion;
+
+    await usuario.save();
+
+    res.status(200).json({
+      mensaje: 'Preferencias actualizadas correctamente',
+      usuario
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      mensaje: 'Error al actualizar preferencias',
+      error: error.message
+    });
+  }
+}; // ACTUALIZAR PREFERENCIAS}
+
+exports.actualizarUsuario = async (req, res) => {
+  try {
+    const { idUsuario } = req.params;
+    const updates = req.body;
+
+    // Actualiza todo el documento reemplazando los campos con el contenido de `updates`
+    const usuarioActualizado = await Usuario.findByIdAndUpdate(
+      idUsuario,
+      updates,
+      { new: true, runValidators: true, overwrite: true }
+    );
+
+    if (!usuarioActualizado) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    res.json({ message: "Usuario actualizado correctamente", usuario: usuarioActualizado });
+  } catch (error) {
+    console.error("Error actualizando usuario:", error);
+    res.status(500).json({ error: "Error en el servidor" });
+  }
+};
+ // ActualizarUsuario
