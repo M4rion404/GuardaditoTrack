@@ -5,47 +5,76 @@ exports.crearPresupuesto = async (req, res) => {
   const idUsuario = req.params.idUsuario;
   const nuevoPresupuesto = req.body;
 
+  console.log("➡️ Solicitud recibida para crear presupuesto");
+  console.log("🧾 Datos recibidos:", JSON.stringify(nuevoPresupuesto, null, 2));
+
   try {
     const usuarioExiste = await Usuario.findById(idUsuario);
-    if (!usuarioExiste) 
-      return res.status(404).json({ mensaje: "Usuario no encontrado" });
 
-    // Validar suma de límites por categoría
+    if (!usuarioExiste) {
+      console.log("⚠️ Usuario no encontrado con ID:", idUsuario);
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    }
+
+    if (!Array.isArray(nuevoPresupuesto.categorias)) {
+      console.log("❌ Error: categorías no es un array");
+      return res.status(400).json({ mensaje: "Las categorías deben ser un arreglo válido" });
+    }
+
     const sumaCategorias = nuevoPresupuesto.categorias.reduce((total, categoria) => {
-      return total + Number(categoria.limite);
+      return total + Number(categoria.limite || 0);
     }, 0);
 
+    console.log("✅ Suma de límites por categoría:", sumaCategorias);
+    console.log("📊 Límite del presupuesto:", nuevoPresupuesto.limite);
+
     if (sumaCategorias > Number(nuevoPresupuesto.limite)) {
+      console.log("❌ Error: suma de límites de categoría excede el límite total");
       return res.status(400).json({
         mensaje: `La suma de los límites por categoría (${sumaCategorias}) excede el límite total del presupuesto (${nuevoPresupuesto.limite}).`
       });
     }
 
-    usuarioExiste.presupuestos.push(nuevoPresupuesto);
-    await usuarioExiste.save();
+    // Asignar dinero_disponible general y por categoría
+    nuevoPresupuesto.dinero_disponible = Number(nuevoPresupuesto.limite);
+    nuevoPresupuesto.categorias = nuevoPresupuesto.categorias.map(cat => ({
+      ...cat,
+      dinero_disponible: Number(cat.limite)
+    }));
 
-    // Registrar acción en historial
-    await Usuario.findByIdAndUpdate(idUsuario, {
-      $push: {
-        historial: {
-          $each: [{
-            accion: 'crear',
-            tipo_entidad: 'presupuesto',
-            descripcion: `Creó el presupuesto "${nuevoPresupuesto.titulo}"`,
-            fecha: new Date(),
-            detalles: nuevoPresupuesto
-          }],
-          $sort: { fecha: -1 },
-          $slice: 150
-        }
-      }
+    // Agregar presupuesto al usuario
+    usuarioExiste.presupuestos.push(nuevoPresupuesto);
+    console.log("✅ Presupuesto agregado a usuario");
+
+    // Registrar acción en historial (manualmente para evitar validación global)
+    const historialAccion = {
+      tipo: 'presupuesto',
+      accion: 'crear',
+      fecha: new Date(),
+      datos_despues: nuevoPresupuesto
+    };
+
+    usuarioExiste.historial.push(historialAccion);
+    usuarioExiste.historial.sort((a, b) => b.fecha - a.fecha);
+    usuarioExiste.historial = usuarioExiste.historial.slice(0, 150);
+
+    await usuarioExiste.save();
+    console.log("📝 Historial actualizado y usuario guardado");
+
+    res.status(200).json({
+      mensaje: 'Presupuesto creado exitosamente',
+      presupuesto: nuevoPresupuesto
     });
 
-    res.status(200).json({ mensaje: 'Presupuesto creado exitosamente', presupuesto: nuevoPresupuesto });
   } catch (error) {
-    res.status(500).json({ mensaje: 'Error al crear presupuesto', error: error.message });
+    console.log("❗ Error en crearPresupuesto:", error);
+    res.status(500).json({
+      mensaje: 'Error al crear presupuesto',
+      error: error.message
+    });
   }
-}; // CREAR PRESUPUESTO
+};
+ // CREAR PRESUPUESTO
 
 exports.obtenerPresupuestos = async (req, res) => {
   const idUsuario = req.params.idUsuario;

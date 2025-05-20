@@ -22,9 +22,17 @@ const PresupuestoSchema = new mongoose.Schema({
   categorias : [
     {
       categoria: { type: CategoriaInternaSchema, required: true },
-      limite: { type: Number, required: true, min: 0 }
+      limite: { type: Number, required: true, min: 0 },
+      dinero_disponible: { type: Number }, 
     }
   ]
+
+  /* Tenemos el presupuesto:
+     Asignamos el límite de 1000
+      Repartimos el limite en las categorias con 600 y 400
+      Al realizar una transaccion se debe asociar el presupuesto
+        si se hace un retiro hay vincularlo con una categoría y restar dinero disponible 
+        a su vez se actualiza el dinero disponible del presupuesto y ya*/
 
 });
 

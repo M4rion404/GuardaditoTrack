@@ -35,7 +35,6 @@ const initialForm = {
   accion: "",
   metodo_pago: "",
   monto: "",
-  estado: "",
   categoria_asociada: "",
   presupuesto_asociado: "",
 };
@@ -222,34 +221,37 @@ const Transacciones = () => {
 
   // Fetch transacciones
   const fetchTransacciones = async () => {
-    setLoading(true);
-    setError(null);
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
-    try {
-      if (!token) throw new Error("No token disponible, inicia sesión.");
-      const response = await fetch(
-        `http://localhost:3000/api/transacciones/${userId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      if (!response.ok) throw new Error("Error al obtener las transacciones");
-      const data = await response.json();
-      setTransacciones(data);
-      setTransaccionSeleccionada(null);
-      response.data.forEach((t) => {
-        console.log(
-          `Transacción ID: ${t._id}, categoria_asociada:`,
-          t.categoria_asociada
-        );
-      });
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  setError(null);
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+  try {
+    if (!token) throw new Error("No token disponible, inicia sesión.");
+    const response = await fetch(
+      `http://localhost:3000/api/transacciones/${userId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    if (!response.ok) {
+      const errorMessage = await response.text(); // Esto ayuda a ver si hay HTML o texto de error
+      throw new Error(`Error del servidor: ${response.status} - ${errorMessage}`);
     }
-  };
+    const data = await response.json();
+    setTransacciones(data);
+    setTransaccionSeleccionada(null);
+    
+    // Error: estabas intentando acceder a response.data, pero response es la respuesta fetch
+    // y data ya contiene los datos. Cambia esto por:
+    console.log("Transacciones recibidas:", data.length);
+    
+  } catch (err) {
+    setError(err.message);
+    console.error("Error al cargar transacciones:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Fetch presupuestos
   useEffect(() => {
@@ -323,7 +325,6 @@ const Transacciones = () => {
       accion: transaccionSeleccionada.accion || "",
       metodo_pago: transaccionSeleccionada.metodo_pago || "",
       monto: transaccionSeleccionada.monto || "",
-      estado: transaccionSeleccionada.estado || "",
       categoria_asociada: transaccionSeleccionada.categoria_asociada || "",
       presupuesto_asociado: transaccionSeleccionada.presupuesto_asociado || "",
     });
@@ -340,7 +341,6 @@ const Transacciones = () => {
       accion: transaccion.accion || "",
       metodo_pago: transaccion.metodo_pago || "",
       monto: transaccion.monto || "",
-      estado: transaccion.estado || "",
       categoria_asociada:
         transaccion.categoria_asociada?._id ||
         transaccion.categoria_asociada ||
@@ -362,40 +362,53 @@ const Transacciones = () => {
   };
 
   // CRUD handlers
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    const validacion = validarCampos(formData);
-    if (validacion) {
-      setError(validacion);
-      return;
-    }
-    setLoading(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError(null);
+
+  const validacion = validarCampos(formData);
+  if (validacion) {
+    setError(validacion);
+    return;
+  }
+
+  setLoading(true);
+
+  try {
     const userId = localStorage.getItem("userId");
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("Token no encontrado. Inicie sesión.");
-      const cleanData = limpiarDatos(formData);
-      await axios.post(
-        `http://localhost:3000/api/transacciones/${userId}`,
-        cleanData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      await Swal.fire({
-        icon: "success",
-        title: "Transaccion creada!",
-        text: "Los datos se guardaron correctamente.",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      fetchTransacciones();
-      cerrarModal();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Token no encontrado. Inicie sesión.");
+
+    // Usar presupuesto_asociado del formulario como id_presupuesto
+    const cleanData = {
+      ...limpiarDatos(formData),
+      id_presupuesto: formData.presupuesto_asociado || null,
+    };
+
+    await axios.post(
+      `http://localhost:3000/api/transacciones/${userId}`,
+      cleanData,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    await Swal.fire({
+      icon: "success",
+      title: "Transacción creada!",
+      text: "Los datos se guardaron correctamente.",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+
+    fetchTransacciones();
+    cerrarModal();
+
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -511,7 +524,6 @@ const Transacciones = () => {
       "Accion",
       "Metodo de Pago",
       "Monto",
-      "Estado",
       "Categoria Asociada",
       "Presupuesto Asociado",
       "Fecha",
@@ -522,7 +534,6 @@ const Transacciones = () => {
       t.accion || "",
       t.metodo_pago || "",
       `$${Number(t.monto || 0).toFixed(2)}`,
-      t.estado || "",
       obtenerNombreCategoria(t.categoria_asociada) || "",
       obtenerNombrePresupuesto(t.presupuesto_asociado) || "",
       t.fecha ? new Date(t.fecha).toLocaleDateString() : "",
@@ -655,7 +666,6 @@ const Transacciones = () => {
             <th>Accion</th>
             <th>Metodo de Pago</th>
             <th>Monto</th>
-            <th>Estado</th>
             <th>Presupuesto</th>
             <th>Categoria</th>
             <th>Fecha</th>
@@ -663,12 +673,6 @@ const Transacciones = () => {
         </thead>
         <tbody>
           {transaccionesPaginadas.map((transaccion) => {
-            console.log(
-              "Transacción ID:",
-              transaccion._id,
-              "| Categoria asociada:",
-              transaccion.categoria_asociada
-            );
 
             return (
               <tr
@@ -687,7 +691,6 @@ const Transacciones = () => {
                 <td>{transaccion.accion}</td>
                 <td>{transaccion.metodo_pago}</td>
                 <td>${Number(transaccion.monto || 0).toFixed(2)}</td>
-                <td>{transaccion.estado}</td>
                 <td>
                   {obtenerNombrePresupuesto(transaccion.presupuesto_asociado)}
                 </td>
@@ -786,9 +789,6 @@ const Transacciones = () => {
                   <p>
                     <strong>Monto: </strong> $
                     {Number(formData.monto).toFixed(2)}
-                  </p>
-                  <p>
-                    <strong>Estado: </strong> {formData.estado}
                   </p>
                   <p>
                     <strong>Categoria:</strong>{" "}

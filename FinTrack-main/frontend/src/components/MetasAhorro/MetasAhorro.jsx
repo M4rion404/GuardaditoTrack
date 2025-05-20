@@ -328,7 +328,7 @@ const MetasAhorro = () => {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("Token no encontrado. Inicie sesión.");
         await axios.delete(
-          `http://localhost:3000/api/metasahorro/${userId}/${metaAhorroSeleccionada._id}`,
+          `http://localhost:3000/api/metas-ahorro/${userId}/${metaAhorroSeleccionada._id}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         fetchmetaAhorro();
@@ -622,7 +622,6 @@ const MetasAhorro = () => {
                   loading={loading}
                   error={error}
                   presupuestos={presupuestos}
-                  divisas={divisas}
                 />
               </>
             )}

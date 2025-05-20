@@ -5,10 +5,16 @@ import "./Presupuestos.css";
 import PresupuestoResumen from "./PresupuestoResumen";
 import { Doughnut } from "react-chartjs-2";
 
-import { Chart, ArcElement, Tooltip, Legend, CategoryScale,
+import {
+  Chart,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
   LinearScale,
   BarElement,
-  Title } from "chart.js";
+  Title,
+} from "chart.js";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { FaFilePdf, FaEye } from "react-icons/fa";
@@ -23,10 +29,15 @@ import {
 import { FaTags } from "react-icons/fa";
 import { Bar } from "react-chartjs-2";
 
-Chart.register(ArcElement, Tooltip, Legend, CategoryScale,
+Chart.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
   LinearScale,
   BarElement,
-  Title);
+  Title
+);
 
 // Iconos personalizados
 const IconCrear = () => (
@@ -56,7 +67,7 @@ const IconBuscar = () => (
 );
 const IconCerrar = () => (
   <span role="img" aria-label="cerrar">
-    <FaTimes style={{ color: "#757575" }} />
+    <FaTimes style={{ color: "white" }} />
   </span>
 );
 const IconPDF = () => (
@@ -90,7 +101,7 @@ const validarCampos = (data) => {
 
   if (isNaN(limite) || limite < 0)
     return "El limite de presupuesto debe ser un número mayor o igual a 0.";
- 
+
   return null;
 };
 
@@ -103,9 +114,6 @@ function PresupuestoForm({
   error,
   categorias,
 }) {
-
-
-  
   return (
     <form onSubmit={onSubmit} className="presupuestos-form">
       <div className="form-group">
@@ -139,9 +147,14 @@ function PresupuestoForm({
           id="limite"
           name="limite"
           value={formData.limite}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, limite: e.target.value }))
-          }
+          onChange={(e) => {
+            const limiteValue = e.target.value;
+            setFormData((prev) => ({
+              ...prev,
+              limite: limiteValue,
+              dinero_disponible: limiteValue, // Actualizar dinero_disponible automáticamente
+            }));
+          }}
           required
         />
       </div>
@@ -163,15 +176,25 @@ function PresupuestoForm({
           <option value="Quincenal">Quincenal</option>
         </select>
       </div>
-    
+
       <div className="form-group">
         <label>Categorías y límites:</label>
         {formData.categorias.map((cat, index) => (
-          <div key={index} style={{ display: 'flex', gap: '20px', marginBottom: '0.5rem', alignItems: 'center' }}>
+          <div
+            key={index}
+            style={{
+              display: "flex",
+              gap: "20px",
+              marginBottom: "0.5rem",
+              alignItems: "center",
+            }}
+          >
             <select
               value={cat.categoria?._id || ""}
               onChange={(e) => {
-                const nuevaCategoria = categorias.find(c => c._id === e.target.value);
+                const nuevaCategoria = categorias.find(
+                  (c) => c._id === e.target.value
+                );
                 const nuevasCategorias = [...formData.categorias];
                 nuevasCategorias[index].categoria = nuevaCategoria;
                 setFormData({ ...formData, categorias: nuevasCategorias });
@@ -202,7 +225,9 @@ function PresupuestoForm({
             <button
               type="button"
               onClick={() => {
-                const nuevasCategorias = formData.categorias.filter((_, i) => i !== index);
+                const nuevasCategorias = formData.categorias.filter(
+                  (_, i) => i !== index
+                );
                 setFormData({ ...formData, categorias: nuevasCategorias });
               }}
               style={{
@@ -211,7 +236,7 @@ function PresupuestoForm({
                 color: "white",
                 padding: "0.4rem 0.6rem",
                 borderRadius: "4px",
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             >
               ✕
@@ -224,7 +249,10 @@ function PresupuestoForm({
           onClick={() =>
             setFormData({
               ...formData,
-              categorias: [...formData.categorias, { categoria: {}, limite: 0 }],
+              categorias: [
+                ...formData.categorias,
+                { categoria: {}, limite: 0 },
+              ],
             })
           }
           style={{
@@ -240,9 +268,6 @@ function PresupuestoForm({
           + Agregar categoría
         </button>
       </div>
-
-
-
 
       <div className="btn-submit-container">
         <button type="submit" className="btn-submit" disabled={loading}>
@@ -275,14 +300,13 @@ const Presupuestos = () => {
 
   // Fetch presupuestos
 
-  
-const [categoriasDePresupuestos, setCategoriasDePresupuestos] = useState([]);
+  const [categoriasDePresupuestos, setCategoriasDePresupuestos] = useState([]);
 
-useEffect(() => {
-  fetchPresupuestosAnidados();
-}, []);
+  useEffect(() => {
+    fetchPresupuestosAnidados();
+  }, []);
 
-const fetchPresupuestos = async () => {
+  const fetchPresupuestos = async () => {
     setLoading(true);
     setError(null);
     const token = localStorage.getItem("token");
@@ -301,45 +325,47 @@ const fetchPresupuestos = async () => {
     }
   };
 
-const fetchPresupuestosAnidados = async () => {
-  setLoading(true);
+  const fetchPresupuestosAnidados = async () => {
+    setLoading(true);
     setError(null);
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userId");
-  try {
-    const res = await axios.get(`http://localhost:3000/api/presupuestos/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/presupuestos/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Categorias obtenidas: ", res.data);
+      const data = res.data;
+      setPresupuestos(data);
+
+      const nombres = obtenerNombresCategoriasDesdePresupuestos(data);
+      setCategoriasDePresupuestos(nombres);
+    } catch (error) {
+      console.error("Error al obtener presupuestos:", error);
+    }
+  };
+
+  const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
+    const nombres = [];
+
+    presupuestos.forEach((presupuesto) => {
+      if (Array.isArray(presupuesto.categorias)) {
+        presupuesto.categorias.forEach((c) => {
+          if (c.categoria?.titulo) {
+            nombres.push(c.categoria.titulo);
+          }
+        });
+      }
     });
 
-    console.log("Categorias obtenidas: ", res.data);
-    const data = res.data;
-    setPresupuestos(data);
-
-    const nombres = obtenerNombresCategoriasDesdePresupuestos(data);
-    setCategoriasDePresupuestos(nombres);
-
-  } catch (error) {
-    console.error("Error al obtener presupuestos:", error);
-  }
-};
-
-const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
-  const nombres = [];
-
-  presupuestos.forEach(presupuesto => {
-    if (Array.isArray(presupuesto.categorias)) {
-      presupuesto.categorias.forEach(c => {
-        if (c.categoria?.titulo) {
-          nombres.push(c.categoria.titulo);
-        }
-      });
-    }
-  });
-
-  return nombres;
-};
+    return nombres;
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -361,7 +387,10 @@ const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
           // Alternativa si la API devuelve { categorias: [...] }
           setCategorias(res.data.categorias);
         } else {
-          console.error("Formato de respuesta de categorías incorrecto:", res.data);
+          console.error(
+            "Formato de respuesta de categorías incorrecto:",
+            res.data
+          );
           setCategorias([]);
         }
       } catch (error) {
@@ -381,11 +410,11 @@ const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
 
   // Helpers
   const obtenerNombreCategoria = (id) => {
-  if (!id) return "Sin categoría";
-  
-  const categoria = categorias.find((cat) => cat._id === id);
-  return categoria ? categoria.titulo : "Sin categoría";
-};
+    if (!id) return "Sin categoría";
+
+    const categoria = categorias.find((cat) => cat._id === id);
+    return categoria ? categoria.titulo : "Sin categoría";
+  };
 
   // Modal handlers
   const abrirModalCrear = () => {
@@ -404,6 +433,7 @@ const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
       dinero_disponible: presupuestoSeleccionado.dinero_disponible || "",
       categoria_asociada: presupuestoSeleccionado.categoria_asociada || "",
       periodo: presupuestoSeleccionado.periodo || "",
+      categorias: presupuestoSeleccionado.categorias || ""
     });
     setModalMode("editar");
     setModalOpen(true);
@@ -418,6 +448,7 @@ const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
       dinero_disponible: presupuesto.dinero_disponible || "",
       categoria_asociada: presupuesto.categoria_asociada || "",
       periodo: presupuesto.periodo || "",
+      categorias: presupuesto.categorias || [], // ✅ aquí está el fix
     });
     setModalMode("ver");
     setModalOpen(true);
@@ -431,6 +462,7 @@ const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
   };
 
   // CRUD handlers
+  // En handleSubmit, antes de enviar los datos:
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -441,12 +473,29 @@ const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
       return;
     }
 
-    setLoading(true);
     const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Token no encontrado. Inicie sesión.");
+      return;
+    }
+
+    // Transformar las categorías para agregar dinero_disponible = limite
+    const categoriasFormateadas = (formData.categorias || []).map(cat => ({
+      ...cat,
+      dinero_disponible: Number(cat.limite) // Asegura que sea número
+    }));
+
+    const dataToSubmit = {
+      ...formData,
+      limite: Number(formData.limite), // asegura que el total sea número
+      dinero_disponible: Number(formData.limite),
+      categorias: categoriasFormateadas
+    };
+
     try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("Token no encontrado. Inicie sesión.");
-      const cleanData = limpiarDatos(formData);
+      setLoading(true);
+      const cleanData = limpiarDatos(dataToSubmit);
       await axios.post(
         `http://localhost:3000/api/presupuestos/${userId}`,
         cleanData,
@@ -468,41 +517,51 @@ const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
     }
   };
 
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    setError(null);
 
-    const validacion = validarCampos(formData);
-    if (validacion) {
-      setError(validacion);
-      return;
-    }
-    const userId = localStorage.getItem("userId");
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("Token no encontrado. Inicie sesión.");
-      const dataLimpia = limpiarDatos(formData);
-      await axios.patch(
-        `http://localhost:3000/api/presupuestos/${userId}/${presupuestoSeleccionado._id}`,
-        dataLimpia,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      await Swal.fire({
-        icon: "success",
-        title: "¡Presupuesto actualizado!",
-        text: "Los cambios se guardaron correctamente.",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      fetchPresupuestos();
-      cerrarModal();
-    } catch (err) {
-      setError("Error al actualizar el presupuesto");
-    } finally {
-      setLoading(false);
-    }
+  // También modificar handleUpdate de manera similar:
+const handleUpdate = async (e) => {
+  e.preventDefault();
+  setError(null);
+
+  const validacion = validarCampos(formData);
+  if (validacion) {
+    setError(validacion);
+    return;
+  }
+  
+  // Si estás creando un nuevo presupuesto o actualizando el límite
+  // debemos asegurarnos de que dinero_disponible se actualice
+  const dataToUpdate = {
+    ...formData,
+    dinero_disponible: formData.limite
   };
+  
+  const userId = localStorage.getItem("userId");
+  setLoading(true);
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Token no encontrado. Inicie sesión.");
+    const dataLimpia = limpiarDatos(dataToUpdate);
+    await axios.patch(
+      `http://localhost:3000/api/presupuestos/${userId}/${presupuestoSeleccionado._id}`,
+      dataLimpia,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    await Swal.fire({
+      icon: "success",
+      title: "¡Presupuesto actualizado!",
+      text: "Los cambios se guardaron correctamente.",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+    fetchPresupuestos();
+    cerrarModal();
+  } catch (err) {
+    setError("Error al actualizar el presupuesto");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleDelete = async () => {
     if (!presupuestoSeleccionado) return;
@@ -543,7 +602,6 @@ const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
     presupuestos.some((p) => p.divisa_asociada === d._id)
   );
 
-
   const presupuestosFiltrados = presupuestos.filter((p) => {
     const coincideCategoria = filtroCategoria
       ? p.categoria_asociada === filtroCategoria
@@ -555,16 +613,14 @@ const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
 
     const coincideBusqueda = busqueda
       ? p.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      p.descripcion?.toLowerCase().includes(busqueda.toLowerCase())
+        p.descripcion?.toLowerCase().includes(busqueda.toLowerCase())
       : true;
 
     return coincideCategoria && coincideDivisa && coincideBusqueda;
   });
 
   // Paginación
-  const totalPaginas = Math.ceil(
-    presupuestosFiltrados.length / ITEMS_PER_PAGE
-  );
+  const totalPaginas = Math.ceil(presupuestosFiltrados.length / ITEMS_PER_PAGE);
 
   const presupuestosPaginados = presupuestosFiltrados.slice(
     (paginaActual - 1) * ITEMS_PER_PAGE,
@@ -588,26 +644,28 @@ const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
           Math.max(
             0,
             Number(presupuestoSeleccionado?.limite || 0) -
-            Number(presupuestoSeleccionado?.dinero_disponible || 0)
+              Number(presupuestoSeleccionado?.dinero_disponible || 0)
           ),
         ],
         backgroundColor: ["#4caf50", "#f44336"],
         borderWidth: 1,
       },
     ],
-};
-
+  };
 
   const dataGraph2 = React.useMemo(() => {
-    if (!presupuestoSeleccionado || !Array.isArray(presupuestoSeleccionado.categorias)) {
+    if (
+      !presupuestoSeleccionado ||
+      !Array.isArray(presupuestoSeleccionado.categorias)
+    ) {
       return {
         labels: [],
         datasets: [],
       };
     }
 
-    const labels = presupuestoSeleccionado.categorias.map((cat) =>
-      cat?.categoria?.titulo || "Sin título"
+    const labels = presupuestoSeleccionado.categorias.map(
+      (cat) => cat?.categoria?.titulo || "Sin título"
     );
 
     const data = presupuestoSeleccionado.categorias.map((cat) =>
@@ -615,7 +673,13 @@ const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
     );
 
     const backgroundColors = [
-      "#4caf50", "#2196f3", "#ff9800", "#e91e63", "#9c27b0", "#00bcd4", "#cddc39"
+      "#4caf50",
+      "#2196f3",
+      "#ff9800",
+      "#e91e63",
+      "#9c27b0",
+      "#00bcd4",
+      "#cddc39",
     ];
 
     return {
@@ -630,7 +694,7 @@ const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
       ],
     };
   }, [presupuestoSeleccionado]);
-  
+
   const exportarPDF = () => {
     const doc = new jsPDF();
 
@@ -653,11 +717,10 @@ const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
       p.periodo || "",
       // Extraemos todos los títulos de categorías y los unimos con coma
       p.categorias && p.categorias.length > 0
-        ? p.categorias.map(catObj => catObj.categoria.titulo).join(", ")
+        ? p.categorias.map((catObj) => catObj.categoria.titulo).join(", ")
         : "Sin categoría",
       p.fecha_creacion ? new Date(p.fecha_creacion).toLocaleDateString() : "",
     ]);
-
 
     doc.text("Listado de Presupuestos", 14, 15);
 
@@ -676,7 +739,12 @@ const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
         <div className="brine-header">
           <button
             onClick={() => (window.location.href = "/home")}
-            style={{ zIndex: 9999, position: "relative", pointerEvents: "auto", cursor: "pointer" }}
+            style={{
+              zIndex: 9999,
+              position: "relative",
+              pointerEvents: "auto",
+              cursor: "pointer",
+            }}
           >
             &larr; Regresar
           </button>
@@ -820,11 +888,11 @@ const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
               <td>
                 {presupuesto.categorias && presupuesto.categorias.length > 0
                   ? presupuesto.categorias.map((catObj, index) => (
-                    <span key={index}>
-                      {catObj.categoria.titulo}
-                      {index < presupuesto.categorias.length - 1 ? ", " : ""}
-                    </span>
-                  ))
+                      <span key={index}>
+                        {catObj.categoria.titulo}
+                        {index < presupuesto.categorias.length - 1 ? ", " : ""}
+                      </span>
+                    ))
                   : "Sin categoría"}
               </td>
 
@@ -911,16 +979,44 @@ const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
                     <strong>Descripción:</strong> {formData.descripcion}
                   </p>
                   <p>
-                    <strong>Limite:</strong> ${Number(formData.limite).toFixed(2)}
+                    <strong>Limite:</strong> $
+                    {Number(formData.limite).toFixed(2)}
                   </p>
                   <p>
-                    <strong>Dinero Disponible:</strong> ${Number(formData.dinero_disponible).toFixed(2)}
+                    <strong>Dinero Disponible:</strong> $
+                    {Number(formData.dinero_disponible).toFixed(2)}
                   </p>
                   <p>
                     <strong>Periodo:</strong> {formData.periodo}
                   </p>
                   <div>
-                    <p><strong>Categorías:</strong></p> {Array.isArray(presupuestoSeleccionado?.categorias) && presupuestoSeleccionado.categorias.length > 0 ? ( <ul> {presupuestoSeleccionado.categorias.map((catObj, index) => { const titulo = catObj?.categoria?.titulo || "Sin título"; const limite = catObj?.limite != null ? `$${Number(catObj.limite).toFixed(2)}` : "Sin límite"; return ( <li key={index}> {titulo} — Límite: {limite} </li> ); })} </ul> ) : ( <p>No hay categorías asignadas.</p> )}
+                    <p>
+                      <strong>Categorías:</strong>
+                    </p>{" "}
+                    {Array.isArray(presupuestoSeleccionado?.categorias) &&
+                    presupuestoSeleccionado.categorias.length > 0 ? (
+                      <ul>
+                        {" "}
+                        {presupuestoSeleccionado.categorias.map(
+                          (catObj, index) => {
+                            const titulo =
+                              catObj?.categoria?.titulo || "Sin título";
+                            const limite =
+                              catObj?.limite != null
+                                ? `$${Number(catObj.limite).toFixed(2)}`
+                                : "Sin límite";
+                            return (
+                              <li key={index}>
+                                {" "}
+                                {titulo} — Límite: {limite}{" "}
+                              </li>
+                            );
+                          }
+                        )}{" "}
+                      </ul>
+                    ) : (
+                      <p>No hay categorías asignadas.</p>
+                    )}
                   </div>
                   <div style={{ display: "flex", justifyContent: "center" }}>
                     {presupuestoSeleccionado && (
