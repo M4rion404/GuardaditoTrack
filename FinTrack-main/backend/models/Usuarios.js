@@ -16,7 +16,7 @@ const UsuarioSchema = new mongoose.Schema({
   nombre_usuario: { type: String, required: true },
   numero_telefono: { type: String },
   
-  verificacion: { type: String, enum: ["email", "sms", "configuracion_pendiente"], default: "configuracion_pendiente" },
+  verificacion: { type: String, enum: ["email", "sms", "configuracion_pendiente"], default: "email" },
   divisa: { type: String, default:"MXN" },
 
   presupuestos: [PresupuestoSchema],

@@ -67,7 +67,7 @@ exports.obtenerMetas = async (req, res) => {
 }; // OBTENER metas
 
 exports.obtenerMetaPorId = async (req, res) => {
-  const { idUsuario, idMeta } = req.params;
+  const { idUsuario, idMetaAhorro } = req.params;
 
   try {
     const usuario = await Usuario.findById(idUsuario);
@@ -75,7 +75,7 @@ exports.obtenerMetaPorId = async (req, res) => {
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
     }
 
-    const meta = usuario.metas_ahorro.find(m => m._id.toString() === idMeta);
+    const meta = usuario.metas_ahorro.find(m => m._id.toString() === idMetaAhorro);
 
     if (!meta) {
       return res.status(404).json({ mensaje: 'Meta no encontrada' });
@@ -88,7 +88,7 @@ exports.obtenerMetaPorId = async (req, res) => {
 };// OBTENER Meta
 
 exports.actualizarMeta = async (req, res) => {
-  const { idUsuario, idMeta } = req.params;
+  const { idUsuario, idMetaAhorro } = req.params; // Corregido aquí
   const datosActualizados = req.body;
 
   try {
@@ -97,7 +97,7 @@ exports.actualizarMeta = async (req, res) => {
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
     }
 
-    const index = usuario.metas_ahorro.findIndex(m => m._id.toString() === idMeta);
+    const index = usuario.metas_ahorro.findIndex(m => m._id.toString() === idMetaAhorro); // Cambiado idMeta por idMetaAhorro
 
     if (index === -1) {
       return res.status(404).json({ mensaje: 'Meta no encontrada' });
@@ -140,10 +140,10 @@ exports.actualizarMeta = async (req, res) => {
       error: error.message
     });
   }
-}; // ACTUALIZAR Meta
+};
 
 exports.eliminarMeta = async (req, res) => {
-  const { idUsuario, idMeta } = req.params;
+  const { idUsuario, idMetaAhorro } = req.params;
 
   try {
     const usuario = await Usuario.findById(idUsuario);
@@ -151,12 +151,12 @@ exports.eliminarMeta = async (req, res) => {
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
     }
 
-    const metaEliminada = usuario.metas_ahorro.find(m => m._id.toString() === idMeta);
+    const metaEliminada = usuario.metas_ahorro.find(m => m._id.toString() === idMetaAhorro);
     if (!metaEliminada) {
       return res.status(404).json({ mensaje: 'Meta no encontrada' });
     }
 
-    usuario.metas_ahorro = usuario.metas_ahorro.filter(m => m._id.toString() !== idMeta);
+    usuario.metas_ahorro = usuario.metas_ahorro.filter(m => m._id.toString() !== idMetaAhorro);
 
     // Registrar en historial
     usuario.historial = usuario.historial.filter(item =>

@@ -36,13 +36,13 @@ const initialForm = {
   metodo_pago: "",
   monto: "",
   estado: "",
-  divisa_asociada: "",
+  categoria_asociada: "",
   presupuesto_asociado: "",
 };
 
 const limpiarDatos = (data) => ({
   ...data,
-  divisa_asociada: data.divisa_asociada || null,
+  categoria_asociada: data.categoria_asociada || null,
   presupuesto_asociado: data.presupuesto_asociado || null,
 });
 
@@ -65,21 +65,15 @@ const validarCampos = (data) => {
   if (
     ![
       "Efectivo",
-      "Tarjeta de crédito",
-      "Tarjeta de Debito",
-      "Pago Móvil",
-      "PayPal",
-      "Criptomonedas",
-      "Pago con código QR",
-      "Transferencia",
+      "Tarjeta",
     ].includes(data.metodo_pago)
   ) {
     return "Seleccione un método de pago válido.";
   }
   // Validar estado
-  if (!["En proceso", "Completado", "Cancelado"].includes(data.estado)) {
+  /* if (!["En proceso", "Completado", "Cancelado"].includes(data.estado)) {
     return "Seleccione un estado válido.";
-  }
+  } */
   // Validar monto
   if (isNaN(Number(data.monto)) || Number(data.monto) < 0) {
     return "El monto debe ser un número positivo.";
@@ -95,7 +89,7 @@ function TransaccionForm({
   loading,
   error,
   presupuestos,
-  divisas,
+  categorias,
 }) {
   return (
     <form onSubmit={onSubmit} className="transacciones-form">
@@ -152,13 +146,7 @@ function TransaccionForm({
         >
           <option value="">Seleccionar método</option>
           <option value="Efectivo">Efectivo</option>
-          <option value="Tarjeta de crédito">Tarjeta de Crédito</option>
-          <option value="Tarjeta de Debito">Tarjeta de Débito</option>
-          <option value="Pago Móvil">Pago Móvil</option>
-          <option value="PayPal">PayPal</option>
-          <option value="Criptomonedas">Criptomonedas</option>
-          <option value="Pago con código QR">Pago con código QR</option>
-          <option value="Transferencia">Transferencia</option>
+          <option value="Tarjeta">Tarjeta</option>
         </select>
       </div>
       <div className="form-group">
@@ -179,39 +167,22 @@ function TransaccionForm({
         />
       </div>
       <div className="form-group">
-        <label htmlFor="estado">Estado:</label>
+        <label htmlFor="categoria_asociada">Categoria:</label>
         <select
-          id="estado"
-          name="estado"
-          value={formData.estado}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, estado: e.target.value }))
-          }
-          required
-        >
-          <option value="">Seleccionar estado</option>
-          <option value="En proceso">En Proceso</option>
-          <option value="Completado">Completado</option>
-          <option value="Cancelado">Cancelado</option>
-        </select>
-      </div>
-      <div className="form-group">
-        <label htmlFor="divisa_asociada">Divisa:</label>
-        <select
-          id="divisa_asociada"
-          name="divisa_asociada"
-          value={formData.divisa_asociada}
+          id="categoria_asociada"
+          name="categoria_asociada"
+          value={formData.categoria_asociada}
           onChange={(e) =>
             setFormData((prev) => ({
               ...prev,
-              divisa_asociada: e.target.value || "",
+              categoria_asociada: e.target.value || "",
             }))
           }
         >
-          <option value="">Seleccionar divisa</option>
-          {divisas.map((divisa) => (
-            <option key={divisa._id} value={divisa._id}>
-              {divisa.divisa} - {divisa.nombre}
+          <option value="">Seleccionar categoria</option>
+          {categorias.map((categoria) => (
+            <option key={categoria._id} value={categoria._id}>
+              {categoria.categoria} - {categoria.nombre}
             </option>
           ))}
         </select>
@@ -252,12 +223,12 @@ const Transacciones = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [transaccionSeleccionada, setTransaccionSeleccionada] = useState(null);
-  const [divisas, setDivisas] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   const [presupuestos, setPresupuestos] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("crear"); // crear | editar | ver
   const [filtroPresupuesto, setFiltroPresupuesto] = useState("");
-  const [filtroDivisa, setFiltroDivisa] = useState("");
+  const [filtroCategoria, setFiltroCategoria] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
   const [busqueda, setBusqueda] = useState("");
   const [formData, setFormData] = useState(initialForm);
@@ -309,24 +280,24 @@ const Transacciones = () => {
     fetchPresupuestos();
   }, []);
 
-  // Fetch divisas
+  // Fetch categorias
   useEffect(() => {
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
 
-  const fetchDivisas = async () => {
+  const fetchCategorias = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:3000/api/divisas/${userId}`,
+        `http://localhost:3000/api/categorias/${userId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setDivisas(res.data); // aquí tú decides si usar setTipoDivisa, setDivisasUsuario, etc.
+      setCategorias(res.data); // aquí tú decides si usar setTipoCategoria, setCategoriasUsuario, etc.
     } catch (error) {
-      console.error("Error al cargar divisas:", error);
+      console.error("Error al cargar categorias:", error);
     }
   };
 
-  fetchDivisas();
+  fetchCategorias();
 }, []);
 
   useEffect(() => {
@@ -340,9 +311,9 @@ const Transacciones = () => {
     return presupuesto?.titulo || "Sin Presupuesto";
   };
 
-  const obtenerNombreDivisa = (id) => {
-    const divisa = divisas.find((d) => d._id === id);
-    return divisa?.divisa || "Sin divisa";
+  const obtenerNombreCategoria = (id) => {
+    const categoria = categorias.find((d) => d._id === id);
+    return categoria?.categoria || "Sin categoria";
   };
 
   // Modal handlers
@@ -362,7 +333,7 @@ const Transacciones = () => {
       metodo_pago: transaccionSeleccionada.metodo_pago || "",
       monto: transaccionSeleccionada.monto || "",
       estado: transaccionSeleccionada.estado || "",
-      divisa_asociada: transaccionSeleccionada.divisa_asociada || "",
+      categoria_asociada: transaccionSeleccionada.categoria_asociada || "",
       presupuesto_asociado: transaccionSeleccionada.presupuesto_asociado || "",
     });
     setModalMode("editar");
@@ -379,8 +350,8 @@ const Transacciones = () => {
       metodo_pago: transaccion.metodo_pago || "",
       monto: transaccion.monto || "",
       estado: transaccion.estado || "",
-      divisa_asociada:
-        transaccion.divisa_asociada?._id || transaccion.divisa_asociada || "",
+      categoria_asociada:
+        transaccion.categoria_asociada?._id || transaccion.categoria_asociada || "",
       presupuesto_asociado:
         transaccion.presupuesto_asociado?._id ||
         transaccion.presupuesto_asociado ||
@@ -524,8 +495,8 @@ const Transacciones = () => {
     transacciones.some((t) => t.presupuesto_asociado === p._id)
   );
 
-  const divisasUsadas = divisas.filter((d) =>
-    transacciones.some((t) => t.divisa_asociada === d._id)
+  const categoriasUsadas = categorias.filter((d) =>
+    transacciones.some((t) => t.categoria_asociada === d._id)
   );
 
   // Filtro principal de transacciones
@@ -534,8 +505,8 @@ const Transacciones = () => {
       ? t.presupuesto_asociado === filtroPresupuesto
       : true;
 
-    const coincideDivisa = filtroDivisa
-      ? t.divisa_asociada === filtroDivisa
+    const coincideCategoria = filtroCategoria
+      ? t.categoria_asociada === filtroCategoria
       : true;
 
       const coincideBusqueda = busqueda
@@ -543,7 +514,7 @@ const Transacciones = () => {
       t.descripcion?.toLowerCase().includes(busqueda.toLowerCase())
     : true;
 
-    return coincidePresupuesto && coincideDivisa && coincideBusqueda;
+    return coincidePresupuesto && coincideCategoria && coincideBusqueda;
   });
 
   // Paginación
@@ -571,7 +542,7 @@ const Transacciones = () => {
       "Metodo de Pago",
       "Monto",
       "Estado",
-      "Divisa Asociada",
+      "Categoria Asociada",
       "Presupuesto Asociado",
       "Fecha",
     ];
@@ -582,7 +553,7 @@ const Transacciones = () => {
       t.metodo_pago || "",
       `$${Number(t.monto || 0).toFixed(2)}`,
       t.estado || "",
-      obtenerNombreDivisa(t.divisa_asociada) || "",
+      obtenerNombreCategoria(t.categoria_asociada) || "",
       obtenerNombrePresupuesto(t.presupuesto_asociado) || "",
       t.fecha ? new Date(t.fecha).toLocaleDateString() : "",
     ]);
@@ -694,11 +665,11 @@ const Transacciones = () => {
           </select>
 
           <select
-            value={filtroDivisa}
-            onChange={(e) => setFiltroDivisa(e.target.value)}
+            value={filtroCategoria}
+            onChange={(e) => setFiltroCategoria(e.target.value)}
           >
-            <option value="">Todas las divisas</option>
-            {divisasUsadas.map((d) => (
+            <option value="">Todas las categorias</option>
+            {categoriasUsadas.map((d) => (
               <option key={d._id} value={d._id}>
                 {d.nombre}
               </option>
@@ -716,7 +687,7 @@ const Transacciones = () => {
             <th>Metodo de Pago</th>
             <th>Monto</th>
             <th>Estado</th>
-            <th>Divisa</th>
+            <th>Categoria</th>
             <th>Presupuesto</th>
             <th>Fecha</th>
           </tr>
@@ -742,7 +713,7 @@ const Transacciones = () => {
                 <td>${Number(transaccion.monto || 0).toFixed(2)}</td>
                 <td>{transaccion.estado}</td>
                 <td>
-                  {obtenerNombreDivisa(transaccion.divisa_asociada) ?? "-"}
+                  {obtenerNombreCategoria(transaccion.categoria_asociada) ?? "-"}
                 </td>
                 <td>
                   {obtenerNombrePresupuesto(transaccion.presupuesto_asociado) ??
@@ -803,7 +774,7 @@ const Transacciones = () => {
                   loading={loading}
                   error={error}
                   presupuestos={presupuestos}
-                  divisas={divisas}
+                  categorias={categorias}
                 />
               </>
             )}
@@ -817,7 +788,7 @@ const Transacciones = () => {
                   loading={loading}
                   error={error}
                   presupuestos={presupuestos}
-                  divisas={divisas}
+                  categorias={categorias}
                 />
               </>
             )}
@@ -845,10 +816,10 @@ const Transacciones = () => {
                     <strong>Estado: </strong> {formData.estado}
                   </p>
                   <p>
-                    <strong>Divisa:</strong>{" "}
-                    {transaccionSeleccionada?.divisa_asociada
-                      ? obtenerNombreDivisa(
-                          transaccionSeleccionada.divisa_asociada
+                    <strong>Categoria:</strong>{" "}
+                    {transaccionSeleccionada?.categoria_asociada
+                      ? obtenerNombreCategoria(
+                          transaccionSeleccionada.categoria_asociada
                         )
                       : "No asignada"}
                   </p>

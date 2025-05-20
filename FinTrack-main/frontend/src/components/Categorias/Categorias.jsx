@@ -71,8 +71,8 @@ const Categorias = () => {
   try {
     setCargando(true);
     const categoriaData = {
-      Titulo: nuevaCategoria.trim(),
-      Descripcion: descripcion.trim(),
+      titulo: nuevaCategoria.trim(),
+      descripcion: descripcion.trim(),
     };
 
     let res;
@@ -132,8 +132,8 @@ const Categorias = () => {
 
 const handleEditarCategoria = (categoria) => {
   setEditandoId(categoria._id);
-  setNuevaCategoria(categoria.Titulo);
-  setDescripcion(categoria.Descripcion);
+  setNuevaCategoria(categoria.titulo);
+  setDescripcion(categoria.descripcion);
   setMostrarFormulario(true);
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
@@ -278,9 +278,9 @@ const handleEliminarCategoria = async (id) => {
     {categoriasVisibles.map((cat) => (
       <li key={cat._id}>
         <div>
-          <strong>{cat.Titulo}</strong>
+          <strong>{cat.titulo}</strong>
           <br />
-          <small>{cat.Descripcion || "Sin descripción"}</small>
+          <small>{cat.descripcion || "Sin descripción"}</small>
         </div>
         <div className="category-actions">
           <button

@@ -4,50 +4,65 @@ const Usuario = require('../models/Usuarios');
 const Transaccion = require('../models/Transaccion');
 
 exports.crearTransaccion = async (req, res) => {
-  const idUsuario = req.params.idUsuario; // ID del usuario
+
+  const idUsuario = req.params.idUsuario;
   const nuevaTransaccion = req.body;
+
   try {
-    console.log('ID recibido: ', idUsuario)
-    const usuarioExiste = await Usuario.findById(idUsuario);
-    if (!usuarioExiste) {
+    const usuario = await Usuario.findById(idUsuario);
+    if (!usuario) {
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
     }
 
-    // Creacion de la Transaccion
-    const usuarioActualizado = await Usuario.findByIdAndUpdate(
-      idUsuario,
-      { $push: { Transacciones: nuevaTransaccion } },
-      { new: true }
-    );
+    // Buscar presupuesto afectado
+    const presupuesto = usuario.presupuestos.find(p => p._id.toString() === nuevaTransaccion.id_presupuesto);
+    if (!presupuesto) {
+      return res.status(404).json({ mensaje: 'Presupuesto no encontrado' });
+    }
 
-    // Ingreso al Historial
-     await Usuario.findByIdAndUpdate(idUsuario, {
-      $push: {
-        Historial: {
-          $each: [{
-            accion: 'Creación de Transacción',
-            tipo: 'transaccion',
-            datos_despues: nuevaTransaccion
-          }],
-          $sort: { fecha: -1 },
-          $slice: 150
-        }
+    const monto = parseFloat(nuevaTransaccion.monto);
+    if (isNaN(monto) || monto <= 0) {
+      return res.status(400).json({ mensaje: 'Monto inválido' });
+    }
+
+    // Validar retiro
+    if (nuevaTransaccion.tipo === 'Retiro') {
+      if (presupuesto.dinero_disponible < monto) {
+        return res.status(400).json({ mensaje: 'Fondos insuficientes para realizar el retiro' });
       }
+      presupuesto.dinero_disponible -= monto;
+    } else if (nuevaTransaccion.tipo === 'Ingreso') {
+      presupuesto.dinero_disponible += monto;
+    } else {
+      return res.status(400).json({ mensaje: 'Tipo de transacción inválido' });
+    }
+
+    // Agregar la transacción
+    usuario.transacciones.push(nuevaTransaccion);
+
+    // Agregar al historial
+    usuario.historial.push({
+      accion: 'Creación de Transacción',
+      tipo: 'transaccion',
+      descripcion: `${nuevaTransaccion.tipo === 'retiro' ? 'Retiró' : 'Ingresó'} $${monto} en presupuesto`,
+      detalles: nuevaTransaccion,
+      fecha: new Date()
     });
 
-    // Eliminacion de Registros Antiguos
-    const noventaDiasAtras = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
-    await Usuario.updateOne(
-      { _id: idUsuario },
-      { $pull: { Historial: { fecha: { $lt: noventaDiasAtras } } } }
-    );
+    // Mantener historial limpio
+    usuario.historial = usuario.historial
+      .filter(item => item.fecha >= new Date(Date.now() - 90 * 24 * 60 * 60 * 1000))
+      .sort((a, b) => b.fecha - a.fecha)
+      .slice(0, 150);
 
-    console.log('Usuario actualizado', usuarioActualizado);
-    res.status(200).json(usuarioActualizado);
+    await usuario.save();
+
+    res.status(200).json({ mensaje: 'Transacción realizada con éxito', transaccion: nuevaTransaccion });
   } catch (error) {
     res.status(500).json({ mensaje: 'Error al crear transacción', error: error.message });
   }
-}
+}; // CREAR TRANSACCION
+
 
 exports.obtenerTransacciones = async (req, res) => {
   const idUsuario = req.params.idUsuario;
@@ -114,8 +129,7 @@ exports.actualizarTransaccion = async (req, res) => {
       accion: usuario.Transacciones[index].accion,
       metodo_pago: usuario.Transacciones[index].metodo_pago,
       monto: usuario.Transacciones[index].monto,
-      estado: usuario.Transacciones[index].estado,
-      divisa_asociada: usuario.Transacciones[index].divisa_asociada,
+      categoria_asociada: usuario.Transacciones[index].categoria_asociada,
       presupuesto_asociado: usuario.Transacciones[index].presupuesto_asociado
     };
 
@@ -125,8 +139,7 @@ exports.actualizarTransaccion = async (req, res) => {
     usuario.Transacciones[index].accion = datosActualizados.accion ?? usuario.Transacciones[index].accion;
     usuario.Transacciones[index].metodo_pago = datosActualizados.metodo_pago ?? usuario.Transacciones[index].metodo_pago;
     usuario.Transacciones[index].monto = datosActualizados.monto ?? usuario.Transacciones[index].monto;
-    usuario.Transacciones[index].estado = datosActualizados.estado ?? usuario.Transacciones[index].estado;
-    usuario.Transacciones[index].divisa_asociada = datosActualizados.divisa_asociada ?? usuario.Transacciones[index].divisa_asociada;
+    usuario.Transacciones[index].categoria_asociada = datosActualizados.categoria_asociada ?? usuario.Transacciones[index].categoria_asociada;
     usuario.Transacciones[index].presupuesto_asociado = datosActualizados.presupuesto_asociado ?? usuario.Transacciones[index].presupuesto_asociado;
 
 
