@@ -7,13 +7,13 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
 /* Importar rutas */
-const gastoRoutes = require('./routes/gastosRoute');  
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const transaccionRoutes = require('./routes/transRoutes');
 const presRoute = require('./routes/presRoutes');
 const catRoute = require('./routes/catRoutes');
 const divRoute = require('./routes/divRoutes');
 const historialRoutes = require('./routes/historialRoutes');
+const metasAhorroRoute = require('./routes/metaAhorroRoutes');
 
 /* Crear la aplicación de Express */ 
 const app = express();
@@ -30,13 +30,13 @@ conectarDB()
   .catch( (err) => { console.log('Error de conexión:', err);} );
 
 /* Aplicar las rutas */
-app.use('/api/gastos', gastoRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/transacciones', transaccionRoutes);
 app.use('/api/presupuestos', presRoute);
 app.use('/api/categorias', catRoute);
-app.use('/api/divisas', divRoute);
+app.use('/api/metas-ahorro', metasAhorroRoute);
 app.use('/api/historial', historialRoutes);
+
 
 /* Iniciar el servidor */
 app.listen(PORT, () => { console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);});

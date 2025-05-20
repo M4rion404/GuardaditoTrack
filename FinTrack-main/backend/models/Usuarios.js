@@ -2,31 +2,30 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
-// Importar subdocumentos
-const {DivisaSchema} = require('./Divisa');
+const MetasAhorroSchema = require('./MetaAhorro'); 
 const CategoriaSchema = require('./Categoria');
 const PresupuestoSchema = require('./Presupuesto');
 const TransaccionSchema = require('./Transaccion');
 const HistorialSchema = require('./Historial');
 
 const UsuarioSchema = new mongoose.Schema({
+  
   email: { type: String, required: true, unique: true },
   contraseña: { type: String, required: true },
-  nombres: { type: String, required: true },
-  apellido_paterno: { type: String },
-  apellido_materno: { type: String },
-  numero_telefono: { type: String },
-  notificacion: { type: Boolean, default: false },
-  rol: { type: String, enum: ["Cliente", "Administrador"], default: "Cliente" },
-  verificacion: { type: String, enum: ["email", "sms", "configuracion_pendiente"], default: "configuracion_pendiente" },
-
-  tipo_divisa: [DivisaSchema],
-  Categorias: [CategoriaSchema],
-  Presupuestos: [PresupuestoSchema],
-  Transacciones: [TransaccionSchema],
-  Historial: [HistorialSchema]
   
-});
+  nombre_usuario: { type: String, required: true },
+  numero_telefono: { type: String },
+  
+  verificacion: { type: String, enum: ["email", "sms", "configuracion_pendiente"], default: "configuracion_pendiente" },
+  divisa: { type: String, default:"MXN" },
+
+  presupuestos: [PresupuestoSchema],
+  categorias: [CategoriaSchema],
+  transacciones: [TransaccionSchema],
+  metas_ahorro: [MetasAhorroSchema],
+  historial: [HistorialSchema]
+  
+}, {versionKey: false});
 
 // Encriptar contraseña
 UsuarioSchema.pre('save', async function (next) {

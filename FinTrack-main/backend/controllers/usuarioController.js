@@ -14,35 +14,42 @@ const validarEmail = (email) => {
 
 exports.crearUsuario = async (req, res) => {
   
-  const { email, contraseña, nombres, numero_telefono, verificacion } = req.body;
+  // Extraer datos del body
+  const { 
+    email, 
+    contraseña, 
+    nombre_usuario, 
+    numero_telefono, 
+    verificacion 
+  } = req.body;
 
-  /* Validaciones */
-  if (!email || !contraseña || !nombres) { return res.status(400).json({ mensaje: 'Faltan campos obligatorios' });}
-  if (!validarEmail(email)) { return res.status(400).json({ mensaje: 'Email no válido' });}
+  /* VALIDACIONES: Campos vacíos o Email inválido */
+  if (!email || !contraseña || !nombre_usuario)  
+    return res.status(400).json({ mensaje: 'Faltan campos obligatorios' });
+  
+  if (!validarEmail(email)) 
+    return res.status(400).json({ mensaje: 'Email no válido' });
 
+ 
   try {
   
     const usuarioExistente = await Usuario.findOne({ email });
-    if (usuarioExistente) {
+    
+    if (usuarioExistente) 
       return res.status(400).json({ mensaje: 'El usuario ya existe' });
-    }
+    
 
     const nuevoUsuario = new Usuario(req.body);
     await nuevoUsuario.save();
     
-    console.log('Enviando SMS a:', numero_telefono, nombres);
+    // if(verificacion == "sms"){
+    //   await enviarSMS(numero_telefono, nombre_usuario);
+    //   console.log('Enviando SMS a:', numero_telefono, nombre_usuario);
+    // }else {
+    //   await enviarCorreo(email, "Bienvenido a Fintrack" ,nombre_usuario);
+    //   console.log('Enviando Email:', numero_telefono, nombre_usuario);
+    // }
     
-    
-    if(verificacion == "sms"){
-      await enviarSMS(numero_telefono, nombres);
-    }else {
-      await enviarCorreo(email, "Bienvenido a Fintrack" ,nombres);
-    }
-    // await enviarEmail(email, "Registro éxitoso", nombres);  
-    // Si regresan un True se envía a Whatsapp, si no al correo
-    // msj 
-    //   ? await enviarSMS(numero_telefono, nombres) 
-    //   : await enviarEmail(email, nombres);  
     res.status(201).json(nuevoUsuario);
   
   } catch (error) {
@@ -58,12 +65,9 @@ exports.iniciarSesion = async (req, res) => {
 
     const esValida = usuario ? await bcrypt.compare(contraseña, usuario.contraseña) : false;
 
-    if (!usuario || !esValida) {
-      return res.status(401).json({
-        code: '401',
-        mensaje: 'Las credenciales no son válidas, verifique su usuario o contraseña'
-      });
-    }
+    if (!usuario || !esValida)
+      return res.status(401).json({ code: '401', mensaje: 'Las credenciales no son válidas, verifique su usuario o contraseña' });
+    
 
     const token = auth.firmarToken({ id: usuario._id, email: usuario.email });
     auth.crearCookie(res, token);
@@ -72,29 +76,25 @@ exports.iniciarSesion = async (req, res) => {
     const usuarioSinContraseña = usuario.toObject(); // Convierte a objeto plano
     delete usuarioSinContraseña.contraseña;
 
-    res.json({
-      mensaje: 'Inicio de sesión exitoso',
-      usuario: usuarioSinContraseña
-    });
+    res.json({ mensaje: 'Inicio de sesión exitoso', usuario: usuarioSinContraseña });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }; // INICIAR SESION
 
-
 exports.eliminarUsuario = async (req, res) => {
   
-  const id = req.params.idUsuario;
+  const idUsuario = req.params.idUsuario;
 
   try {
-    const usuarioEliminado = await Usuario.findByIdAndDelete(id);
+    const usuarioEliminado = await Usuario.findByIdAndDelete(idUsuario);
 
-    if (!usuarioEliminado) {
+    if (!usuarioEliminado) 
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
-    }
-
+    
     res.status(200).json({ mensaje: 'Usuario eliminado correctamente', usuario: usuarioEliminado });
+    
   } catch (error) {
     res.status(500).json({ mensaje: 'Error al eliminar el usuario', error });
   }
@@ -119,44 +119,22 @@ exports.actualizarPreferencias = async (req, res) => {
   const { idUsuario } = req.params;
   const { tipo_divisa, verificacion } = req.body;
 
-  
-  if (!Array.isArray(tipo_divisa) || tipo_divisa.length === 0) {
-    return res.status(400).json({ mensaje: 'Debes proporcionar al menos una divisa' });
-  }
-
-  const divisasValidas = tipo_divisa.every(div =>
-    div.divisa && div.nombre
-  );
-
-  if (!divisasValidas) {
-    return res.status(400).json({ mensaje: 'Cada divisa debe tener los campos "divisa" y "nombre"' });
-  }
-
-  if (!['sms', 'email'].includes(verificacion)) {
+  if (!['sms', 'email'].includes(verificacion)) 
     return res.status(400).json({ mensaje: 'El tipo de verificación debe ser "sms" o "email"' });
-  }
+  
 
   try {
     const usuario = await Usuario.findById(idUsuario);
-    if (!usuario) {
+    if (!usuario) 
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
-    }
 
-    usuario.tipo_divisa = tipo_divisa;
     usuario.verificacion = verificacion;
-
     await usuario.save();
 
-    res.status(200).json({
-      mensaje: 'Preferencias actualizadas correctamente',
-      usuario
-    });
+    res.status(200).json({ mensaje: 'Preferencias actualizadas correctamente', usuario });
 
   } catch (error) {
-    res.status(500).json({
-      mensaje: 'Error al actualizar preferencias',
-      error: error.message
-    });
+    res.status(500).json({ mensaje: 'Error al actualizar preferencias', error: error.message});
   }
 }; // ACTUALIZAR PREFERENCIAS}
 

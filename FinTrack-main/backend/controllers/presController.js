@@ -7,21 +7,33 @@ exports.crearPresupuesto = async (req, res) => {
 
   try {
     const usuarioExiste = await Usuario.findById(idUsuario);
-    if (!usuarioExiste) {
+    if (!usuarioExiste) 
       return res.status(404).json({ mensaje: "Usuario no encontrado" });
+
+    // Validar suma de límites por categoría
+    const sumaCategorias = nuevoPresupuesto.categorias.reduce((total, categoria) => {
+      return total + Number(categoria.limite);
+    }, 0);
+
+    if (sumaCategorias > Number(nuevoPresupuesto.limite)) {
+      return res.status(400).json({
+        mensaje: `La suma de los límites por categoría (${sumaCategorias}) excede el límite total del presupuesto (${nuevoPresupuesto.limite}).`
+      });
     }
 
-    // Insertar presupuesto en array
-    usuarioExiste.Presupuestos.push(nuevoPresupuesto);
+    usuarioExiste.presupuestos.push(nuevoPresupuesto);
     await usuarioExiste.save();
 
+    // Registrar acción en historial
     await Usuario.findByIdAndUpdate(idUsuario, {
-      $push:{
-        Historial: {
+      $push: {
+        historial: {
           $each: [{
-            accion: 'Creación de Presupuesto',
-            tipo: 'presupuesto',
-            datos_despues: nuevoPresupuesto
+            accion: 'crear',
+            tipo_entidad: 'presupuesto',
+            descripcion: `Creó el presupuesto "${nuevoPresupuesto.titulo}"`,
+            fecha: new Date(),
+            detalles: nuevoPresupuesto
           }],
           $sort: { fecha: -1 },
           $slice: 150
@@ -33,7 +45,7 @@ exports.crearPresupuesto = async (req, res) => {
   } catch (error) {
     res.status(500).json({ mensaje: 'Error al crear presupuesto', error: error.message });
   }
-};
+}; // CREAR PRESUPUESTO
 
 exports.obtenerPresupuestos = async (req, res) => {
   const idUsuario = req.params.idUsuario;
@@ -44,24 +56,24 @@ exports.obtenerPresupuestos = async (req, res) => {
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
     }
 
-    res.status(200).json(usuario.Presupuestos);
+    res.status(200).json(usuario.presupuestos);
   } catch (error) {
     res.status(500).json({ mensaje: 'Error al obtener presupuestos', error: error.message });
   }
-};
+}; // OBTENER PRESUPUESTOS
 
 exports.obtenerPresupuestoPorId = async (req, res) => {
-  
   const { idUsuario, idPresupuesto } = req.params;
 
   try {
-    
-    const usuario = await Usuario.findById(idUsuario); 
+    // Buscar el usuario
+    const usuario = await Usuario.findById(idUsuario);
     if (!usuario) {
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
     }
 
-    const presupuesto = usuario.Presupuestos.id(idPresupuesto);
+    // Buscar el presupuesto dentro del arreglo de presupuestos
+    const presupuesto = usuario.presupuestos.find(p => p._id.toString() === idPresupuesto);
 
     if (!presupuesto) {
       return res.status(404).json({ mensaje: 'Presupuesto no encontrado' });
@@ -72,6 +84,7 @@ exports.obtenerPresupuestoPorId = async (req, res) => {
     res.status(500).json({ mensaje: 'Error al buscar presupuesto', error: error.message });
   }
 };
+ // OBTENER PRESUPUESTO
 
 exports.actualizarPresupuesto = async (req, res) => {
   const { idUsuario, idPresupuesto } = req.params;
@@ -83,54 +96,65 @@ exports.actualizarPresupuesto = async (req, res) => {
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
     }
 
-    const index = usuario.Presupuestos.findIndex(p => p._id.toString() === idPresupuesto);
-
+    const index = usuario.presupuestos.findIndex(p => p._id.toString() === idPresupuesto);
     if (index === -1) {
       return res.status(404).json({ mensaje: 'Presupuesto no encontrado' });
     }
 
     const datosAntes = {
-      titulo: usuario.Presupuestos[index].titulo,
-      descripcion: usuario.Presupuestos[index].descripcion,
-      meta_ahorro: usuario.Presupuestos[index].meta_ahorro,
-      monto_inicial: usuario.Presupuestos[index].monto_inicial,
-      dinero_ahorrado: usuario.Presupuestos[index].dinero_ahorrado,
-      dinero_gastado: usuario.Presupuestos[index].dinero_gastado,
-      categoria_asociada: usuario.Presupuestos[index].categoria_asociada,
-      divisa_asociada: usuario.Presupuestos[index].divisa_asociada,
-    }
+      titulo: usuario.presupuestos[index].titulo,
+      descripcion: usuario.presupuestos[index].descripcion,
+      limite: usuario.presupuestos[index].limite,
+      dinero_disponible: usuario.presupuestos[index].dinero_disponible,
+      periodo: usuario.presupuestos[index].periodo,
+      fecha_creacion: usuario.presupuestos[index].fecha_creacion,
+      categorias: usuario.presupuestos[index].categorias,
+    };
 
-    // Actualización condicional usando el operador nullish coalescing (??)
-    usuario.Presupuestos[index].titulo = datosActualizados.titulo ?? usuario.Presupuestos[index].titulo;
-    usuario.Presupuestos[index].descripcion = datosActualizados.descripcion ?? usuario.Presupuestos[index].descripcion;
-    usuario.Presupuestos[index].meta_ahorro = datosActualizados.meta_ahorro ?? usuario.Presupuestos[index].meta_ahorro;
-    usuario.Presupuestos[index].monto_inicial = datosActualizados.monto_inicial ?? usuario.Presupuestos[index].monto_inicial;
-    usuario.Presupuestos[index].dinero_ahorrado = datosActualizados.dinero_ahorrado ?? usuario.Presupuestos[index].dinero_ahorrado;
-    usuario.Presupuestos[index].dinero_gastado = datosActualizados.dinero_gastado ?? usuario.Presupuestos[index].dinero_gastado;
-    usuario.Presupuestos[index].categoria_asociada = datosActualizados.categoria_asociada ?? usuario.Presupuestos[index].categoria_asociada;
-    usuario.Presupuestos[index].divisa_asociada = datosActualizados.divisa_asociada ?? usuario.Presupuestos[index].divisa_asociada;
-    
+    usuario.presupuestos[index].titulo = datosActualizados.titulo ?? usuario.presupuestos[index].titulo;
+    usuario.presupuestos[index].descripcion = datosActualizados.descripcion ?? usuario.presupuestos[index].descripcion;
+    usuario.presupuestos[index].limite = datosActualizados.limite ?? usuario.presupuestos[index].limite;
+    usuario.presupuestos[index].dinero_disponible = datosActualizados.dinero_disponible ?? usuario.presupuestos[index].dinero_disponible;
+    usuario.presupuestos[index].periodo = datosActualizados.periodo ?? usuario.presupuestos[index].periodo;
+    usuario.presupuestos[index].fecha_creacion = datosActualizados.fecha_creacion ?? usuario.presupuestos[index].fecha_creacion;
+    usuario.presupuestos[index].categorias = datosActualizados.categorias ?? usuario.presupuestos[index].categorias;
+
+    // Limpiar historial para evitar errores de validación
+    usuario.historial = usuario.historial.filter(item =>
+      item.tipo &&
+      ['presupuesto', 'transaccion', 'categoria', 'meta_ahorro'].includes(item.tipo)
+    );
+
+    // Agregar entrada al historial
+    usuario.historial.push({
+      accion: 'Actualización de Presupuesto',
+      tipo: 'presupuesto',
+      datos_antes: datosAntes,
+      datos_despues: usuario.presupuestos[index],
+      fecha: new Date()
+    });
+
+    // Limitar historial a los últimos 150
+    usuario.historial = usuario.historial
+      .sort((a, b) => b.fecha - a.fecha)
+      .slice(0, 150);
 
     await usuario.save();
 
-    await Usuario.findByIdAndUpdate(idUsuario, {
-      $push: {
-        Historial: {
-          accion: 'Actualizacion de Presupuesto',
-          tipo: 'presupuesto',
-          datos_antes: datosAntes,
-          datos_despues: usuario.Presupuestos[index]
-        },
-      },
+    res.status(200).json({
+      mensaje: 'Presupuesto actualizado correctamente',
+      presupuesto: usuario.presupuestos[index]
     });
-
-    res.status(200).json({ mensaje: 'Presupuesto actualizado correctamente', presupuesto: usuario.Presupuestos[index] });
   } catch (error) {
-    res.status(500).json({ mensaje: 'Error al actualizar presupuesto', error: error.message });
+    res.status(500).json({
+      mensaje: 'Error al actualizar presupuesto',
+      error: error.message
+    });
   }
-};
+}; // ACTUALIZAR PRESUPUESTO
 
 exports.eliminarPresupuesto = async (req, res) => {
+  
   const { idUsuario, idPresupuesto } = req.params;
 
   try {
@@ -139,33 +163,51 @@ exports.eliminarPresupuesto = async (req, res) => {
       return res.status(404).json({ mensaje: 'Usuario no encontrado' });
     }
 
-    //Buscar el presupuesto antes de eliminarlo
-    const presupuestoEliminado = usuario.Presupuestos.find(
+    // Buscar el presupuesto antes de eliminarlo
+    const presupuestoEliminado = usuario.presupuestos.find(
       p => p._id.toString() === idPresupuesto
     );
 
-    const presupuestosAntes = usuario.Presupuestos.length;
-    usuario.Presupuestos = usuario.Presupuestos.filter(p => p._id.toString() !== idPresupuesto);
+    const presupuestosAntes = usuario.presupuestos.length;
+    usuario.presupuestos = usuario.presupuestos.filter(
+      p => p._id.toString() !== idPresupuesto
+    );
 
-    if (usuario.Presupuestos.length === presupuestosAntes) {
+    if (usuario.presupuestos.length === presupuestosAntes) {
       return res.status(404).json({ mensaje: 'Presupuesto no encontrado' });
     }
 
+    // Limpiar historial para evitar errores de validación
+    usuario.historial = usuario.historial.filter(item =>
+      item.tipo &&
+      ['presupuesto', 'transaccion', 'categoria', 'meta_ahorro'].includes(item.tipo)
+    );
+
+    // Agregar entrada al historial
+    usuario.historial.push({
+      accion: 'Eliminacion de Presupuesto',
+      tipo: 'presupuesto',
+      datos_antes: presupuestoEliminado,
+      datos_despues: {},
+      fecha: new Date()
+    });
+
+    // Ordenar historial por fecha descendente y limitar a los últimos 150
+    usuario.historial = usuario.historial
+      .sort((a, b) => b.fecha - a.fecha)
+      .slice(0, 150);
+
+    // Guardar cambios en usuario
     await usuario.save();
 
-    await Usuario.findByIdAndUpdate(idUsuario, {
-          $push: {
-            Historial: {
-              accion: 'Eliminacion de Presupuesto',
-              tipo: 'presupuesto',
-              datos_antes: presupuestoEliminado,
-              datos_despues: {}, // Datos después de la eliminación (vacío)
-            },
-          },
-        });
-
-    res.status(200).json({ mensaje: 'Presupuesto eliminado correctamente' });
+    res.status(200).json({
+      mensaje: 'Presupuesto eliminado correctamente',
+      presupuesto_eliminado: presupuestoEliminado
+    });
   } catch (error) {
-    res.status(500).json({ mensaje: 'Error al eliminar presupuesto', error: error.message });
+    res.status(500).json({
+      mensaje: 'Error al eliminar presupuesto',
+      error: error.message
+    });
   }
-};
+};// ELIMINAR PRESUPUESTO

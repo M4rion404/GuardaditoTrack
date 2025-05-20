@@ -1,18 +1,39 @@
 const mongoose = require('mongoose');
 
+// Primero define el subesquema
+const CategoriaInternaSchema = new mongoose.Schema({
+  _id: mongoose.Schema.Types.ObjectId,
+  titulo: String,
+  descripcion: String
+}, { _id: false });
+
+// Luego define el esquema principal
 const PresupuestoSchema = new mongoose.Schema({
+
   titulo: { type: String, required: true },
   descripcion: { type: String },
   
-  meta_ahorro: { type: Number, required: true, min: 0 },
-  monto_inicial: { type: Number, default: 0, min: 0 },
+  limite: { type: Number, required: true, min: 0 },
+  dinero_disponible: { type: Number }, 
+  periodo: { type: String, enum: ["Mensual", "Semanal", "Anual", "Quincenal"] },
 
-  dinero_ahorrado: { type: Number, default: 0, min: 0 },
-  dinero_gastado: { type: Number, default: 0, min: 0 },
-  
-  categoria_asociada: { type: mongoose.Schema.Types.ObjectId, ref: 'Categoria' },
-  divisa_asociada: { type: mongoose.Schema.Types.ObjectId, ref: 'Divisa' },
   fecha_creacion: { type: Date, default: Date.now },
+
+  categorias : [
+    {
+      categoria: { type: CategoriaInternaSchema, required: true },
+      limite: { type: Number, required: true, min: 0 }
+    }
+  ]
+
+});
+
+// Middleware para inicializar dinero_disponible
+PresupuestoSchema.pre('save', function (next) {
+  if (this.dinero_disponible == null) {
+    this.dinero_disponible = this.limite;
+  }
+  next();
 });
 
 module.exports = PresupuestoSchema;

@@ -1,12 +1,13 @@
 const mongoose = require('mongoose');
 
 const historialSchema = new mongoose.Schema({
-  tipo: { type: String, enum: ['presupuesto', 'transaccion', 'categoria'], required: true },
-  accion: { type: String, required: true },
+  
   fecha: { type: Date, default: Date.now },
+  tipo: { type: String, enum: ['presupuesto', 'transaccion', 'categoria', 'meta_ahorro'], required: true },
+  accion: { type: String, required: true },
   datos_antes: { type: Object, default: {} },
   datos_despues: { type: Object, default: {} }
+
 });
 
-//module.exports = mongoose.model('Historial', historialSchema);
 module.exports = historialSchema;
