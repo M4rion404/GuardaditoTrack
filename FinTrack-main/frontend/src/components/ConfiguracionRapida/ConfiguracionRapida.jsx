@@ -21,7 +21,7 @@ const ConfiguracionRapida = () => {
 
 
   // Chambea cuando se detecta una actualización en divisa o mensaje (Hay un useState por)
-  useEffect(() => {
+  useEffect(() => {   
     console.log("Divisas actualizadas correctamente:", divisas);
   }, [divisas]);
 

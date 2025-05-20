@@ -1,0 +1,71 @@
+.barra-navegacion {
+    
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: linear-gradient(90deg, #1a1a2e, #21325f);
+  color: var(--color-blanco);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.barra-navegacion-izquierda {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.logo-fintrack {
+  height: 70px;
+  object-fit: contain;
+}
+
+.barra-navegacion-lista {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+  padding: 0;
+  margin: 0;
+}
+
+.barra-navegacion-lista li a {
+  position: relative;
+  color: var(--color-blanco);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.barra-navegacion-lista li a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0%;
+  height: 2px;
+  background-color: var(--color-blanco);
+  transition: width 0.3s ease;
+}
+
+.barra-navegacion-lista li a:hover {
+  color: var(--color-celeste);
+}
+
+.barra-navegacion-lista li a:hover::after {
+  width: 100%;
+}
+
+.barra-navegacion-derecha {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.icono-usuario {
+  font-size: 1.5rem;
+}

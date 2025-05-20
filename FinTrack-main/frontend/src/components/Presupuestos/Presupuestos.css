@@ -15,6 +15,10 @@
   margin: 0;         /* quitar margen automático */
 }
 
+.brine-header {
+  position: relative;
+  z-index: 10;
+}
 
 /* Flexbox adaptable con espacio entre elementos y wrapping */
 .acciones-superiores {

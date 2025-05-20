@@ -83,10 +83,10 @@ const Inicio = () => {
               <Link to="/transacciones">Transacciones</Link>
             </li>
             <li>
-              <Link to="/metasH">Metas y ahorros</Link>
+              <Link to="/metasAhorro">Metas y ahorros</Link>
             </li>
             <li>
-              <Link to="/saludF">Salud Financiera</Link>
+              <Link to="/saludFinanciera">Salud Financiera</Link>
             </li>
             <li>
               <Link to="/categorias">Categorías</Link>
@@ -117,12 +117,6 @@ const Inicio = () => {
             y gastos con facilidad.
           </p>
           <div className="flex flex-col md:flex-row justify-center gap-4">
-            <button className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 rounded-lg font-bold text-lg">
-              Comenzar ahora
-            </button>
-            <button className="bg-transparent border-2 border-white hover:bg-blue-700 px-8 py-3 rounded-lg font-bold text-lg">
-              Ver demostración
-            </button>
           </div>
         </div>
       </section>
@@ -190,11 +184,10 @@ const Inicio = () => {
                 1
               </div>
               <h3 className="text-lg font-bold mb-2 text-gray-800">
-                Conecta tus cuentas
+                Gestiona tus Metas financieras 
               </h3>
               <p className="text-gray-600">
-                Integra tus cuentas bancarias y tarjetas para un seguimiento
-                automático.
+                Al agregar una meta podras ahorrar una vez que tus presupuesto te lo permita y alcanzar tu objetivo con una gestión optima.
               </p>
             </div>
 
@@ -206,7 +199,7 @@ const Inicio = () => {
                 Categoriza transacciones
               </h3>
               <p className="text-gray-600">
-                Organiza automáticamente tus gastos e ingresos por categorías
+                Organiza automáticamente tus movimientos por categorías
                 personalizables.
               </p>
             </div>
@@ -283,11 +276,11 @@ const Inicio = () => {
               </div>
               <div>
                 <h3 className="text-xl font-bold mb-2 text-gray-800">
-                  Control de deudas
+                  Control de Presupuestos
                 </h3>
                 <p className="text-gray-600">
-                  Gestiona tus préstamos y tarjetas de crédito de manera
-                  eficiente para reducir intereses y eliminar deudas.
+                  Gestiona tus presupuestos de manera
+                  eficiente para reducir tus gastos inecesarios.
                 </p>
               </div>
             </div>

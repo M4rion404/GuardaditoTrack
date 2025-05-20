@@ -1,0 +1,81 @@
+{
+	"Usuarios": {
+
+		"id_usuario": "ID",
+		"email": "string",
+		"contraseña": "BCrypt",
+		"nombre_usuario": "string",
+		"numero_telefono": "string",
+		"verificacion": "enum('sms', 'email')",
+		"divisa": "MXN",
+
+		"categorias": [
+			{
+				"Id_Categoria": "ID",
+				"titulo": "string",
+				"descripcion": "string"
+			}
+		],
+
+		"presupuestos": [
+			{
+				"id_presupuesto": "UUID",
+				"titulo": "String",
+				"descripcion": "String",
+				"limite": "decimal", 
+				"periodo": "enum('mensual', 'semanal', 'anual')",
+			
+				"fecha": "datetime",
+
+				"categorias": [
+					{
+						"categoria_asociada": "ID",
+						"limite": "numero"
+					}
+				]
+			}
+		],
+
+
+		"transacciones": [
+			{
+				"id_transaccion": "UUID",
+				"presupuesto_asociado":"UUID",
+
+				"titulo": "string",
+				"descripcion": "string",
+
+				"monto": "decimal",
+				"fecha": "datetime",
+				"categoria": "string",
+				"accion": "enum('ingreso', 'retiro')",
+				"metodo_pago": "enum('efectivo', 'tarjeta')"
+			}
+		],
+
+		"metas_ahorro": [
+			{
+				"id_meta": "UUID",
+				"nombre": "string",
+				"objetivo": "decimal",
+				"fecha_limite": "datetime",
+				"estado": "enum('ahorrando', 'completada')",
+				"progreso_actual": "decimal"
+			}
+		],
+
+		"historial": [
+			{
+				"id_movimiento": "UUID",
+				"fecha": "datetime",
+				"tipo": "enum('presupuesto', 'categoria', 'transaccion', 'meta_ahorro')",
+				"accion": "string",
+				"descripcion": "string",
+				"detalles": {
+					
+				}
+			}
+		]
+
+	}
+} 

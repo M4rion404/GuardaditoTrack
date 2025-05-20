@@ -12,11 +12,11 @@ const ColorHoverEffect = () => {
   
   // Colores asociados a cada elemento del menú - Usando pares de colores para degradados
   const menuGradients = {
-    'Presupuestos': { from: '#08ba49', to: '#378ce6' },        // Azul degradado
-    'Transacciones': { from: '#08ba49', via: '#378ce6', to: '#9564ce' },        // Verde degradado
-    'Metas y ahorros': { from: '#3a9dfc', to: '#b43aa8' },     // Morado degradado
-    'Salud Financiera': { from: '#4e87e7', to: '#5501a0' },    // Naranja degradado
-    'Categorías': { from: '#32a6cd', to: '#a006cb' },          // Azul oscuro degradado
+    'Presupuestos': { from: ' #08ba49', to: ' #378ce6' },        // Azul degradado
+    'Transacciones': { from: ' #08ba49', via: ' #378ce6', to: ' #9564ce' },        // Verde degradado
+    'Metas y ahorros': { from: ' #3a9dfc', to: ' #b43aa8' },     // Morado degradado
+    'Salud Financiera': { from: ' #4e87e7', to: ' #5501a0' },    // Naranja degradado
+    'Categorías': { from: ' #32a6cd', to: ' #a006cb' },          // Azul oscuro degradado
     'default': { from: 'var(--accent-color, #3498db)', to: 'var(--primary-color, #2980b9)' } // Degradado por defecto
   };
 

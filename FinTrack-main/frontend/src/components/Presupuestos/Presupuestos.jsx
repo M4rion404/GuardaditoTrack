@@ -299,23 +299,23 @@ const Presupuestos = () => {
   }, []);
 
   useEffect(() => {
-  const token = localStorage.getItem("token");
-  const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
 
-  const fetchDivisas = async () => {
-    try {
-      const res = await axios.get(
-        `http://localhost:3000/api/divisas/${userId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setDivisas(res.data); // aquí tú decides si usar setTipoDivisa, setDivisasUsuario, etc.
-    } catch (error) {
-      console.error("Error al cargar divisas:", error);
-    }
-  };
+    const fetchDivisas = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:3000/api/divisas/${userId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setDivisas(res.data); // aquí tú decides si usar setTipoDivisa, setDivisasUsuario, etc.
+      } catch (error) {
+        console.error("Error al cargar divisas:", error);
+      }
+    };
 
-  fetchDivisas();
-}, []);
+    fetchDivisas();
+  }, []);
 
   // Fetch presupuestos inicial
   useEffect(() => {
@@ -485,7 +485,7 @@ const Presupuestos = () => {
     setLoading(false);
   };
 
-// Filtrar categorias y divisas usados en presupuestos
+  // Filtrar categorias y divisas usados en presupuestos
   const categoriasUsadas = categorias.filter((c) =>
     presupuestos.some((p) => p.categoria_asociada === c._id)
   );
@@ -496,21 +496,21 @@ const Presupuestos = () => {
 
 
   const presupuestosFiltrados = presupuestos.filter((p) => {
-  const coincideCategoria = filtroCategoria
-    ? p.categoria_asociada === filtroCategoria
-    : true;
+    const coincideCategoria = filtroCategoria
+      ? p.categoria_asociada === filtroCategoria
+      : true;
 
-  const coincideDivisa = filtroDivisa
-    ? p.divisa_asociada === filtroDivisa
-    : true;
+    const coincideDivisa = filtroDivisa
+      ? p.divisa_asociada === filtroDivisa
+      : true;
 
-  const coincideBusqueda = busqueda
-    ? p.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
+    const coincideBusqueda = busqueda
+      ? p.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
       p.descripcion?.toLowerCase().includes(busqueda.toLowerCase())
-    : true;
+      : true;
 
-  return coincideCategoria && coincideDivisa && coincideBusqueda;
-});
+    return coincideCategoria && coincideDivisa && coincideBusqueda;
+  });
 
   // Paginación
   const totalPaginas = Math.ceil(
@@ -539,7 +539,7 @@ const Presupuestos = () => {
           Math.max(
             0,
             Number(presupuestoSeleccionado?.meta_ahorro || 0) -
-              Number(presupuestoSeleccionado?.dinero_ahorrado || 0)
+            Number(presupuestoSeleccionado?.dinero_ahorrado || 0)
           ),
         ],
         backgroundColor: ["#4caf50", "#f44336"],
@@ -590,7 +590,10 @@ const Presupuestos = () => {
     <div className="presupuestos-tabla-container">
       <div>
         <div className="brine-header">
-          <button onClick={() => (window.location.href = "/home")}>
+          <button
+            onClick={() => (window.location.href = "/home")}
+            style={{ zIndex: 9999, position: "relative", pointerEvents: "auto", cursor: "pointer" }}
+          >
             &larr; Regresar
           </button>
           <h1>
@@ -851,16 +854,16 @@ const Presupuestos = () => {
                     <strong>Categoría:</strong>{" "}
                     {presupuestoSeleccionado?.categoria_asociada
                       ? obtenerNombreCategoria(
-                          presupuestoSeleccionado.categoria_asociada
-                        )
+                        presupuestoSeleccionado.categoria_asociada
+                      )
                       : "No asignada"}
                   </p>
                   <p>
                     <strong>Divisa:</strong>{" "}
                     {presupuestoSeleccionado?.divisa_asociada
                       ? obtenerNombreDivisa(
-                          presupuestoSeleccionado.divisa_asociada
-                        )
+                        presupuestoSeleccionado.divisa_asociada
+                      )
                       : "No asignada"}
                   </p>
                   <div style={{ display: "flex", justifyContent: "center" }}>

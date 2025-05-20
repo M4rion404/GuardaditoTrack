@@ -1,0 +1,551 @@
+/* SaludFinanciera.css */
+
+/* Variables globales */
+:root {
+  --primary-color: #0066cc;
+  --primary-light: #e6f2ff;
+  --primary-dark: #004d99;
+  --secondary-color: #00cc99;
+  --secondary-light: #e6fff9;
+  /* --accent-color: #ff9933; */
+  /* --neutral-dark: #333333; */
+  --neutral-medium: #666666;
+  --neutral-light: #f5f5f5;
+  --white: #ffffff;
+  --error-color: #e74c3c;
+  --warning-color: #f39c12;
+  --success-color: #2ecc71;
+  --info-color: #3498db;
+  --font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --border-radius: 8px;
+  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+}
+
+/* Estilos generales */
+.financial-health-container {
+  font-family: var(--font-family);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: var(--neutral-dark);
+  background-color: var(--white);
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  font-weight: 600;
+  color: var(--neutral-dark);
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-family);
+  font-weight: 500;
+  border: none;
+  transition: var(--transition);
+}
+
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+ul {
+  padding-left: 1.5rem;
+}
+
+li {
+  margin-bottom: 0.5rem;
+}
+
+/* Header */
+.financial-health-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.financial-health-header h1 {
+  color: var(--primary-color);
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: var(--neutral-medium);
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+/* Tabs */
+.financial-health-tabs {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.tab-button {
+  background-color: var(--neutral-light);
+  color: var(--neutral-medium);
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.tab-button:hover {
+  background-color: #e9e9e9;
+  transform: translateY(-2px);
+}
+
+.tab-button.active {
+  background-color: var(--primary-color);
+  color: var(--white);
+}
+
+/* Content Section */
+.content-section {
+  background-color: var(--white);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  box-shadow: var(--box-shadow);
+  margin-bottom: 2rem;
+}
+
+.content-section h2 {
+  color: var(--primary-color);
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--primary-light);
+}
+
+/* Content with image layout */
+.content-with-image {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  align-items: center;
+}
+
+.text-content {
+  flex: 1;
+  min-width: 300px;
+}
+
+.image-container {
+  flex: 1;
+  min-width: 300px;
+}
+
+.placeholder-image {
+  background-color: var(--primary-light);
+  border-radius: var(--border-radius);
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-color);
+  font-style: italic;
+}
+
+/* Pillars */
+.pillar-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.pillar-card {
+  background-color: var(--white);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: var(--box-shadow);
+  text-align: center;
+  transition: var(--transition);
+  border: 1px solid #eaeaea;
+}
+
+.pillar-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.pillar-icon {
+  background-color: var(--primary-color);
+  color: var(--white);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+.pillar-card h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.pillar-description {
+  background-color: var(--primary-light);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--primary-color);
+}
+
+/* Tips */
+.tips-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.tip-card {
+  background-color: var(--white);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: var(--box-shadow);
+  border-top: 4px solid var(--secondary-color);
+  transition: var(--transition);
+}
+
+.tip-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tip-card h3 {
+  color: var(--secondary-color);
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+/* Quiz */
+.financial-quiz {
+  background-color: var(--neutral-light);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+}
+
+.quiz-question {
+  margin-bottom: 2rem;
+}
+
+.quiz-question p {
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.quiz-options label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.8rem;
+  background-color: var(--white);
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.quiz-options label:hover {
+  background-color: #f0f0f0;
+}
+
+.quiz-options input[type="radio"] {
+  width: 18px;
+  height: 18px;
+}
+
+.quiz-submit-btn, .quiz-reset-btn {
+  background-color: var(--primary-color);
+  color: var(--white);
+  padding: 1rem 2rem;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 500;
+  margin-top: 1rem;
+  width: 100%;
+  transition: var(--transition);
+}
+
+.quiz-submit-btn:hover, .quiz-reset-btn:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+/* Quiz Results */
+.quiz-results {
+  background-color: var(--neutral-light);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  text-align: center;
+}
+
+.quiz-results h3 {
+  margin-bottom: 2rem;
+  color: var(--primary-color);
+}
+
+.score-meter {
+  margin: 2rem 0;
+}
+
+.score-gauge {
+  height: 20px;
+  background-color: #e0e0e0;
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+}
+
+.score-indicator {
+  height: 100%;
+  background-color: var(--primary-color);
+  border-radius: 10px;
+  transition: width 1s ease-in-out;
+}
+
+.score-label {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.score-interpretation {
+  margin-top: 2rem;
+}
+
+.score-category {
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 1.5rem;
+}
+
+.score-category h4 {
+  margin-bottom: 0.5rem;
+}
+
+.excellent {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.good {
+  background-color: var(--info-color);
+  color: white;
+}
+
+.moderate {
+  background-color: var(--warning-color);
+  color: white;
+}
+
+.attention {
+  background-color: var(--error-color);
+  color: white;
+}
+
+/* Tools */
+.tools-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.tool-card {
+  background-color: var(--neutral-light);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  text-align: center;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+}
+
+.tool-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--box-shadow);
+}
+
+.tool-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1rem;
+  background-color: var(--primary-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.budget-icon::before {
+  content: "💰";
+  font-size: 1.8rem;
+}
+
+.calculator-icon::before {
+  content: "🧮";
+  font-size: 1.8rem;
+}
+
+.debt-icon::before {
+  content: "📉";
+  font-size: 1.8rem;
+}
+
+.goals-icon::before {
+  content: "🎯";
+  font-size: 1.8rem;
+}
+
+.tool-card h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.tool-card p {
+  flex-grow: 1;
+  margin-bottom: 1.5rem;
+}
+
+.tool-btn {
+  background-color: var(--secondary-color);
+  color: var(--white);
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.tool-btn:hover {
+  background-color: #00b386;
+  transform: translateY(-2px);
+}
+
+.tools-additional {
+  margin-top: 3rem;
+  background-color: var(--primary-light);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+}
+
+.tools-additional h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.resources-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.resource-link {
+  display: block;
+  padding: 0.8rem;
+  background-color: var(--white);
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.resource-link:hover {
+  background-color: #f0f0f0;
+  transform: translateX(5px);
+  text-decoration: none;
+}
+
+/* Footer */
+.financial-health-footer {
+  text-align: center;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eaeaea;
+}
+
+.contact-btn {
+  background-color: var(--accent-color);
+  color: var(--white);
+  padding: 0.8rem 2rem;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  margin-top: 1rem;
+  transition: var(--transition);
+}
+
+.contact-btn:hover {
+  background-color: #e67300;
+  transform: translateY(-2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .financial-health-container {
+    padding: 1rem;
+  }
+  
+  .financial-health-header h1 {
+    font-size: 2rem;
+  }
+  
+  .content-section {
+    padding: 1.5rem;
+  }
+  
+  .tab-button {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .pillar-container,
+  .tips-container,
+  .tools-container {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .financial-health-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+  }
+  
+  .content-section h2 {
+    font-size: 1.5rem;
+  }
+  
+  .tab-button {
+    flex: 1 0 40%;
+    font-size: 0.8rem;
+    text-align: center;
+  }
+}
