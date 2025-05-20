@@ -267,10 +267,10 @@
 /* Contenido del modal */
 .modal-content {
   background: #fff;
-  padding: 1.5rem 2rem;        /* Menos padding */
+  padding: 1.5rem 2rem;
   border-radius: 10px;
-  max-width: 90vw;
-  width: 480px;               /* Más pequeño */
+  max-width: 95vw;
+  width: 700px; /* <-- Aumentamos el ancho fijo */
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
   position: relative;
   animation: fadeIn 0.25s ease-out forwards;

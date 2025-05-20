@@ -4,7 +4,11 @@ import Swal from "sweetalert2";
 import "./Presupuestos.css";
 import PresupuestoResumen from "./PresupuestoResumen";
 import { Doughnut } from "react-chartjs-2";
-import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
+
+import { Chart, ArcElement, Tooltip, Legend, CategoryScale,
+  LinearScale,
+  BarElement,
+  Title } from "chart.js";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { FaFilePdf, FaEye } from "react-icons/fa";
@@ -17,8 +21,12 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import { FaTags } from "react-icons/fa";
+import { Bar } from "react-chartjs-2";
 
-Chart.register(ArcElement, Tooltip, Legend);
+Chart.register(ArcElement, Tooltip, Legend, CategoryScale,
+  LinearScale,
+  BarElement,
+  Title);
 
 // Iconos personalizados
 const IconCrear = () => (
@@ -65,42 +73,24 @@ const IconVer = () => (
 const initialForm = {
   titulo: "",
   descripcion: "",
-  meta_ahorro: "",
-  monto_inicial: "",
-  dinero_ahorrado: "",
-  dinero_gastado: "",
-  categoria_asociada: "",
-  divisa_asociada: "",
+  limite: 0,
+  dinero_disponible: 0,
+  periodo: "",
+  categorias: [], // [{ categoria: <id>, limite: "" }]
 };
 
 const limpiarDatos = (data) => ({
   ...data,
   categoria_asociada: data.categoria_asociada || null,
-  divisa_asociada: data.divisa_asociada || null,
 });
 
 const validarCampos = (data) => {
-  const meta_ahorro = Number(data.meta_ahorro);
-  const monto_inicial = Number(data.monto_inicial);
-  const dinero_ahorrado = Number(data.dinero_ahorrado);
-  const dinero_gastado = Number(data.dinero_gastado);
+  const limite = Number(data.limite);
+  const dinero_disponible = Number(data.dinero_disponible);
 
-  if (isNaN(meta_ahorro) || meta_ahorro < 0)
-    return "La meta de ahorro debe ser un número mayor o igual a 0.";
-  if (data.monto_inicial !== "" && (isNaN(monto_inicial) || monto_inicial < 0))
-    return "El monto inicial debe ser un número mayor o igual a 0.";
-  if (
-    data.dinero_ahorrado !== "" &&
-    (isNaN(dinero_ahorrado) || dinero_ahorrado < 0)
-  )
-    return "El dinero ahorrado debe ser un número mayor o igual a 0.";
-  if (
-    data.dinero_gastado !== "" &&
-    (isNaN(dinero_gastado) || dinero_gastado < 0)
-  )
-    return "El dinero gastado debe ser un número mayor o igual a 0.";
-  if (monto_inicial && dinero_ahorrado + dinero_gastado > monto_inicial)
-    return "La suma de dinero ahorrado y gastado no puede ser mayor que el monto inicial.";
+  if (isNaN(limite) || limite < 0)
+    return "El limite de presupuesto debe ser un número mayor o igual a 0.";
+ 
   return null;
 };
 
@@ -112,8 +102,10 @@ function PresupuestoForm({
   loading,
   error,
   categorias,
-  divisas,
 }) {
+
+
+  
   return (
     <form onSubmit={onSubmit} className="presupuestos-form">
       <div className="form-group">
@@ -141,96 +133,117 @@ function PresupuestoForm({
         ></textarea>
       </div>
       <div className="form-group">
-        <label htmlFor="meta_ahorro">Meta de Ahorro:</label>
+        <label htmlFor="limite">Limite del presupuesto:</label>
         <input
           type="number"
-          id="meta_ahorro"
-          name="meta_ahorro"
-          value={formData.meta_ahorro}
+          id="limite"
+          name="limite"
+          value={formData.limite}
           onChange={(e) =>
-            setFormData((prev) => ({ ...prev, meta_ahorro: e.target.value }))
+            setFormData((prev) => ({ ...prev, limite: e.target.value }))
           }
           required
         />
       </div>
       <div className="form-group">
-        <label htmlFor="monto_inicial">Monto Inicial:</label>
-        <input
-          type="number"
-          id="monto_inicial"
-          name="monto_inicial"
-          value={formData.monto_inicial}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, monto_inicial: e.target.value }))
-          }
-        />
-      </div>
-      <div className="form-group">
-        <label htmlFor="dinero_ahorrado">Dinero Ahorrado:</label>
-        <input
-          type="number"
-          id="dinero_ahorrado"
-          name="dinero_ahorrado"
-          value={formData.dinero_ahorrado}
-          onChange={(e) =>
-            setFormData((prev) => ({
-              ...prev,
-              dinero_ahorrado: e.target.value,
-            }))
-          }
-        />
-      </div>
-      <div className="form-group">
-        <label htmlFor="dinero_gastado">Dinero Gastado:</label>
-        <input
-          type="number"
-          id="dinero_gastado"
-          name="dinero_gastado"
-          value={formData.dinero_gastado}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, dinero_gastado: e.target.value }))
-          }
-        />
-      </div>
-      <div className="form-group">
-        <label htmlFor="categoria_asociada">Categoría:</label>
+        <label htmlFor="periodo">Periodo:</label>
         <select
-          id="categoria_asociada"
-          name="categoria_asociada"
-          value={formData.categoria_asociada}
+          id="periodo"
+          name="periodo"
+          value={formData.periodo}
           onChange={(e) =>
-            setFormData((prev) => ({
-              ...prev,
-              categoria_asociada: e.target.value || "",
-            }))
+            setFormData((prev) => ({ ...prev, periodo: e.target.value }))
           }
+          required
         >
-          <option value="">Seleccionar categoría</option>
-          {categorias.map((cat) => (
-            <option key={cat._id} value={cat._id}>
-              {cat.Titulo}
-            </option>
-          ))}
+          <option value="">Seleccionar periodo</option>
+          <option value="Mensual">Mensual</option>
+          <option value="Semanal">Semanal</option>
+          <option value="Anual">Anual</option>
+          <option value="Quincenal">Quincenal</option>
         </select>
       </div>
-      <select
-        id="divisa_asociada"
-        name="divisa_asociada"
-        value={formData.divisa_asociada}
-        onChange={(e) =>
-          setFormData((prev) => ({
-            ...prev,
-            divisa_asociada: e.target.value || "",
-          }))
-        }
-      >
-        <option value="">Seleccionar divisa</option>
-        {divisas.map((divisa) => (
-          <option key={divisa._id} value={divisa._id}>
-            {divisa.divisa} - {divisa.nombre}
-          </option>
+    
+      <div className="form-group">
+        <label>Categorías y límites:</label>
+        {formData.categorias.map((cat, index) => (
+          <div key={index} style={{ display: 'flex', gap: '20px', marginBottom: '0.5rem', alignItems: 'center' }}>
+            <select
+              value={cat.categoria?._id || ""}
+              onChange={(e) => {
+                const nuevaCategoria = categorias.find(c => c._id === e.target.value);
+                const nuevasCategorias = [...formData.categorias];
+                nuevasCategorias[index].categoria = nuevaCategoria;
+                setFormData({ ...formData, categorias: nuevasCategorias });
+              }}
+              style={{ flex: 2 }}
+            >
+              <option value="">Seleccionar categoría</option>
+              {categorias.map((categoria) => (
+                <option key={categoria._id} value={categoria._id}>
+                  {categoria.titulo}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="number"
+              placeholder="Límite"
+              min={0}
+              value={cat.limite}
+              onChange={(e) => {
+                const nuevasCategorias = [...formData.categorias];
+                nuevasCategorias[index].limite = Number(e.target.value);
+                setFormData({ ...formData, categorias: nuevasCategorias });
+              }}
+              style={{ flex: 1 }}
+            />
+
+            <button
+              type="button"
+              onClick={() => {
+                const nuevasCategorias = formData.categorias.filter((_, i) => i !== index);
+                setFormData({ ...formData, categorias: nuevasCategorias });
+              }}
+              style={{
+                backgroundColor: "#e57373",
+                border: "none",
+                color: "white",
+                padding: "0.4rem 0.6rem",
+                borderRadius: "4px",
+                cursor: "pointer"
+              }}
+            >
+              ✕
+            </button>
+          </div>
         ))}
-      </select>
+
+        <button
+          type="button"
+          onClick={() =>
+            setFormData({
+              ...formData,
+              categorias: [...formData.categorias, { categoria: {}, limite: 0 }],
+            })
+          }
+          style={{
+            marginTop: "10px",
+            backgroundColor: "#2e7d32",
+            color: "white",
+            border: "none",
+            padding: "0.5rem 1rem",
+            borderRadius: "6px",
+            cursor: "pointer",
+          }}
+        >
+          + Agregar categoría
+        </button>
+      </div>
+
+
+
+
       <div className="btn-submit-container">
         <button type="submit" className="btn-submit" disabled={loading}>
           {loading ? "Guardando..." : "Guardar"}
@@ -261,7 +274,15 @@ const Presupuestos = () => {
   const ITEMS_PER_PAGE = 5;
 
   // Fetch presupuestos
-  const fetchPresupuestos = async () => {
+
+  
+const [categoriasDePresupuestos, setCategoriasDePresupuestos] = useState([]);
+
+useEffect(() => {
+  fetchPresupuestosAnidados();
+}, []);
+
+const fetchPresupuestos = async () => {
     setLoading(true);
     setError(null);
     const token = localStorage.getItem("token");
@@ -280,59 +301,91 @@ const Presupuestos = () => {
     }
   };
 
-  // Fetch categorías
+const fetchPresupuestosAnidados = async () => {
+  setLoading(true);
+    setError(null);
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+  try {
+    const res = await axios.get(`http://localhost:3000/api/presupuestos/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log("Categorias obtenidas: ", res.data);
+    const data = res.data;
+    setPresupuestos(data);
+
+    const nombres = obtenerNombresCategoriasDesdePresupuestos(data);
+    setCategoriasDePresupuestos(nombres);
+
+  } catch (error) {
+    console.error("Error al obtener presupuestos:", error);
+  }
+};
+
+const obtenerNombresCategoriasDesdePresupuestos = (presupuestos) => {
+  const nombres = [];
+
+  presupuestos.forEach(presupuesto => {
+    if (Array.isArray(presupuesto.categorias)) {
+      presupuesto.categorias.forEach(c => {
+        if (c.categoria?.titulo) {
+          nombres.push(c.categoria.titulo);
+        }
+      });
+    }
+  });
+
+  return nombres;
+};
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userId");
+
     const fetchCategorias = async () => {
       try {
+        if (!token) throw new Error("No token disponible, inicia sesión.");
+
         const res = await axios.get(
           `http://localhost:3000/api/categorias/${userId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setCategorias(res.data);
+
+        // Asegurarse de que res.data existe y es un array
+        if (Array.isArray(res.data)) {
+          setCategorias(res.data);
+        } else if (res.data && Array.isArray(res.data.categorias)) {
+          // Alternativa si la API devuelve { categorias: [...] }
+          setCategorias(res.data.categorias);
+        } else {
+          console.error("Formato de respuesta de categorías incorrecto:", res.data);
+          setCategorias([]);
+        }
       } catch (error) {
         console.error("Error al cargar categorías:", error);
+        setCategorias([]);
       }
     };
+
     fetchCategorias();
-  }, []);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
-
-    const fetchDivisas = async () => {
-      try {
-        const res = await axios.get(
-          `http://localhost:3000/api/divisas/${userId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setDivisas(res.data); // aquí tú decides si usar setTipoDivisa, setDivisasUsuario, etc.
-      } catch (error) {
-        console.error("Error al cargar divisas:", error);
-      }
-    };
-
-    fetchDivisas();
   }, []);
 
   // Fetch presupuestos inicial
   useEffect(() => {
     fetchPresupuestos();
     // eslint-disable-next-line
-  }, []);
+  }, [setCategorias]);
 
   // Helpers
   const obtenerNombreCategoria = (id) => {
-    const categoria = categorias.find((cat) => cat._id === id);
-    return categoria?.Titulo || "Sin categoría";
-  };
-
-  const obtenerNombreDivisa = (id) => {
-    const divisa = divisas.find((d) => d._id === id);
-    return divisa?.divisa || "Sin divisa";
-  };
+  if (!id) return "Sin categoría";
+  
+  const categoria = categorias.find((cat) => cat._id === id);
+  return categoria ? categoria.titulo : "Sin categoría";
+};
 
   // Modal handlers
   const abrirModalCrear = () => {
@@ -347,12 +400,10 @@ const Presupuestos = () => {
     setFormData({
       titulo: presupuestoSeleccionado.titulo || "",
       descripcion: presupuestoSeleccionado.descripcion || "",
-      meta_ahorro: presupuestoSeleccionado.meta_ahorro || "",
-      monto_inicial: presupuestoSeleccionado.monto_inicial || "",
-      dinero_ahorrado: presupuestoSeleccionado.dinero_ahorrado || "",
-      dinero_gastado: presupuestoSeleccionado.dinero_gastado || "",
+      limite: presupuestoSeleccionado.limite || "",
+      dinero_disponible: presupuestoSeleccionado.dinero_disponible || "",
       categoria_asociada: presupuestoSeleccionado.categoria_asociada || "",
-      divisa_asociada: presupuestoSeleccionado.divisa_asociada || "",
+      periodo: presupuestoSeleccionado.periodo || "",
     });
     setModalMode("editar");
     setModalOpen(true);
@@ -363,12 +414,10 @@ const Presupuestos = () => {
     setFormData({
       titulo: presupuesto.titulo || "",
       descripcion: presupuesto.descripcion || "",
-      meta_ahorro: presupuesto.meta_ahorro || "",
-      monto_inicial: presupuesto.monto_inicial || "",
-      dinero_ahorrado: presupuesto.dinero_ahorrado || "",
-      dinero_gastado: presupuesto.dinero_gastado || "",
+      limite: presupuesto.limite || "",
+      dinero_disponible: presupuesto.dinero_disponible || "",
       categoria_asociada: presupuesto.categoria_asociada || "",
-      divisa_asociada: presupuesto.divisa_asociada || "",
+      periodo: presupuesto.periodo || "",
     });
     setModalMode("ver");
     setModalOpen(true);
@@ -434,7 +483,7 @@ const Presupuestos = () => {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Token no encontrado. Inicie sesión.");
       const dataLimpia = limpiarDatos(formData);
-      await axios.put(
+      await axios.patch(
         `http://localhost:3000/api/presupuestos/${userId}/${presupuestoSeleccionado._id}`,
         dataLimpia,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -530,35 +579,68 @@ const Presupuestos = () => {
 
   // Gráfico
   const dataGraph = {
-    labels: ["Ahorrado", "Faltante"],
+    labels: ["Disponible", "Gastado"],
     datasets: [
       {
         label: "Estado del ahorro",
         data: [
-          Number(presupuestoSeleccionado?.dinero_ahorrado || 0),
+          Number(presupuestoSeleccionado?.dinero_disponible || 0),
           Math.max(
             0,
-            Number(presupuestoSeleccionado?.meta_ahorro || 0) -
-            Number(presupuestoSeleccionado?.dinero_ahorrado || 0)
+            Number(presupuestoSeleccionado?.limite || 0) -
+            Number(presupuestoSeleccionado?.dinero_disponible || 0)
           ),
         ],
         backgroundColor: ["#4caf50", "#f44336"],
         borderWidth: 1,
       },
     ],
-  };
+};
+
+
+  const dataGraph2 = React.useMemo(() => {
+    if (!presupuestoSeleccionado || !Array.isArray(presupuestoSeleccionado.categorias)) {
+      return {
+        labels: [],
+        datasets: [],
+      };
+    }
+
+    const labels = presupuestoSeleccionado.categorias.map((cat) =>
+      cat?.categoria?.titulo || "Sin título"
+    );
+
+    const data = presupuestoSeleccionado.categorias.map((cat) =>
+      Number(cat?.limite || 0)
+    );
+
+    const backgroundColors = [
+      "#4caf50", "#2196f3", "#ff9800", "#e91e63", "#9c27b0", "#00bcd4", "#cddc39"
+    ];
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: "Distribución por Categoría",
+          data,
+          backgroundColor: backgroundColors.slice(0, data.length),
+          borderWidth: 1,
+        },
+      ],
+    };
+  }, [presupuestoSeleccionado]);
+  
   const exportarPDF = () => {
     const doc = new jsPDF();
 
     const columnas = [
       "Título",
       "Descripción",
-      "Meta Ahorro",
-      "Monto Inicial",
-      "Dinero Ahorrado",
-      "Dinero Gastado",
-      "Categoría",
-      "Divisa",
+      "Limite",
+      "Dinero Disponible",
+      "Periodo",
+      "Categorías",
       "Fecha",
     ];
 
@@ -566,14 +648,16 @@ const Presupuestos = () => {
     const filas = presupuestosFiltrados.map((p) => [
       p.titulo || "",
       p.descripcion || "",
-      `$${Number(p.meta_ahorro || 0).toFixed(2)}`,
-      `$${Number(p.monto_inicial || 0).toFixed(2)}`,
-      `$${Number(p.dinero_ahorrado || 0).toFixed(2)}`,
-      `$${Number(p.dinero_gastado || 0).toFixed(2)}`,
-      obtenerNombreCategoria(p.categoria_asociada) || "",
-      obtenerNombreDivisa(p.divisa_asociada) || "",
+      `$${Number(p.limite || 0).toFixed(2)}`,
+      `$${Number(p.dinero_disponible || 0).toFixed(2)}`,
+      p.periodo || "",
+      // Extraemos todos los títulos de categorías y los unimos con coma
+      p.categorias && p.categorias.length > 0
+        ? p.categorias.map(catObj => catObj.categoria.titulo).join(", ")
+        : "Sin categoría",
       p.fecha_creacion ? new Date(p.fecha_creacion).toLocaleDateString() : "",
     ]);
+
 
     doc.text("Listado de Presupuestos", 14, 15);
 
@@ -685,7 +769,7 @@ const Presupuestos = () => {
             <option value="">Todas las categorías</option>
             {categoriasUsadas.map((cat) => (
               <option key={cat._id} value={cat._id}>
-                {cat.Titulo}
+                {cat.titulo}
               </option>
             ))}
           </select>
@@ -708,57 +792,49 @@ const Presupuestos = () => {
           <tr>
             <th>Título</th>
             <th>Descripción</th>
-            <th>Meta Ahorro</th>
-            <th>Monto Inicial</th>
-            <th>Ahorrado</th>
-            <th>Gastado</th>
+            <th>Limite</th>
+            <th>Dinero Disponible</th>
+            <th>Periodo</th>
             <th>Categoría</th>
-            <th>Divisa</th>
             <th>Fecha</th>
           </tr>
         </thead>
         <tbody>
-          {presupuestosPaginados.map((presupuesto) => {
-            const ahorroBueno =
-              Number(presupuesto.dinero_ahorrado || 0) >=
-              Number(presupuesto.meta_ahorro || 0);
-            const gastoAlto =
-              Number(presupuesto.dinero_gastado || 0) >
-              Number(presupuesto.meta_ahorro || 0) * 0.25;
-            return (
-              <tr
-                key={presupuesto._id}
-                onClick={() => setPresupuestoSeleccionado(presupuesto)}
-                style={{
-                  cursor: "pointer",
-                  backgroundColor:
-                    presupuestoSeleccionado?._id === presupuesto._id
-                      ? "#e0f7fa"
-                      : "transparent",
-                }}
-              >
-                <td>{presupuesto.titulo}</td>
-                <td>{presupuesto.descripcion}</td>
-                <td>${Number(presupuesto.meta_ahorro || 0).toFixed(2)}</td>
-                <td>${Number(presupuesto.monto_inicial || 0).toFixed(2)}</td>
-                <td className={ahorroBueno ? "positivo" : "negativo"}>
-                  ${Number(presupuesto.dinero_ahorrado || 0).toFixed(2)}
-                </td>
-                <td className={gastoAlto ? "negativo" : "positivo"}>
-                  ${Number(presupuesto.dinero_gastado || 0).toFixed(2)}
-                </td>
-                <td>
-                  {obtenerNombreCategoria(presupuesto.categoria_asociada)}
-                </td>
-                <td>{obtenerNombreDivisa(presupuesto.divisa_asociada)}</td>
-                <td>
-                  {presupuesto.fecha_creacion
-                    ? new Date(presupuesto.fecha_creacion).toLocaleDateString()
-                    : ""}
-                </td>
-              </tr>
-            );
-          })}
+          {presupuestosPaginados.map((presupuesto) => (
+            <tr
+              key={presupuesto._id}
+              onClick={() => setPresupuestoSeleccionado(presupuesto)}
+              style={{
+                cursor: "pointer",
+                backgroundColor:
+                  presupuestoSeleccionado?._id === presupuesto._id
+                    ? "#e0f7fa"
+                    : "transparent",
+              }}
+            >
+              <td>{presupuesto.titulo}</td>
+              <td>{presupuesto.descripcion}</td>
+              <td>${Number(presupuesto.limite || 0).toFixed(2)}</td>
+              <td>${Number(presupuesto.dinero_disponible || 0).toFixed(2)}</td>
+              <td>{presupuesto.periodo || ""}</td>
+              <td>
+                {presupuesto.categorias && presupuesto.categorias.length > 0
+                  ? presupuesto.categorias.map((catObj, index) => (
+                    <span key={index}>
+                      {catObj.categoria.titulo}
+                      {index < presupuesto.categorias.length - 1 ? ", " : ""}
+                    </span>
+                  ))
+                  : "Sin categoría"}
+              </td>
+
+              <td>
+                {presupuesto.fecha_creacion
+                  ? new Date(presupuesto.fecha_creacion).toLocaleDateString()
+                  : ""}
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
 
@@ -835,42 +911,30 @@ const Presupuestos = () => {
                     <strong>Descripción:</strong> {formData.descripcion}
                   </p>
                   <p>
-                    <strong>Meta de Ahorro:</strong> $
-                    {Number(formData.meta_ahorro).toFixed(2)}
+                    <strong>Limite:</strong> ${Number(formData.limite).toFixed(2)}
                   </p>
                   <p>
-                    <strong>Monto Inicial:</strong> $
-                    {Number(formData.monto_inicial).toFixed(2)}
+                    <strong>Dinero Disponible:</strong> ${Number(formData.dinero_disponible).toFixed(2)}
                   </p>
                   <p>
-                    <strong>Dinero Ahorrado:</strong> $
-                    {Number(formData.dinero_ahorrado).toFixed(2)}
+                    <strong>Periodo:</strong> {formData.periodo}
                   </p>
-                  <p>
-                    <strong>Dinero Gastado:</strong> $
-                    {Number(formData.dinero_gastado).toFixed(2)}
-                  </p>
-                  <p>
-                    <strong>Categoría:</strong>{" "}
-                    {presupuestoSeleccionado?.categoria_asociada
-                      ? obtenerNombreCategoria(
-                        presupuestoSeleccionado.categoria_asociada
-                      )
-                      : "No asignada"}
-                  </p>
-                  <p>
-                    <strong>Divisa:</strong>{" "}
-                    {presupuestoSeleccionado?.divisa_asociada
-                      ? obtenerNombreDivisa(
-                        presupuestoSeleccionado.divisa_asociada
-                      )
-                      : "No asignada"}
-                  </p>
+                  <div>
+                    <p><strong>Categorías:</strong></p> {Array.isArray(presupuestoSeleccionado?.categorias) && presupuestoSeleccionado.categorias.length > 0 ? ( <ul> {presupuestoSeleccionado.categorias.map((catObj, index) => { const titulo = catObj?.categoria?.titulo || "Sin título"; const limite = catObj?.limite != null ? `$${Number(catObj.limite).toFixed(2)}` : "Sin límite"; return ( <li key={index}> {titulo} — Límite: {limite} </li> ); })} </ul> ) : ( <p>No hay categorías asignadas.</p> )}
+                  </div>
                   <div style={{ display: "flex", justifyContent: "center" }}>
                     {presupuestoSeleccionado && (
                       <div className="grafico-ahorro">
-                        <h3>Estado del Ahorro</h3>
+                        <h3>Estado del Presupuesto</h3>
                         <Doughnut data={dataGraph} />
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "center" }}>
+                    {presupuestoSeleccionado && (
+                      <div className="grafico-ahorro">
+                        <h3>Distribución por Categorias</h3>
+                        <Bar data={dataGraph2} />
                       </div>
                     )}
                   </div>

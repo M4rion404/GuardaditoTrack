@@ -50,7 +50,7 @@ const ReestablecerContraseña = () => {
         
                     <div className="links">
                       <Link to="/SignUp">¿Todavía no tienes una cuenta? Regístrate</Link><br/>
-                      <Link to="/ResetPassword">¿Olvidó su contraseña?</Link><br/>
+                      <Link to="/ResetPassword" className="forgot-password-link">¿Olvidó su contraseña?</Link><br/>
                     </div>
         
                   </form>

@@ -16,12 +16,12 @@ router.get("/:idUsuario", async (req, res) => {
       return res.status(404).json({ mensaje: "Usuario no encontrado" });
     }
 
-    if (!usuario.Historial) {
+    if (!usuario.historial) {
       console.log("El usuario no tiene historial.");
       return res.status(200).json([]);
     }
 
-    let historial = [...usuario.Historial];
+    let historial = [...usuario.historial];
 
     if (tipo && tipo !== "todos") {
       historial = historial.filter(item => item.tipo === tipo);

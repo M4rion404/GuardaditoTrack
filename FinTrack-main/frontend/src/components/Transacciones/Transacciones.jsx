@@ -47,41 +47,26 @@ const limpiarDatos = (data) => ({
 });
 
 const validarCampos = (data) => {
-  // Validación de campos requeridos
   if (
     !data.titulo ||
     !data.accion ||
     !data.metodo_pago ||
-    !data.monto ||
-    !data.estado
+    !data.monto
   ) {
     return "Por favor, complete todos los campos obligatorios.";
   }
-  // Validar acción
   if (!["Ingreso", "Retiro"].includes(data.accion)) {
     return "La acción debe ser 'Ingreso' o 'Retiro'.";
   }
-  // Validar método de pago
-  if (
-    ![
-      "Efectivo",
-      "Tarjeta",
-    ].includes(data.metodo_pago)
-  ) {
+  if (!["Efectivo", "Tarjeta"].includes(data.metodo_pago)) {
     return "Seleccione un método de pago válido.";
   }
-  // Validar estado
-  /* if (!["En proceso", "Completado", "Cancelado"].includes(data.estado)) {
-    return "Seleccione un estado válido.";
-  } */
-  // Validar monto
   if (isNaN(Number(data.monto)) || Number(data.monto) < 0) {
     return "El monto debe ser un número positivo.";
   }
   return null;
 };
 
-// Formulario reutilizable para crear/editar
 function TransaccionForm({
   formData,
   setFormData,
@@ -182,7 +167,7 @@ function TransaccionForm({
           <option value="">Seleccionar categoria</option>
           {categorias.map((categoria) => (
             <option key={categoria._id} value={categoria._id}>
-              {categoria.categoria} - {categoria.nombre}
+              {categoria.categoria}{categoria.titulo}
             </option>
           ))}
         </select>
@@ -226,7 +211,7 @@ const Transacciones = () => {
   const [categorias, setCategorias] = useState([]);
   const [presupuestos, setPresupuestos] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState("crear"); // crear | editar | ver
+  const [modalMode, setModalMode] = useState("crear");
   const [filtroPresupuesto, setFiltroPresupuesto] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
@@ -241,7 +226,6 @@ const Transacciones = () => {
     setError(null);
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userId");
-
     try {
       if (!token) throw new Error("No token disponible, inicia sesión.");
       const response = await fetch(
@@ -251,10 +235,15 @@ const Transacciones = () => {
         }
       );
       if (!response.ok) throw new Error("Error al obtener las transacciones");
-
       const data = await response.json();
       setTransacciones(data);
-      setTransaccionSeleccionada(null); // <- Limpia la selección
+      setTransaccionSeleccionada(null);
+      response.data.forEach((t) => {
+        console.log(
+          `Transacción ID: ${t._id}, categoria_asociada:`,
+          t.categoria_asociada
+        );
+      });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -282,23 +271,22 @@ const Transacciones = () => {
 
   // Fetch categorias
   useEffect(() => {
-  const token = localStorage.getItem("token");
-  const userId = localStorage.getItem("userId");
-
-  const fetchCategorias = async () => {
-    try {
-      const res = await axios.get(
-        `http://localhost:3000/api/categorias/${userId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setCategorias(res.data); // aquí tú decides si usar setTipoCategoria, setCategoriasUsuario, etc.
-    } catch (error) {
-      console.error("Error al cargar categorias:", error);
-    }
-  };
-
-  fetchCategorias();
-}, []);
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+    const fetchCategorias = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:3000/api/categorias/${userId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setCategorias(res.data);
+        console.log("Categorias recibidas: ", res.data);
+      } catch (error) {
+        // No error visible aquí
+      }
+    };
+    fetchCategorias();
+  }, []);
 
   useEffect(() => {
     fetchTransacciones();
@@ -312,8 +300,11 @@ const Transacciones = () => {
   };
 
   const obtenerNombreCategoria = (id) => {
-    const categoria = categorias.find((d) => d._id === id);
-    return categoria?.categoria || "Sin categoria";
+    if (!id) return null;
+    const categoria = categorias.find(
+      (c) => c._id.toString() === id.toString()
+    );
+    return categoria ? categoria.titulo : null;
   };
 
   // Modal handlers
@@ -351,7 +342,9 @@ const Transacciones = () => {
       monto: transaccion.monto || "",
       estado: transaccion.estado || "",
       categoria_asociada:
-        transaccion.categoria_asociada?._id || transaccion.categoria_asociada || "",
+        transaccion.categoria_asociada?._id ||
+        transaccion.categoria_asociada ||
+        "",
       presupuesto_asociado:
         transaccion.presupuesto_asociado?._id ||
         transaccion.presupuesto_asociado ||
@@ -372,13 +365,11 @@ const Transacciones = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-
     const validacion = validarCampos(formData);
     if (validacion) {
       setError(validacion);
       return;
     }
-
     setLoading(true);
     const userId = localStorage.getItem("userId");
     try {
@@ -409,40 +400,27 @@ const Transacciones = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     setError(null);
-
     if (!transaccionSeleccionada) {
-      console.error("No hay transacción seleccionada");
       setError("Debe seleccionar una transacción para actualizar");
       return;
     }
-
-    console.log("Transacción seleccionada:", transaccionSeleccionada);
-
     const validacion = validarCampos(formData);
     if (validacion) {
       setError(validacion);
       return;
     }
-
     setLoading(true);
-
     try {
       const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
-
       if (!token || !userId)
         throw new Error("Sesión inválida. Por favor, inicia sesión.");
-
-      console.log("ID transacción seleccionada:", transaccionSeleccionada._id);
-
       const dataLimpia = limpiarDatos(formData);
-
       await axios.put(
         `http://localhost:3000/api/transacciones/${userId}/${transaccionSeleccionada._id}`,
         dataLimpia,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
       await Swal.fire({
         icon: "success",
         title: "Transacción actualizada!",
@@ -450,11 +428,9 @@ const Transacciones = () => {
         timer: 1500,
         showConfirmButton: false,
       });
-
       fetchTransacciones();
       cerrarModal();
     } catch (err) {
-      console.error(err);
       setError("Error al actualizar la transacción");
     } finally {
       setLoading(false);
@@ -494,7 +470,6 @@ const Transacciones = () => {
   const presupuestosUsados = presupuestos.filter((p) =>
     transacciones.some((t) => t.presupuesto_asociado === p._id)
   );
-
   const categoriasUsadas = categorias.filter((d) =>
     transacciones.some((t) => t.categoria_asociada === d._id)
   );
@@ -504,16 +479,13 @@ const Transacciones = () => {
     const coincidePresupuesto = filtroPresupuesto
       ? t.presupuesto_asociado === filtroPresupuesto
       : true;
-
     const coincideCategoria = filtroCategoria
       ? t.categoria_asociada === filtroCategoria
       : true;
-
-      const coincideBusqueda = busqueda
-    ? t.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      t.descripcion?.toLowerCase().includes(busqueda.toLowerCase())
-    : true;
-
+    const coincideBusqueda = busqueda
+      ? t.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
+        t.descripcion?.toLowerCase().includes(busqueda.toLowerCase())
+      : true;
     return coincidePresupuesto && coincideCategoria && coincideBusqueda;
   });
 
@@ -521,13 +493,11 @@ const Transacciones = () => {
   const totalPaginas = Math.ceil(
     transaccionesFiltrados.length / ITEMS_PER_PAGE
   );
-
   const transaccionesPaginadas = transaccionesFiltrados.slice(
     (paginaActual - 1) * ITEMS_PER_PAGE,
     paginaActual * ITEMS_PER_PAGE
   );
 
-  // Ir a página específica
   const irAPagina = (numPagina) => {
     if (numPagina < 1 || numPagina > totalPaginas) return;
     setPaginaActual(numPagina);
@@ -663,7 +633,6 @@ const Transacciones = () => {
               </option>
             ))}
           </select>
-
           <select
             value={filtroCategoria}
             onChange={(e) => setFiltroCategoria(e.target.value)}
@@ -671,7 +640,7 @@ const Transacciones = () => {
             <option value="">Todas las categorias</option>
             {categoriasUsadas.map((d) => (
               <option key={d._id} value={d._id}>
-                {d.nombre}
+                {d.titulo}
               </option>
             ))}
           </select>
@@ -687,13 +656,20 @@ const Transacciones = () => {
             <th>Metodo de Pago</th>
             <th>Monto</th>
             <th>Estado</th>
-            <th>Categoria</th>
             <th>Presupuesto</th>
+            <th>Categoria</th>
             <th>Fecha</th>
           </tr>
         </thead>
         <tbody>
           {transaccionesPaginadas.map((transaccion) => {
+            console.log(
+              "Transacción ID:",
+              transaccion._id,
+              "| Categoria asociada:",
+              transaccion.categoria_asociada
+            );
+
             return (
               <tr
                 key={transaccion._id}
@@ -713,11 +689,10 @@ const Transacciones = () => {
                 <td>${Number(transaccion.monto || 0).toFixed(2)}</td>
                 <td>{transaccion.estado}</td>
                 <td>
-                  {obtenerNombreCategoria(transaccion.categoria_asociada) ?? "-"}
+                  {obtenerNombrePresupuesto(transaccion.presupuesto_asociado)}
                 </td>
                 <td>
-                  {obtenerNombrePresupuesto(transaccion.presupuesto_asociado) ??
-                    "-"}
+                  {obtenerNombreCategoria(transaccion.categoria_asociada)}
                 </td>
                 <td>
                   {transaccion.fecha
@@ -823,7 +798,6 @@ const Transacciones = () => {
                         )
                       : "No asignada"}
                   </p>
-
                   <p>
                     <strong>Presupuesto:</strong>{" "}
                     {transaccionSeleccionada?.presupuesto_asociado

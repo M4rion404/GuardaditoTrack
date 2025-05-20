@@ -12,7 +12,6 @@ const RegistroUsuario = () => {
   const [email, setEmail] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [confirmarContraseña, setconfirmarContraseña] = useState("");
-  const [verificacion, setVerificacion] = useState("");
 
   const navigate = useNavigate();
 
@@ -57,7 +56,7 @@ const RegistroUsuario = () => {
           timer: 1500,
           showConfirmButton: false,
         });
-        navigate("/");
+        navigate("/Login");
       } else {
         const errorData = await response.json();
         console.error("Error en el registro:", errorData);
