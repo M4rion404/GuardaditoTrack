@@ -391,26 +391,7 @@ const Inicio = () => {
           </div>
         </div>
       </section>
-
-      {/* CTA Section */}
-      <section className="cta-section py-16 bg-gradient-to-r from-blue-600 to-cyan-500 text-white">
-        <div className="mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Empieza a transformar tus finanzas hoy mismo
-          </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Únete a miles de usuarios que ya han tomado el control de su futuro
-            financiero con Fintrack.
-          </p>
-          <button className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 rounded-lg font-bold text-lg shadow-lg">
-            Crear cuenta gratuita
-          </button>
-          <p className="mt-4 text-sm">
-            No se requiere tarjeta de crédito para comenzar
-          </p>
-        </div>
-      </section>
-
+      
       {/* Footer */}
       <footer className="bg-navy-900 text-white py-12">
         <div className="mx-auto px-4">
@@ -418,11 +399,11 @@ const Inicio = () => {
             <div>
               <div className="flex items-center space-x-3 mb-6">
                 <div className="logo-container bg-white rounded-full p-1 w-10 h-10 flex items-center justify-center">
-                  <img
-                    src="/api/placeholder/40/40"
-                    alt="Fintrack Logo"
-                    className="w-8 h-8"
-                  />
+                       <img
+              className="logo-fintrack"
+              src={logoFintrack}
+              alt="Logo Fintrack"
+            />
                 </div>
                 <h3 className="text-xl font-bold">Fintrack</h3>
               </div>

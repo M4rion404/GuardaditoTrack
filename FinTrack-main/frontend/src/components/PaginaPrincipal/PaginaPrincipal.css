@@ -30,11 +30,14 @@ body {
   align-items: center;
 }
 
-.panel-derecho {
+.panel-derecho-inicio {
   width: 40%;
   min-width: 300px;
   max-width: 1000px;
   display: flex;
+  background: linear-gradient(135deg, #0d36b1, #60a5fa, #1e3a8a, #0ea5a9);
+  background-size: 400% 400%;
+  animation: gradientBG 10s ease infinite;
   flex-direction: column;
   justify-content: center;
   align-items: center;     
@@ -42,10 +45,26 @@ body {
   padding: 2rem;
 }
 
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.img-logo-fintrack {
+  display: flex;
+  justify-content: center;
+}
+
 .img-logo-fintrack img {
   width: clamp(100px, 20vw, 300px);
   height: auto;
-  width: auto;
 }
 
 /* Contenido */
@@ -114,6 +133,7 @@ body {
 
 .boton:hover {
   background-color: #2258b5;
+  color: white;
 }
 
 .icono {

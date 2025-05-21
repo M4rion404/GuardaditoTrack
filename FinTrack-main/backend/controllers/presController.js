@@ -6,7 +6,7 @@ exports.crearPresupuesto = async (req, res) => {
   const nuevoPresupuesto = req.body;
 
   console.log("➡️ Solicitud recibida para crear presupuesto");
-  console.log("🧾 Datos recibidos:", JSON.stringify(nuevoPresupuesto, null, 2));
+  console.log("🧾 Datos recibidos en body:", JSON.stringify(nuevoPresupuesto, null, 2));
 
   try {
     const usuarioExiste = await Usuario.findById(idUsuario);
@@ -42,24 +42,40 @@ exports.crearPresupuesto = async (req, res) => {
       dinero_disponible: Number(cat.limite)
     }));
 
+    console.log("💰 Presupuesto con dinero_disponible asignado:", JSON.stringify(nuevoPresupuesto, null, 2));
+
     // Agregar presupuesto al usuario
     usuarioExiste.presupuestos.push(nuevoPresupuesto);
-    console.log("✅ Presupuesto agregado a usuario");
+    console.log("✅ Presupuesto agregado al array de presupuestos del usuario");
 
-    // Registrar acción en historial (manualmente para evitar validación global)
+    // Crear acción para historial
     const historialAccion = {
       tipo: 'presupuesto',
       accion: 'crear',
       fecha: new Date(),
+      datos_antes: {},
       datos_despues: nuevoPresupuesto
     };
 
+    console.log("📚 Acción a agregar al historial:", JSON.stringify(historialAccion, null, 2));
+
+    // Validar estructura antes de agregar al historial
+    if (!historialAccion.tipo || !historialAccion.accion) {
+      console.log("❌ Error: historialAccion inválido");
+      return res.status(500).json({ mensaje: "Error al agregar acción al historial" });
+    }
+
     usuarioExiste.historial.push(historialAccion);
+    console.log("🧾 Historial antes de ordenar:", usuarioExiste.historial.map(h => h.fecha));
+
     usuarioExiste.historial.sort((a, b) => b.fecha - a.fecha);
     usuarioExiste.historial = usuarioExiste.historial.slice(0, 150);
 
+    console.log("🧾 Historial después de ordenar y truncar:", usuarioExiste.historial.map(h => h.fecha));
+
+    // Guardar usuario con cambios
     await usuarioExiste.save();
-    console.log("📝 Historial actualizado y usuario guardado");
+    console.log("💾 Usuario guardado correctamente con el nuevo presupuesto e historial");
 
     res.status(200).json({
       mensaje: 'Presupuesto creado exitosamente',
@@ -74,7 +90,9 @@ exports.crearPresupuesto = async (req, res) => {
     });
   }
 };
- // CREAR PRESUPUESTO
+
+
+
 
 exports.obtenerPresupuestos = async (req, res) => {
   const idUsuario = req.params.idUsuario;

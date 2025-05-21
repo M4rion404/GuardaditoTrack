@@ -16,18 +16,18 @@ const SaludFinanciera = () => {
       
 
       {/* Botón de regresar */}
-      <div style={{ marginTop: '1rem' }}>
-        <button
-          onClick={() => (window.location.href = "/home")}
-          style={{
-            zIndex: 9999,
-            position: "relative",
-            pointerEvents: "auto",
-            cursor: "pointer"
-          }}
-        >
-          &larr; Regresar
-        </button>
+      <div className="brine-header">
+         <button
+            onClick={() => (window.location.href = "/home")}
+            style={{
+              zIndex: 9999,
+              position: "relative",
+              pointerEvents: "auto",
+              cursor: "pointer",
+            }}
+          >
+            &larr; Regresar
+          </button>
       </div>
 
       {/* Encabezado */}

@@ -467,40 +467,66 @@ const Presupuestos = () => {
     e.preventDefault();
     setError(null);
 
+    console.log("=== Iniciando handleSubmit ===");
+    console.log("formData:", formData);
+
     const validacion = validarCampos(formData);
     if (validacion) {
       setError(validacion);
       return;
     }
 
-    const userId = localStorage.getItem("userId");
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setError("Token no encontrado. Inicie sesión.");
+    const limitePresupuesto = Number(formData.limite);
+    if (isNaN(limitePresupuesto) || limitePresupuesto <= 0) {
+      setError("El límite del presupuesto debe ser un número válido mayor que 0.");
       return;
     }
 
-    // Transformar las categorías para agregar dinero_disponible = limite
+    // Sumar límites de las categorías
+    const sumaCategorias = (formData.categorias || []).reduce((total, cat, i) => {
+      const limiteCat = Number(cat.limite);
+      console.log(`Categoría ${i} - Nombre: ${cat.nombre} | Límite: ${cat.limite} ->`, limiteCat);
+      return total + (isNaN(limiteCat) ? 0 : limiteCat);
+    }, 0);
+
+    console.log("Límite del presupuesto:", limitePresupuesto);
+    console.log("Suma de límites de categorías:", sumaCategorias);
+
+    if (sumaCategorias > limitePresupuesto) {
+      setError(
+        `La suma de los límites de las categorías (${sumaCategorias}) excede el límite total del presupuesto (${limitePresupuesto}).`
+      );
+      return;
+    }
+
     const categoriasFormateadas = (formData.categorias || []).map(cat => ({
       ...cat,
-      dinero_disponible: Number(cat.limite) // Asegura que sea número
+      limite: Number(cat.limite),
+      dinero_disponible: Number(cat.limite)
     }));
 
     const dataToSubmit = {
       ...formData,
-      limite: Number(formData.limite), // asegura que el total sea número
-      dinero_disponible: Number(formData.limite),
+      limite: limitePresupuesto,
+      dinero_disponible: limitePresupuesto,
       categorias: categoriasFormateadas
     };
 
+    setLoading(true);
+    const userId = localStorage.getItem("userId");
     try {
-      setLoading(true);
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Token no encontrado. Inicie sesión.");
+
       const cleanData = limpiarDatos(dataToSubmit);
+      console.log("Datos preparados para POST:", cleanData);
+
       await axios.post(
         `http://localhost:3000/api/presupuestos/${userId}`,
         cleanData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       await Swal.fire({
         icon: "success",
         title: "¡Presupuesto creado!",
@@ -508,9 +534,11 @@ const Presupuestos = () => {
         timer: 1500,
         showConfirmButton: false,
       });
+
       fetchPresupuestos();
       cerrarModal();
     } catch (err) {
+      console.error("Error al crear:", err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -518,50 +546,88 @@ const Presupuestos = () => {
   };
 
 
-  // También modificar handleUpdate de manera similar:
-const handleUpdate = async (e) => {
-  e.preventDefault();
-  setError(null);
 
-  const validacion = validarCampos(formData);
-  if (validacion) {
-    setError(validacion);
-    return;
-  }
-  
-  // Si estás creando un nuevo presupuesto o actualizando el límite
-  // debemos asegurarnos de que dinero_disponible se actualice
-  const dataToUpdate = {
-    ...formData,
-    dinero_disponible: formData.limite
+  // También modificar handleUpdate de manera similar:
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setError(null);
+
+    console.log("=== Iniciando handleUpdate ===");
+    console.log("formData:", formData);
+
+    const validacion = validarCampos(formData);
+    if (validacion) {
+      setError(validacion);
+      return;
+    }
+
+    const limitePresupuesto = Number(formData.limite);
+    if (isNaN(limitePresupuesto) || limitePresupuesto <= 0) {
+      setError("El límite del presupuesto debe ser un número válido mayor que 0.");
+      return;
+    }
+
+    // Sumar límites de categorías
+    const sumaCategorias = (formData.categorias || []).reduce((total, cat, i) => {
+      const limiteCategoria = Number(cat.limite);
+      console.log(`Categoría ${i} - Nombre: ${cat.nombre} | Límite: ${cat.limite} ->`, limiteCategoria);
+      return total + (isNaN(limiteCategoria) ? 0 : limiteCategoria);
+    }, 0);
+
+    console.log("Límite del presupuesto:", limitePresupuesto);
+    console.log("Suma de límites de categorías:", sumaCategorias);
+
+    if (sumaCategorias > limitePresupuesto) {
+      setError(
+        `La suma de los límites de las categorías (${sumaCategorias}) excede el límite total del presupuesto (${limitePresupuesto}).`
+      );
+      return;
+    }
+
+    const dataToUpdate = {
+      ...formData,
+      limite: limitePresupuesto,
+      dinero_disponible: limitePresupuesto,
+      categorias: (formData.categorias || []).map((cat) => ({
+        ...cat,
+        limite: Number(cat.limite),
+        dinero_disponible: Number(cat.limite)
+      }))
+    };
+
+    const userId = localStorage.getItem("userId");
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Token no encontrado. Inicie sesión.");
+
+      const dataLimpia = limpiarDatos(dataToUpdate);
+      console.log("Datos preparados para PATCH:", dataLimpia);
+
+      await axios.patch(
+        `http://localhost:3000/api/presupuestos/${userId}/${presupuestoSeleccionado._id}`,
+        dataLimpia,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      await Swal.fire({
+        icon: "success",
+        title: "¡Presupuesto actualizado!",
+        text: "Los cambios se guardaron correctamente.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      fetchPresupuestos();
+      cerrarModal();
+    } catch (err) {
+      console.error("Error al actualizar:", err);
+      setError("Error al actualizar el presupuesto");
+    } finally {
+      setLoading(false);
+    }
   };
-  
-  const userId = localStorage.getItem("userId");
-  setLoading(true);
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("Token no encontrado. Inicie sesión.");
-    const dataLimpia = limpiarDatos(dataToUpdate);
-    await axios.patch(
-      `http://localhost:3000/api/presupuestos/${userId}/${presupuestoSeleccionado._id}`,
-      dataLimpia,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    await Swal.fire({
-      icon: "success",
-      title: "¡Presupuesto actualizado!",
-      text: "Los cambios se guardaron correctamente.",
-      timer: 1500,
-      showConfirmButton: false,
-    });
-    fetchPresupuestos();
-    cerrarModal();
-  } catch (err) {
-    setError("Error al actualizar el presupuesto");
-  } finally {
-    setLoading(false);
-  }
-};
+
 
   const handleDelete = async () => {
     if (!presupuestoSeleccionado) return;

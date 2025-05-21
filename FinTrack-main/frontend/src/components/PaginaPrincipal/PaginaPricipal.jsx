@@ -5,7 +5,7 @@ import { FaChevronRight, FaUserPlus } from 'react-icons/fa';
 //import { RiInformation2Fill } from "react-icons/ri";
 //import Leon from '../../assets/Leon.jpg';
 import logoFintrack from '../../assets/FintrackBlanco.png'
-import './PaginaPrincipal.css';
+import '../PaginaPrincipal/PaginaPrincipal.css'
 
 const PaginaPrincipal = () => {
     return (
@@ -27,7 +27,7 @@ const PaginaPrincipal = () => {
           
         </div>
 
-        <div className="panel-derecho">            
+        <div className="panel-derecho-inicio">            
           <div className="img-logo-fintrack">
             <img src={logoFintrack} alt="Logo"/>  
           </div>

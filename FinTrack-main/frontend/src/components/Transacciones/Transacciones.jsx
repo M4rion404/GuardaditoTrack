@@ -255,21 +255,31 @@ const Transacciones = () => {
 
   // Fetch presupuestos
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
-    const fetchPresupuestos = async () => {
-      try {
-        const res = await axios.get(
-          `http://localhost:3000/api/presupuestos/${userId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setPresupuestos(res.data);
-      } catch (error) {
-        // No setError aquí para no mostrar error si no hay presupuestos
-      }
-    };
-    fetchPresupuestos();
-  }, []);
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+
+  const fetchPresupuestos = async () => {
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/presupuestos/${userId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      console.log("📦 Presupuestos recibidos:", res.data);
+      setPresupuestos(res.data);
+
+      // ✅ Obtener nombres de las categorías
+      const nombresCategorias = obtenerNombresCategorias(res.data);
+      console.log("📋 Nombres de categorías extraídas:", nombresCategorias);
+
+    } catch (error) {
+      console.error("❌ Error al obtener presupuestos:", error);
+    }
+  };
+
+  fetchPresupuestos();
+}, []);
+
 
   // Fetch categorias
   useEffect(() => {
@@ -296,6 +306,17 @@ const Transacciones = () => {
   }, []);
 
   // Helpers
+  // 🔧 Extrae los nombres de todas las categorías de todos los presupuestos
+const obtenerNombresCategorias = (presupuestos) => {
+  if (!Array.isArray(presupuestos)) return [];
+
+  const nombres = presupuestos.flatMap(p => 
+    Array.isArray(p.categorias) ? p.categorias.map(cat => cat.nombre) : []
+  );
+
+  return nombres;
+};
+
   const obtenerNombrePresupuesto = (id) => {
     const presupuesto = presupuestos.find((p) => p._id === id);
     return presupuesto?.titulo || "Sin Presupuesto";
@@ -551,7 +572,15 @@ const handleSubmit = async (e) => {
     <div className="transacciones-tabla-container">
       <div>
         <div className="brine-header">
-          <button onClick={() => (window.location.href = "/home")}>
+           <button
+            onClick={() => (window.location.href = "/home")}
+            style={{
+              zIndex: 9999,
+              position: "relative",
+              pointerEvents: "auto",
+              cursor: "pointer",
+            }}
+          >
             &larr; Regresar
           </button>
           <h1>
