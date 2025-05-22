@@ -1,0 +1,214 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap');
+
+/* Modal base */
+.modal,
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Contenido del modal */
+.modal-content {
+  background: #fff;
+  padding: 1.5rem 2rem;
+  border-radius: 10px;
+  max-width: 95vw;
+  width: 700px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  position: relative;
+  animation: fadeIn 0.25s ease-out forwards;
+  box-sizing: border-box;
+  max-height: 80vh;
+  overflow-y: auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #222;
+}
+
+/* Animación de fade in */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Labels */
+.modal-content label {
+  display: block;
+  margin: 1rem 0 0.4rem;
+  font-weight: bold;
+  color: #007bff;
+  font-size: 1rem;
+}
+
+/* Inputs y selects */
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border: 1.3px solid #aaa;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: border-color 0.25s ease;
+  box-sizing: border-box;
+}
+
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 6px #007bff;
+}
+
+/* Textarea ajuste */
+.modal-content textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+/* Botones dentro del modal */
+.modal-content button {
+  background-color: #28a745; /* verde */
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 7px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1.2rem;
+  transition: background-color 0.3s ease;
+}
+
+.modal-content button:hover {
+  background-color: #218838;
+}
+
+/* Botón cerrar */
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  background-color: #dc3545 !important; /* rojo sólido */
+  border: 2px solid #dc3545 !important;
+  border-radius: 50%;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: white !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.modal-close:hover {
+  background-color: #b02a37 !important;
+  border-color: #b02a37 !important;
+  color: white !important;
+  box-shadow: 0 0 6px #dc3545;
+}
+
+/* Scroll personalizado */
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-content::-webkit-scrollbar-thumb {
+  background-color: #007bff;
+  border-radius: 8px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .modal-content {
+    width: 95vw;
+    padding: 1.2rem 1.5rem;
+    max-height: 90vh;
+  }
+}
+
+/* Botón de submit */
+.btn-submit {
+  display: block;
+  margin: 1rem auto 0 auto;
+  padding: 0.5rem 1rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.btn-submit:hover {
+  background-color: #218838;
+}
+
+h2 {
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  color: #007bff;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Estilo para detalle-presupuesto usando <p> y <strong> */
+.detalle-presupuesto p {
+  margin: 1rem 0 0.4rem;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.detalle-presupuesto strong {
+  font-weight: bold;
+  color: #007bff; /* para destacar el valor */
+}
+
+/* detalle-transaccion: párrafos sin color especial, strong azul y bold */
+.detalle-transaccion p {
+  margin: 1rem 0 0.4rem;
+  font-size: 1rem;
+  font-family: inherit;
+  color: inherit; /* para asegurar que tome el color del padre (normalmente #222) */
+  font-weight: normal; /* que no se haga bold automáticamente */
+}
+
+.detalle-transaccion p strong {
+  font-weight: 700; /* bold */
+  color: #007bff !important; /* azul vibrante, !important para evitar sobrescrituras */
+}
+
+/* detalle-metaAhorro: párrafos normales, strong azul y bold */
+.detalle-metaAhorro p {
+  margin: 1rem 0 0.4rem;
+  font-size: 1rem;
+  font-family: inherit;
+  color: inherit;
+  font-weight: normal;
+}
+
+.detalle-metaAhorro p strong {
+  font-weight: 700;
+  color: #007bff !important;
+}

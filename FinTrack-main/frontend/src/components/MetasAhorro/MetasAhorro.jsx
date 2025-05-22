@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
@@ -15,24 +15,59 @@ import {
   FaEye,
   FaTags,
 } from "react-icons/fa";
-import "./MetasAhorro.css";
+import "../Estilos/modalesStyles.css"
+import "../MetasAhorro/MetasAhorro.css"
 
 Chart.register(ArcElement, Tooltip, Legend);
 
 // Iconos personalizados
-const IconCrear = () => <FaPlus style={{ color: "#388e3c" }} />;
-const IconEditar = () => <FaEdit style={{ color: "#1976d2" }} />;
-const IconEliminar = () => <FaTrash style={{ color: "#e53935" }} />;
-const IconRefrescar = () => <FaSyncAlt style={{ color: "#ffa000" }} />;
-const IconBuscar = () => <FaSearch style={{ color: "#616161" }} />;
-const IconCerrar = () => <FaTimes style={{ color: "#757575" }} />;
-const IconPDF = () => <FaFilePdf style={{ color: "#e53935" }} />;
-const IconVer = () => <FaEye style={{ color: "#1976d2" }} />;
+const IconCrear = () => (
+  <span role="img" aria-label="crear">
+    <FaPlus style={{ color: "#388e3c" }} />
+  </span>
+);
+const IconEditar = () => (
+  <span role="img" aria-label="editar">
+    <FaEdit style={{ color: "#1976d2" }} />
+  </span>
+);
+const IconEliminar = () => (
+  <span role="img" aria-label="eliminar">
+    <FaTrash style={{ color: "#e53935" }} />
+  </span>
+);
+const IconRefrescar = () => (
+  <span role="img" aria-label="refrescar">
+    <FaSyncAlt style={{ color: "#ffa000" }} />
+  </span>
+);
+const IconBuscar = () => (
+  <span role="img" aria-label="buscar">
+    <FaSearch style={{ color: "#616161" }} />
+  </span>
+);
+const IconCerrar = () => (
+  <span role="img" aria-label="cerrar">
+    <FaTimes style={{ color: "white" }} />
+  </span>
+);
+const IconPDF = () => (
+  <span role="img" aria-label="pdf">
+    <FaFilePdf style={{ color: "#e53935" }} />
+  </span>
+);
+const IconVer = () => (
+  <span role="img" aria-label="ver">
+    <FaEye style={{ color: "#1976d2" }} />
+  </span>
+);
+
 
 const initialForm = {
   nombre: "",
   descripcion: "",
   objetivo: "",
+  ahorrado: "",
   fecha_limite: "",
   estado: "",
 };
@@ -45,20 +80,14 @@ const limpiarDatos = (data) => ({
 
 const validarCampos = (data) => {
   // Validación de campos requeridos
-  if (
-    !data.nombre ||
-    !data.objetivo ||
-    !data.fecha_limite ||
-    !data.estado 
-  ) {
+  if (!data.nombre || !data.objetivo) {
     return "Por favor, complete todos los campos obligatorios.";
   }
   // Validar objetivo
- if (isNaN(Number(data.objetivo)) || Number(data.objetivo) < 0) {
+  if (isNaN(Number(data.objetivo)) || Number(data.objetivo) < 0) {
     return "El objetivo debe ser un número positivo.";
   }
   return null;
-
 
   // Validar método de pago
 
@@ -69,14 +98,17 @@ const validarCampos = (data) => {
   // Validar objetivo
 };
 
+// utils/formatFecha.js
+export function formatearFechaUTC(fechaIso) {
+  const fecha = new Date(fechaIso);
+  const dia = fecha.getUTCDate().toString().padStart(2, "0");
+  const mes = (fecha.getUTCMonth() + 1).toString().padStart(2, "0");
+  const anio = fecha.getUTCFullYear();
+  return `${dia}/${mes}/${anio}`;
+}
+
 // Formulario reutilizable para crear/editar
-function MetaAhorroForm({
-  formData,
-  setFormData,
-  onSubmit,
-  loading,
-  error
-}) {
+function MetaAhorroForm({ formData, setFormData, onSubmit, loading, error }) {
   return (
     <form onSubmit={onSubmit} className="metaAhorro-form">
       <div className="form-group">
@@ -120,7 +152,44 @@ function MetaAhorroForm({
           min="0"
         />
       </div>
-      
+      <div className="form-group">
+        <label htmlFor="ahorrado">Ahorrado:</label>
+        <input
+          type="number"
+          id="ahorrado"
+          name="ahorrado"
+          value={formData.ahorrado}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              ahorrado: e.target.value,
+            }))
+          }
+          required
+          min="0"
+        />
+      </div>
+      <div className="form-group">
+        <label htmlFor="fecha_limite">Fecha límite:</label>
+        <input
+          type="date"
+          id="fecha_limite"
+          name="fecha_limite"
+          value={formData.fecha_limite}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              fecha_limite: e.target.value,
+            }))
+          }
+          required
+        />
+      </div>
+      <div className="btn-submit-container">
+        <button type="submit" className="btn-submit" disabled={loading}>
+          {loading ? "Guardando..." : "Guardar"}
+        </button>
+      </div>
       {error && <p className="error-message">{error}</p>}
     </form>
   );
@@ -131,15 +200,17 @@ const MetasAhorro = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [metaAhorroSeleccionada, setmetaAhorroSeleccionada] = useState(null);
-  const [divisas, setDivisas] = useState([]);
+  const [estados, setEstados] = useState([]);
   const [presupuestos, setPresupuestos] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("crear"); // crear | editar | ver
   const [filtroPresupuesto, setFiltroPresupuesto] = useState("");
-  const [filtroDivisa, setFiltroDivisa] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
   const [busqueda, setBusqueda] = useState("");
   const [formData, setFormData] = useState(initialForm);
+  const [isOpen, setIsOpen] = useState(false);
+  const contentRef = useRef(null);
 
   const ITEMS_PER_PAGE = 5;
 
@@ -153,7 +224,7 @@ const MetasAhorro = () => {
     try {
       if (!token) throw new Error("No token disponible, inicia sesión.");
       const response = await fetch(
-        `http://localhost:3000/api/metasahorro/${userId}`,
+        `http://localhost:3000/api/metas-ahorro/${userId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -168,6 +239,12 @@ const MetasAhorro = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const formatearFechaParaInput = (fechaIso) => {
+    if (!fechaIso) return "";
+    const fecha = new Date(fechaIso);
+    return fecha.toISOString().split("T")[0]; // Retorna YYYY-MM-DD
   };
 
   useEffect(() => {
@@ -189,7 +266,8 @@ const MetasAhorro = () => {
       nombre: metaAhorroSeleccionada.nombre || "",
       descripcion: metaAhorroSeleccionada.descripcion || "",
       objetivo: metaAhorroSeleccionada.objetivo || "",
-      fecha_limite: metaAhorroSeleccionada.fecha_limite || "",
+      fecha_limite:
+        formatearFechaParaInput(metaAhorroSeleccionada.fecha_limite) || "",
       estado: metaAhorroSeleccionada.estado || "",
     });
     setModalMode("editar");
@@ -235,7 +313,7 @@ const MetasAhorro = () => {
       if (!token) throw new Error("Token no encontrado. Inicie sesión.");
       const cleanData = limpiarDatos(formData);
       await axios.post(
-        `http://localhost:3000/api/metasahorro/${userId}`,
+        `http://localhost:3000/api/metas-ahorro/${userId}`,
         cleanData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -286,8 +364,8 @@ const MetasAhorro = () => {
 
       const dataLimpia = limpiarDatos(formData);
 
-      await axios.put(
-        `http://localhost:3000/api/metasahorro/${userId}/${metaAhorroSeleccionada._id}`,
+      await axios.patch(
+        `http://localhost:3000/api/metas-ahorro/${userId}/${metaAhorroSeleccionada._id}`,
         dataLimpia,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -340,36 +418,30 @@ const MetasAhorro = () => {
     setLoading(false);
   };
 
-  const presupuestosUsados = presupuestos.filter((p) =>
+  /* const presupuestosUsados = presupuestos.filter((p) =>
     metaAhorro.some((t) => t.presupuesto_asociado === p._id)
   );
 
-  const divisasUsadas = divisas.filter((d) =>
-    metaAhorro.some((t) => t.divisa_asociada === d._id)
-  );
+  const estadosUsados = estados.filter((d) =>
+    metaAhorro.some((t) => t.estado === d._id)
+  ); */
+
+  const estadosUsados = [...new Set(metaAhorro.map((m) => m.estado))];
 
   // Filtro principal de metaAhorro
   const metaAhorroFiltrados = metaAhorro.filter((t) => {
-    const coincidePresupuesto = filtroPresupuesto
-      ? t.presupuesto_asociado === filtroPresupuesto
+    const coincideEstado = filtroEstado ? t.estado === filtroEstado : true;
+
+    const coincideBusqueda = busqueda
+      ? t.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      t.objetivo?.toString().toLowerCase().includes(busqueda.toLowerCase())
       : true;
 
-    const coincideDivisa = filtroDivisa
-      ? t.divisa_asociada === filtroDivisa
-      : true;
-
-      const coincideBusqueda = busqueda
-    ? t.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      t.objetivo?.toLowerCase().includes(busqueda.toLowerCase())
-    : true;
-
-    return coincidePresupuesto && coincideDivisa && coincideBusqueda;
+    return coincideEstado && coincideBusqueda;
   });
 
   // Paginación
-  const totalPaginas = Math.ceil(
-    metaAhorroFiltrados.length / ITEMS_PER_PAGE
-  );
+  const totalPaginas = Math.ceil(metaAhorroFiltrados.length / ITEMS_PER_PAGE);
 
   const metaAhorroPaginadas = metaAhorroFiltrados.slice(
     (paginaActual - 1) * ITEMS_PER_PAGE,
@@ -388,6 +460,7 @@ const MetasAhorro = () => {
       "Título",
       "Descripción",
       "Objetivo",
+      "Ahorrado",
       "Fecha Limite",
       "Estado",
       "Fecha",
@@ -396,9 +469,9 @@ const MetasAhorro = () => {
       t.nombre || "",
       t.descripcion || "",
       `$${Number(t.objetivo || 0).toFixed(2)}`,
-      t.fecha_limite || "",
+      t.fecha_limite ? formatearFechaUTC(t.fecha_limite) : "",
       t.estado || "",
-      t.fecha ? new Date(t.fecha).toLocaleDateString() : "",
+      t.fecha ? formatearFechaUTC(t.fecha) : "",
     ]);
     doc.text("Listado de Metas de Ahorro", 14, 15);
     autoTable(doc, {
@@ -415,7 +488,12 @@ const MetasAhorro = () => {
         <div className="brine-header">
           <button
             onClick={() => (window.location.href = "/home")}
-            style={{ zIndex: 9999, position: "relative", pointerEvents: "auto", cursor: "pointer" }}
+            style={{
+              zIndex: 9999,
+              position: "relative",
+              pointerEvents: "auto",
+              cursor: "pointer",
+            }}
           >
             &larr; Regresar
           </button>
@@ -423,20 +501,45 @@ const MetasAhorro = () => {
             <FaTags style={{ marginRight: "10px", marginTop: "80px" }} />
             Gestión de Metas de Ahorro
           </h1>
-          <p>
-            Administra tus Metas de Ahorro
-          </p>
+          <p>Administra tus Metas de Ahorro</p>
         </div>
         {error && <div className="error-message">{error}</div>}
         <div className="brine-intro">
-          <h2>¿Qué puedes hacer aquí?</h2>
-          <p>
-            Esta sección te permite crear nuevas Metas, organizarlas y visualizarlas rápidamente.
-          </p>
-          <ul>
-            <li>Crear una nueva meta.</li>
-            <li>Gestionar metas creadas.</li>
-          </ul>
+          <h2 onClick={() => setIsOpen(!isOpen)} style={{ cursor: "pointer" }}>
+            ¿Qué puedes hacer aquí?
+            <span
+              style={{
+                display: "inline-block",
+                marginLeft: "8px",
+                transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+                transition: "transform 0.3s ease",
+              }}
+            >
+              ▶
+            </span>
+          </h2>
+
+          <div
+            ref={contentRef}
+            className="brine-intro-content"
+            style={{
+              maxHeight: isOpen
+                ? `${contentRef.current?.scrollHeight}px`
+                : "0px",
+              opacity: isOpen ? 1 : 0,
+              overflow: "hidden",
+              transition: "max-height 0.5s ease, opacity 0.4s ease",
+            }}
+          >
+            <p>
+              Esta sección te permite crear nuevas Metas, organizarlas y
+              visualizarlas rápidamente.
+            </p>
+            <ul>
+              <li>Crear una nueva meta.</li>
+              <li>Gestionar metas creadas.</li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -497,27 +600,13 @@ const MetasAhorro = () => {
         </div>
         <div className="Filtros">
           <select
-            value={filtroPresupuesto}
-            onChange={(e) => setFiltroPresupuesto(e.target.value)}
+            id="filtroEstado"
+            value={filtroEstado}
+            onChange={(e) => setFiltroEstado(e.target.value)}
           >
-            <option value="">Todos los presupuestos</option>
-            {presupuestosUsados.map((p) => (
-              <option key={p._id} value={p._id}>
-                {p.nombre}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={filtroDivisa}
-            onChange={(e) => setFiltroDivisa(e.target.value)}
-          >
-            <option value="">Todas las divisas</option>
-            {divisasUsadas.map((d) => (
-              <option key={d._id} value={d._id}>
-                {d.nombre}
-              </option>
-            ))}
+            <option value="">Todos los estados</option>
+            <option value="Ahorrando">Ahorrando</option>
+            <option value="Completada">Completada</option>
           </select>
         </div>
       </div>
@@ -528,6 +617,7 @@ const MetasAhorro = () => {
             <th>Título</th>
             <th>Descripción</th>
             <th>Objetivo</th>
+            <th>Ahorrado</th>
             <th>Fecha Limite</th>
             <th>Estado</th>
             <th>Fecha</th>
@@ -550,8 +640,8 @@ const MetasAhorro = () => {
                 <td>{metaAhorro.nombre}</td>
                 <td>{metaAhorro.descripcion}</td>
                 <td>${Number(metaAhorro.objetivo || 0).toFixed(2)}</td>
-                <td>{metaAhorro.fecha_limite}</td>
-                <td>{metaAhorro.progreso_actual}</td>
+                <td>${Number(metaAhorro.ahorrado || 0).toFixed(2)}</td>
+                <td>{formatearFechaUTC(metaAhorro.fecha_limite)}</td>
                 <td>{metaAhorro.estado}</td>
                 <td>
                   {metaAhorro.fecha
@@ -600,7 +690,7 @@ const MetasAhorro = () => {
             </button>
             {modalMode === "crear" && (
               <>
-                <h2>Crear metaAhorro</h2>
+                <h2>Crear Meta de Ahorro</h2>
                 <MetaAhorroForm
                   formData={formData}
                   setFormData={setFormData}
@@ -608,13 +698,12 @@ const MetasAhorro = () => {
                   loading={loading}
                   error={error}
                   presupuestos={presupuestos}
-                  divisas={divisas}
                 />
               </>
             )}
             {modalMode === "editar" && (
               <>
-                <h2>Editar metaAhorro</h2>
+                <h2>Editar Meta de Ahorro</h2>
                 <MetaAhorroForm
                   formData={formData}
                   setFormData={setFormData}
@@ -627,23 +716,33 @@ const MetasAhorro = () => {
             )}
             {modalMode === "ver" && formData && (
               <>
-                <h2>Detalles de la metaAhorro</h2>
+                <h2>Detalles de la Meta de Ahorro</h2>
                 <div className="detalle-metaAhorro">
                   <p>
                     <strong>Título: </strong> {formData.nombre}
                   </p>
                   <p>
-                    <strong>Descripción: </strong> {formData.objetivo}
+                    <strong>Descripción: </strong> {formData.descripcion}
                   </p>
                   <p>
                     <strong>Objetivo: </strong> $
                     {Number(formData.objetivo).toFixed(2)}
                   </p>
                   <p>
-                    <strong>fecha_limite: </strong> {formData.fecha_limite}
+                    <strong> Ahorrado: </strong>
+                    ${Number(metaAhorro.ahorrado || 0).toFixed(2)}
+                  </p>
+                  <p>
+                    <strong>Fechar límite: </strong>{" "}
+                    {formatearFechaUTC(formData.fecha_limite)}
                   </p>
                   <p>
                     <strong>Estado: </strong> {formData.estado}
+                  </p>
+                  <p>
+                    <strong>Fecha: </strong> {metaAhorroSeleccionada.fecha
+                    ? new Date(metaAhorroSeleccionada.fecha).toLocaleDateString()
+                    : ""}
                   </p>
                 </div>
               </>

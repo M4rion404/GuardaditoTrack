@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./Categorias.css";
 import {
   FaPlus,
@@ -30,6 +30,8 @@ const Categorias = () => {
   const totalPaginas = Math.ceil(
     categoriasGuardadas.length / categoriasPorPagina
   );
+  const [isOpen, setIsOpen] = useState(false);
+const contentRef = useRef(null);
 
   // Simulación de usuario autenticado
   //const idUsuario = '1234567890abcdef'; // Reemplaza con el ID real desde contexto o localStorage
@@ -63,120 +65,120 @@ const Categorias = () => {
   };
 
   const handleGuardarCategoria = async () => {
-  if (!nuevaCategoria.trim()) {
-    setError("Debes ingresar un nombre para la nueva categoría");
-    return;
-  }
-
-  try {
-    setCargando(true);
-    const categoriaData = {
-      titulo: nuevaCategoria.trim(),
-      descripcion: descripcion.trim(),
-    };
-
-    let res;
-
-    if (editandoId) {
-      // Actualizar categoría existente
-      res = await axios.put(`${API_URL}/${idUsuario}/${editandoId}`, categoriaData);
-      setCategoriasGuardadas(
-        categoriasGuardadas.map((cat) =>
-          cat._id === editandoId ? res.data : cat
-        )
-      );
-
-      await Swal.fire({
-        icon: "success",
-        title: "Categoría actualizada",
-        text: "Los cambios se guardaron correctamente.",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-
-    } else {
-      // Crear nueva categoría
-      res = await axios.post(`${API_URL}/${idUsuario}/`, categoriaData);
-      setCategoriasGuardadas([...categoriasGuardadas, res.data]);
-
-      await Swal.fire({
-        icon: "success",
-        title: "Categoría creada",
-        text: "La nueva categoría fue registrada correctamente.",
-        timer: 1500,
-        showConfirmButton: false,
-      });
+    if (!nuevaCategoria.trim()) {
+      setError("Debes ingresar un nombre para la nueva categoría");
+      return;
     }
 
-    await fetchCategorias();
-    setNuevaCategoria("");
-    setDescripcion("");
-    setError("");
-    setMostrarFormulario(false);
-    setEditandoId(null);
+    try {
+      setCargando(true);
+      const categoriaData = {
+        titulo: nuevaCategoria.trim(),
+        descripcion: descripcion.trim(),
+      };
 
-  } catch (err) {
-    console.error("Error al guardar categoría:", err);
-    setError(err.response?.data?.message || "Error al guardar la categoría");
+      let res;
 
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "No se pudo guardar la categoría.",
+      if (editandoId) {
+        // Actualizar categoría existente
+        res = await axios.put(`${API_URL}/${idUsuario}/${editandoId}`, categoriaData);
+        setCategoriasGuardadas(
+          categoriasGuardadas.map((cat) =>
+            cat._id === editandoId ? res.data : cat
+          )
+        );
+
+        await Swal.fire({
+          icon: "success",
+          title: "Categoría actualizada",
+          text: "Los cambios se guardaron correctamente.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+
+      } else {
+        // Crear nueva categoría
+        res = await axios.post(`${API_URL}/${idUsuario}/`, categoriaData);
+        setCategoriasGuardadas([...categoriasGuardadas, res.data]);
+
+        await Swal.fire({
+          icon: "success",
+          title: "Categoría creada",
+          text: "La nueva categoría fue registrada correctamente.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
+
+      await fetchCategorias();
+      setNuevaCategoria("");
+      setDescripcion("");
+      setError("");
+      setMostrarFormulario(false);
+      setEditandoId(null);
+
+    } catch (err) {
+      console.error("Error al guardar categoría:", err);
+      setError(err.response?.data?.message || "Error al guardar la categoría");
+
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo guardar la categoría.",
+      });
+
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const handleEditarCategoria = (categoria) => {
+    setEditandoId(categoria._id);
+    setNuevaCategoria(categoria.titulo);
+    setDescripcion(categoria.descripcion);
+    setMostrarFormulario(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleEliminarCategoria = async (id) => {
+    const confirmacion = await Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Esta acción eliminará la categoría permanentemente.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
     });
 
-  } finally {
-    setCargando(false);
-  }
-};
+    if (!confirmacion.isConfirmed) return;
 
-const handleEditarCategoria = (categoria) => {
-  setEditandoId(categoria._id);
-  setNuevaCategoria(categoria.titulo);
-  setDescripcion(categoria.descripcion);
-  setMostrarFormulario(true);
-  window.scrollTo({ top: 0, behavior: "smooth" });
-};
+    try {
+      setCargando(true);
+      await axios.delete(`${API_URL}/${idUsuario}/${id}`);
+      setCategoriasGuardadas(categoriasGuardadas.filter((cat) => cat._id !== id));
 
-const handleEliminarCategoria = async (id) => {
-  const confirmacion = await Swal.fire({
-    title: "¿Estás seguro?",
-    text: "Esta acción eliminará la categoría permanentemente.",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Sí, eliminar",
-    cancelButtonText: "Cancelar",
-  });
+      await Swal.fire({
+        icon: "success",
+        title: "Categoría eliminada",
+        text: "La categoría fue eliminada correctamente.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
 
-  if (!confirmacion.isConfirmed) return;
+    } catch (err) {
+      console.error("Error al eliminar categoría:", err);
+      setError("Error al eliminar la categoría");
 
-  try {
-    setCargando(true);
-    await axios.delete(`${API_URL}/${idUsuario}/${id}`);
-    setCategoriasGuardadas(categoriasGuardadas.filter((cat) => cat._id !== id));
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo eliminar la categoría.",
+      });
 
-    await Swal.fire({
-      icon: "success",
-      title: "Categoría eliminada",
-      text: "La categoría fue eliminada correctamente.",
-      timer: 1500,
-      showConfirmButton: false,
-    });
-
-  } catch (err) {
-    console.error("Error al eliminar categoría:", err);
-    setError("Error al eliminar la categoría");
-
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "No se pudo eliminar la categoría.",
-    });
-
-  } finally {
-    setCargando(false);
-  }
-};
+    } finally {
+      setCargando(false);
+    }
+  };
 
 
   const cambiarPagina = (numeroPagina) => {
@@ -204,15 +206,39 @@ const handleEliminarCategoria = async (id) => {
 
       {/* Introducción */}
       <div className="brine-intro">
-        <h2>¿Qué puedes hacer aquí?</h2>
-        <p>
-          Esta sección te permite crear nuevas categorías, organizar tus
-          finanzas y visualizar rápidamente tus registros.
-        </p>
-        <ul>
-          <li>Crear una nueva categoría personalizada.</li>
-          <li>Gestionar las categorías que ya creaste.</li>
-        </ul>
+        <h2 onClick={() => setIsOpen(!isOpen)}>
+          ¿Qué puedes hacer aquí?
+          <span
+            style={{
+              display: "inline-block",
+              marginLeft: "8px",
+              transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+              transition: "transform 0.3s ease"
+            }}
+          >
+            ▶
+          </span>
+        </h2>
+
+        <div
+          ref={contentRef}
+          className="brine-intro-content"
+          style={{
+            maxHeight: isOpen ? `${contentRef.current?.scrollHeight}px` : "0px",
+            opacity: isOpen ? 1 : 0,
+            overflow: "hidden",
+            transition: "max-height 0.5s ease, opacity 0.4s ease"
+          }}
+        >
+          <p>
+            Esta sección te permite crear nuevas categorías, organizar tus
+            finanzas y visualizar rápidamente tus registros.
+          </p>
+          <ul>
+            <li>Crear una nueva categoría personalizada.</li>
+            <li>Gestionar las categorías que ya creaste.</li>
+          </ul>
+        </div>
       </div>
 
       {/* Formulario */}
@@ -231,9 +257,8 @@ const handleEliminarCategoria = async (id) => {
         </div>
 
         <div
-          className={`brine-form-container ${
-            mostrarFormulario ? "active fadeIn" : ""
-          }`}
+          className={`brine-form-container ${mostrarFormulario ? "active fadeIn" : ""
+            }`}
         >
           <input
             type="text"
@@ -255,8 +280,8 @@ const handleEliminarCategoria = async (id) => {
             {cargando
               ? "Procesando..."
               : editandoId
-              ? "Actualizar categoría"
-              : "Guardar categoría"}
+                ? "Actualizar categoría"
+                : "Guardar categoría"}
           </button>
         </div>
       </div>
@@ -273,46 +298,46 @@ const handleEliminarCategoria = async (id) => {
         ) : categoriasGuardadas.length === 0 ? (
           <p>Aún no has creado categorías.</p>
         ) : (
-<>
-  <ul className="fadeIn">
-    {categoriasVisibles.map((cat) => (
-      <li key={cat._id}>
-        <div>
-          <strong>{cat.titulo}</strong>
-          <br />
-          <small>{cat.descripcion || "Sin descripción"}</small>
-        </div>
-        <div className="category-actions">
-          <button
-            onClick={() => handleEditarCategoria(cat)}
-            disabled={cargando}
-          >
-            <FaEdit />
-          </button>
-          <button
-            onClick={() => handleEliminarCategoria(cat._id)}
-            disabled={cargando}
-          >
-            <FaTrash />
-          </button>
-        </div>
-      </li>
-    ))}
-  </ul>
-  {totalPaginas > 1 && (
-    <div className="paginacion">
-      {Array.from({ length: totalPaginas }, (_, index) => (
-        <button
-          key={index + 1}
-          className={paginaActual === index + 1 ? 'activo' : ''}
-          onClick={() => cambiarPagina(index + 1)}
-        >
-          {index + 1}
-        </button>
-      ))}
-    </div>
-  )}
-</>
+          <>
+            <ul className="fadeIn">
+              {categoriasVisibles.map((cat) => (
+                <li key={cat._id}>
+                  <div>
+                    <strong>{cat.titulo}</strong>
+                    <br />
+                    <small>{cat.descripcion || "Sin descripción"}</small>
+                  </div>
+                  <div className="category-actions">
+                    <button
+                      onClick={() => handleEditarCategoria(cat)}
+                      disabled={cargando}
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      onClick={() => handleEliminarCategoria(cat._id)}
+                      disabled={cargando}
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            {totalPaginas > 1 && (
+              <div className="paginacion">
+                {Array.from({ length: totalPaginas }, (_, index) => (
+                  <button
+                    key={index + 1}
+                    className={paginaActual === index + 1 ? 'activo' : ''}
+                    onClick={() => cambiarPagina(index + 1)}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
 
         )}
       </div>

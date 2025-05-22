@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import './ColorHoverEffect.css'; // Asegúrate de crear este archivo
 
 const ColorHoverEffect = () => {
   // Estado para rastrear los colores del degradado
@@ -30,11 +31,11 @@ const ColorHoverEffect = () => {
   };
 
   // Función para aplicar el degradado al body como fondo general
-  const applyGradientToBody = (fromColor, toColor) => {
+  /* const applyGradientToBody = (fromColor, toColor) => {
     document.body.style.background = `linear-gradient(45deg, ${fromColor}, ${toColor})`;
     document.body.style.backgroundAttachment = 'fixed'; // Para que el degradado cubra toda la página
     document.body.style.transition = 'background 0.5s ease';
-  };
+  }; */
 
   useEffect(() => {
     // Seleccionar todos los enlaces del menú
@@ -55,10 +56,10 @@ const ColorHoverEffect = () => {
       applyGradientToHero(gradient.from, gradient.to);
       
       // Aplicar un degradado sutil al fondo de la página para que se note en toda la pantalla
-      applyGradientToBody(
+      /* applyGradientToBody(
         gradient.from + '99', // Añade transparencia al color (33 = 20% de opacidad)
         gradient.to + '66'    // Añade transparencia al color (19 = 10% de opacidad)
-      );
+      ); */
     };
     
     // Función para manejar el evento mouseleave (cursor sale)
@@ -96,40 +97,6 @@ const ColorHoverEffect = () => {
     };
   }, []); // El array vacío asegura que el efecto se ejecute solo una vez al montar el componente
 
-  // Estilo dinámico para el indicador visual
-  const indicatorStyle = {
-    position: 'fixed',
-    top: '10px',
-    right: '10px',
-    padding: '8px 12px',
-    borderRadius: '4px',
-    background: activeItem ? `linear-gradient(45deg, ${gradientColors.from}, ${gradientColors.to})` : 'transparent',
-    color: '#fff',
-    fontWeight: 'bold',
-    transition: 'all 0.5s ease',
-    opacity: activeItem ? 1 : 0,
-    boxShadow: activeItem ? '0 2px 4px rgba(0,0,0,0.2)' : 'none',
-    zIndex: 1000,
-  };
-
-  return (
-    <>
-      {/* Div de fondo para el efecto - Este div aplica un degradado sutil a toda la página */}
-      <div 
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: `linear-gradient(45deg, ${gradientColors.from}CC, ${gradientColors.to}88)`, // Muy sutil
-          transition: 'background 0.5s ease',
-          zIndex: -1,
-          pointerEvents: 'none',
-        }}
-      />
-    </>
-  );
 };
 
 export default ColorHoverEffect;

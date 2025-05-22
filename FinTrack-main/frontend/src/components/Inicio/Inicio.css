@@ -73,6 +73,7 @@ h1 {
   line-height: 1.2;
   font-weight: 800;
   margin-bottom: var(--space-lg);
+  text-transform: uppercase;
 }
 
 h2 {

@@ -14,9 +14,11 @@ import ColorHoverEffect from "../HoverEffect/ColorHoverEffect";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaUser, FaCog } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Footer from "../Footer/Footer";
+import Swal from "sweetalert2";
 
 import logoFintrack from "../../assets/FintrackBlanco.png";
 import seccionAzul from "../../assets/seccionazul.png";
@@ -25,6 +27,8 @@ import "./Inicio.css";
 import PerroMelon from "../../assets/perro-melon.png";
 import Leon from "../../assets/Leon.jpg";
 import BillsPirata from "../../assets/billspirata.png"
+import { Power } from "lucide-react";
+
 
 
 
@@ -32,6 +36,28 @@ import BillsPirata from "../../assets/billspirata.png"
 const Inicio = () => {
   const [usuario, setUsuario] = useState(null);
   const [mostrarVentana, setMostrarVentana] = useState(false);
+  const navigate = useNavigate();
+
+const handleCerrarSesion = () => {
+  Swal.fire({
+    title: "¿Estás seguro?",
+    text: "Se cerrará tu sesión actual",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Sí, cerrar sesión",
+    cancelButtonText: "Cancelar"
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Limpiar localStorage
+      localStorage.removeItem("usuario");
+      localStorage.clear();
+      
+      // Navegar a la página de inicio
+      navigate("/");
+    }
+  });
+};
+
 
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
@@ -66,47 +92,52 @@ const Inicio = () => {
   return (
     <div className="fintrack-homepage">
       {/* Navegación */}
-      <nav className="barra-navegacion">
-        <div className="barra-navegacion-izquierda">
-          <div className="logo">
-            <img
-              className="logo-fintrack"
-              src={logoFintrack}
-              alt="Logo Fintrack"
+        <nav className="barra-navegacion">
+          <div className="barra-navegacion-izquierda">
+            <div className="logo">
+          <img
+            className="logo-fintrack"
+            src={logoFintrack}
+            alt="Logo Fintrack"
+          />
+            </div>
+            <ul className="barra-navegacion-lista">
+          <li>
+            <Link to="/presupuestos">Presupuestos</Link>
+          </li>
+          <li>
+            <Link to="/transacciones">Transacciones</Link>
+          </li>
+          <li>
+            <Link to="/metasAhorro">Metas y ahorros</Link>
+          </li>
+          <li>
+            <Link to="/saludFinanciera">Salud Financiera</Link>
+          </li>
+          <li>
+            <Link to="/categorias">Categorías</Link>
+          </li>
+            </ul>
+          </div>
+          <div className="barra-navegacion-derecha">
+            <FaUser className="icono-usuario" />
+            <span>{usuario?.nombres || usuario?.email || "Usuario-Fintrack"}</span>
+            <Power
+          className="icono-cerrar-sesion"
+          onClick={handleCerrarSesion}
+          title="Cerrar sesión"
+          style={{ 
+            cursor: "pointer", 
+            marginLeft: "15px", 
+            color: "#FF3B30", // Rojo típico de botón de apagado/encendido
+            fontSize: "1.2rem"
+          }}
             />
           </div>
-          <ul className="barra-navegacion-lista">
-            <li>
-              <Link to="/presupuestos">Presupuestos</Link>
-            </li>
-            <li>
-              <Link to="/transacciones">Transacciones</Link>
-            </li>
-            <li>
-              <Link to="/metasAhorro">Metas y ahorros</Link>
-            </li>
-            <li>
-              <Link to="/saludFinanciera">Salud Financiera</Link>
-            </li>
-            <li>
-              <Link to="/categorias">Categorías</Link>
-            </li>
-          </ul>
-        </div>
-        <div className="barra-navegacion-derecha">
-          <FaUser className="icono-usuario" />
-          <span>{usuario?.nombres || usuario?.email || "Usuario-Fintrack"}</span>
-          <FaCog
-            className="icono-configuracion"
-            onClick={() => setMostrarVentana(true)}
-            title="Configuración de cuenta"
-            style={{ cursor: "pointer" }}
-          />
-        </div>
-      </nav>
-      <ColorHoverEffect />
+        </nav>
+        <ColorHoverEffect />
 
-      {/* Hero Section */}
+        {/* Hero Section */}
       <section className="hero-section bg-gradient-to-b from-cyan-500 to-blue-600 text-white py-20">
         <div className="mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
@@ -391,7 +422,9 @@ const Inicio = () => {
           </div>
         </div>
       </section>
-      
+
+     
+
       {/* Footer */}
       <footer className="bg-navy-900 text-white py-12">
         <div className="mx-auto px-4">
@@ -399,7 +432,7 @@ const Inicio = () => {
             <div>
               <div className="flex items-center space-x-3 mb-6">
                 <div className="logo-container bg-white rounded-full p-1 w-10 h-10 flex items-center justify-center">
-                       <img
+                   <img
               className="logo-fintrack"
               src={logoFintrack}
               alt="Logo Fintrack"
@@ -510,3 +543,4 @@ const Inicio = () => {
 }
 
 export default Inicio;
+

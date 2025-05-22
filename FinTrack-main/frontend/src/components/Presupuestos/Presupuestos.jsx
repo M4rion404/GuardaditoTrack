@@ -1,33 +1,14 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState, useEffect, useRef } from "react";
+import { FaPlus, FaEdit, FaTrash, FaSyncAlt, FaSearch, FaTimes, FaTags, FaFilePdf, FaEye } from "react-icons/fa";
 import Swal from "sweetalert2";
-import "./Presupuestos.css";
 import PresupuestoResumen from "./PresupuestoResumen";
+import axios from "axios";
 import { Doughnut } from "react-chartjs-2";
-
-import {
-  Chart,
-  ArcElement,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-} from "chart.js";
+import { Chart, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from "chart.js";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { FaFilePdf, FaEye } from "react-icons/fa";
-import {
-  FaPlus,
-  FaEdit,
-  FaTrash,
-  FaSyncAlt,
-  FaSearch,
-  FaTimes,
-} from "react-icons/fa";
-import { FaTags } from "react-icons/fa";
 import { Bar } from "react-chartjs-2";
+import "../Estilos/modalesStyles.css"
 
 Chart.register(
   ArcElement,
@@ -294,6 +275,14 @@ const Presupuestos = () => {
   const [filtroCategoria, setFiltroCategoria] = useState("");
   const [filtroDivisa, setFiltroDivisa] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
+  const [isOpen, setIsOpen] = useState(false);
+  const contentRef = useRef(null);
+  const [periodos, setPeriodos] = useState([]);
+  const [filtroPeriodo, setFiltroPeriodo] = useState("");
+  const [isOpenBudget, setIsOpenBudget] = useState(false);
+  const [isOpenGoals, setIsOpenGoals] = useState(false);
+  const budgetRef = useRef(null);
+  const goalsRef = useRef(null);
 
   // Constantes
   const ITEMS_PER_PAGE = 5;
@@ -659,30 +648,36 @@ const Presupuestos = () => {
     setLoading(false);
   };
 
-  // Filtrar categorias y divisas usados en presupuestos
-  const categoriasUsadas = categorias.filter((c) =>
-    presupuestos.some((p) => p.categoria_asociada === c._id)
+  // Obtener todos los IDs de categorías anidadas usadas en presupuestos
+  const idsCategoriasUsadas = new Set(
+    presupuestos.flatMap(p =>
+      (p.categorias || []).map(catObj => catObj.categoria?._id)
+    )
   );
 
-  const divisasUsadas = divisas.filter((d) =>
-    presupuestos.some((p) => p.divisa_asociada === d._id)
+  // Filtrar lista completa de categorías para quedarte solo con las que están en uso
+  const categoriasUsadas = categorias.filter(c =>
+    idsCategoriasUsadas.has(c._id)
   );
+
+  const periodosUsados = [...new Set(presupuestos.map(p => p.periodo))];
+
 
   const presupuestosFiltrados = presupuestos.filter((p) => {
     const coincideCategoria = filtroCategoria
-      ? p.categoria_asociada === filtroCategoria
+      ? (p.categorias || []).some(catObj => catObj.categoria?._id === filtroCategoria)
       : true;
 
-    const coincideDivisa = filtroDivisa
-      ? p.divisa_asociada === filtroDivisa
+    const coincidePeriodo = filtroPeriodo
+      ? p.periodo === filtroPeriodo
       : true;
 
     const coincideBusqueda = busqueda
       ? p.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
-        p.descripcion?.toLowerCase().includes(busqueda.toLowerCase())
+      p.descripcion?.toLowerCase().includes(busqueda.toLowerCase())
       : true;
 
-    return coincideCategoria && coincideDivisa && coincideBusqueda;
+    return coincideCategoria && coincidePeriodo && coincideBusqueda;
   });
 
   // Paginación
@@ -710,7 +705,7 @@ const Presupuestos = () => {
           Math.max(
             0,
             Number(presupuestoSeleccionado?.limite || 0) -
-              Number(presupuestoSeleccionado?.dinero_disponible || 0)
+            Number(presupuestoSeleccionado?.dinero_disponible || 0)
           ),
         ],
         backgroundColor: ["#4caf50", "#f44336"],
@@ -824,20 +819,71 @@ const Presupuestos = () => {
           </p>
         </div>
         {error && <div className="error-message">{error}</div>}
-        <div className="brine-intro">
-          <h2>¿Qué puedes hacer aquí?</h2>
-          <p>
-            Esta sección te permite crear nuevos presupuestos, organizar tus
-            finanzas y visualizar rápidamente tus registros.
-          </p>
-          <ul>
-            <li>Crear un nuevo presupuesto personalizado.</li>
-            <li>Gestionar los presupuestos que ya creaste.</li>
-          </ul>
-        </div>
-      </div>
 
-      <PresupuestoResumen presupuestos={presupuestos} />
+
+        <div className="brine-intro">
+          <h2 onClick={() => setIsOpenBudget(!isOpenBudget)} style={{ cursor: "pointer" }}>
+            ¿Qué puedes hacer con los Presupuestos?
+            <span
+              style={{
+                display: "inline-block",
+                marginLeft: "8px",
+                transform: isOpenBudget ? "rotate(90deg)" : "rotate(0deg)",
+                transition: "transform 0.3s ease"
+              }}
+            >
+              ▶
+            </span>
+          </h2>
+
+          <div
+            ref={budgetRef}
+            className="brine-intro-content"
+            style={{
+              maxHeight: isOpenBudget ? `${budgetRef.current?.scrollHeight}px` : "0px",
+              opacity: isOpenBudget ? 1 : 0,
+              overflow: "hidden",
+              transition: "max-height 0.5s ease, opacity 0.4s ease"
+            }}
+          >
+            <div className="intro-box">
+              <p>
+                Un presupuesto es un ingreso fijo que se renueva cada cierto tiempo (por ejemplo, semanal, quincenal o mensual).
+                Su propósito es ayudarte a controlar tus gastos y distribuir tu dinero en diferentes categorías.
+              </p>
+
+              <div className="example-box">
+                <p><strong>Ejemplo:</strong></p>
+                <p>
+                  Supongamos que creas un presupuesto llamado <strong>“Gastos Personales”</strong> con un límite mensual de <strong>$2,000 pesos</strong>.
+                  Lo divides en:
+                </p>
+                <ul>
+                  <li>Transporte: $500</li>
+                  <li>Comida: $1,000</li>
+                  <li>Entretenimiento: $500</li>
+                </ul>
+                <p>
+                  Si realizas una compra de comida por $150 pesos, podrás registrarla como una transacción
+                  y el sistema restará automáticamente ese gasto del presupuesto correspondiente.
+                </p>
+              </div>
+
+              <p><strong>En resumen:</strong></p>
+              <ul className="summary-list">
+                <li>Crea presupuestos con un límite definido y un periodo de renovación.</li>
+                <li>Asigna montos a diferentes categorías.</li>
+                <li>Registra transacciones y actualiza el saldo de forma automática.</li>
+                <li>Consulta tu historial de gastos en cada categoría.</li>
+                <li>Visualiza cuánto dinero te queda disponible en todo momento.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+
+
+      </div>
 
       <div className="acciones-superiores">
         <button
@@ -894,7 +940,6 @@ const Presupuestos = () => {
             onChange={(e) => setBusqueda(e.target.value)}
           />
         </div>
-
         <div className="Filtros">
           <select
             value={filtroCategoria}
@@ -908,13 +953,14 @@ const Presupuestos = () => {
             ))}
           </select>
           <select
-            value={filtroDivisa}
-            onChange={(e) => setFiltroDivisa(e.target.value)}
+            id="filtroPeriodo"
+            value={filtroPeriodo}
+            onChange={(e) => setFiltroPeriodo(e.target.value)}
           >
-            <option value="">Todas las divisas</option>
-            {divisasUsadas.map((div) => (
-              <option key={div._id} value={div._id}>
-                {div.nombre}
+            <option value="">Todos los periodos</option>
+            {periodosUsados.map((periodo) => (
+              <option key={periodo} value={periodo}>
+                {periodo}
               </option>
             ))}
           </select>
@@ -925,12 +971,10 @@ const Presupuestos = () => {
         <thead>
           <tr>
             <th>Título</th>
-            <th>Descripción</th>
             <th>Limite</th>
             <th>Dinero Disponible</th>
             <th>Periodo</th>
             <th>Categoría</th>
-            <th>Fecha</th>
           </tr>
         </thead>
         <tbody>
@@ -947,30 +991,25 @@ const Presupuestos = () => {
               }}
             >
               <td>{presupuesto.titulo}</td>
-              <td>{presupuesto.descripcion}</td>
               <td>${Number(presupuesto.limite || 0).toFixed(2)}</td>
               <td>${Number(presupuesto.dinero_disponible || 0).toFixed(2)}</td>
               <td>{presupuesto.periodo || ""}</td>
               <td>
                 {presupuesto.categorias && presupuesto.categorias.length > 0
                   ? presupuesto.categorias.map((catObj, index) => (
-                      <span key={index}>
-                        {catObj.categoria.titulo}
-                        {index < presupuesto.categorias.length - 1 ? ", " : ""}
-                      </span>
-                    ))
+                    <span key={index}>
+                      {catObj.categoria.titulo}
+                      {index < presupuesto.categorias.length - 1 ? ", " : ""}
+                    </span>
+                  ))
                   : "Sin categoría"}
-              </td>
-
-              <td>
-                {presupuesto.fecha_creacion
-                  ? new Date(presupuesto.fecha_creacion).toLocaleDateString()
-                  : ""}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+
 
       {/* Controles de paginación */}
       <div className="pagination">
@@ -999,6 +1038,8 @@ const Presupuestos = () => {
           Siguiente &raquo;
         </button>
       </div>
+
+      {/* <PresupuestoResumen presupuestos={presupuestos} /> */}
 
       {modalOpen && (
         <div className="modal-overlay">
@@ -1045,12 +1086,10 @@ const Presupuestos = () => {
                     <strong>Descripción:</strong> {formData.descripcion}
                   </p>
                   <p>
-                    <strong>Limite:</strong> $
-                    {Number(formData.limite).toFixed(2)}
+                    <strong>Límite:</strong> ${Number(formData.limite).toFixed(2)}
                   </p>
                   <p>
-                    <strong>Dinero Disponible:</strong> $
-                    {Number(formData.dinero_disponible).toFixed(2)}
+                    <strong>Dinero Disponible:</strong> ${Number(formData.dinero_disponible).toFixed(2)}
                   </p>
                   <p>
                     <strong>Periodo:</strong> {formData.periodo}
@@ -1058,9 +1097,10 @@ const Presupuestos = () => {
                   <div>
                     <p>
                       <strong>Categorías:</strong>
-                    </p>{" "}
+                    </p>
+                    {" "}
                     {Array.isArray(presupuestoSeleccionado?.categorias) &&
-                    presupuestoSeleccionado.categorias.length > 0 ? (
+                      presupuestoSeleccionado.categorias.length > 0 ? (
                       <ul>
                         {" "}
                         {presupuestoSeleccionado.categorias.map(
@@ -1071,10 +1111,14 @@ const Presupuestos = () => {
                               catObj?.limite != null
                                 ? `$${Number(catObj.limite).toFixed(2)}`
                                 : "Sin límite";
+                            const dinero_disponible =
+                              catObj?.dinero_disponible != null
+                                ? `$${Number(catObj.dinero_disponible).toFixed(2)}`
+                                : "Sin límite";
                             return (
                               <li key={index}>
                                 {" "}
-                                {titulo} — Límite: {limite}{" "}
+                                {titulo} — Límite: {limite} - Dinero disponible: {dinero_disponible}  {" "}
                               </li>
                             );
                           }
@@ -1084,6 +1128,12 @@ const Presupuestos = () => {
                       <p>No hay categorías asignadas.</p>
                     )}
                   </div>
+
+                  <p><strong> Fecha de creación: </strong>{" "}{presupuestoSeleccionado.fecha_creacion
+                    ? new Date(presupuestoSeleccionado.fecha_creacion).toLocaleDateString()
+                    : ""}</p>
+
+
                   <div style={{ display: "flex", justifyContent: "center" }}>
                     {presupuestoSeleccionado && (
                       <div className="grafico-ahorro">

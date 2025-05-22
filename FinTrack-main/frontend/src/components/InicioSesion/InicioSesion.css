@@ -40,12 +40,33 @@ img {
 
 .right-panel {
   flex: 4;
-  background-color: white;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   padding: 40px;
+  background: linear-gradient(
+    135deg,
+    #b5b5b5,
+    #f3f4f6,
+    rgb(225, 225, 225),
+    #ffffff
+  );
+  background-size: 200% 200%;
+  animation: gradientBlanco 8s linear infinite alternate;
+  flex-wrap: wrap;
+}
+
+@keyframes gradientBlanco {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
 }
 
 h1 {

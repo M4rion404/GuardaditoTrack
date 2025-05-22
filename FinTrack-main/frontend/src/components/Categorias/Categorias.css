@@ -107,12 +107,34 @@ body::-webkit-scrollbar {
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   border-left: 5px solid var(--accent-blue);
+  transition: box-shadow 0.3s ease;
 }
 
 .brine-intro h2 {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-  color: var(--accent-blue);
+  cursor: pointer;
+  color: #2563eb;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.25rem;
+  transition: color 0.2s ease;
+}
+
+.brine-intro h2:hover {
+  color: #1e40af; /* tono más oscuro al pasar el mouse */
+}
+
+.brine-intro-content {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.4s ease, opacity 0.4s ease;
+}
+
+.brine-intro-content.open {
+  max-height: 500px; /* asegúrate que sea suficiente para el contenido */
+  opacity: 1;
 }
 
 .brine-intro p {
@@ -121,9 +143,10 @@ body::-webkit-scrollbar {
 }
 
 .brine-intro ul {
+  margin-top: 0.5rem;
   padding-left: 1.5rem;
   list-style-type: disc;
-  color: #555;
+  color: #333;
 }
 
 /* Formulario */

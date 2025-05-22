@@ -1,33 +1,56 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import {
-  FaPlus,
-  FaEdit,
-  FaTrash,
-  FaSyncAlt,
-  FaSearch,
-  FaTimes,
-  FaFilePdf,
-  FaEye,
-  FaTags,
-} from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaSyncAlt, FaSearch, FaTimes, FaFilePdf, FaEye, FaTags } from "react-icons/fa";
+import "../Estilos/modalesStyles.css"
 import "./Transacciones.css";
 
 Chart.register(ArcElement, Tooltip, Legend);
 
 // Iconos personalizados
-const IconCrear = () => <FaPlus style={{ color: "#388e3c" }} />;
-const IconEditar = () => <FaEdit style={{ color: "#1976d2" }} />;
-const IconEliminar = () => <FaTrash style={{ color: "#e53935" }} />;
-const IconRefrescar = () => <FaSyncAlt style={{ color: "#ffa000" }} />;
-const IconBuscar = () => <FaSearch style={{ color: "#616161" }} />;
-const IconCerrar = () => <FaTimes style={{ color: "#757575" }} />;
-const IconPDF = () => <FaFilePdf style={{ color: "#e53935" }} />;
-const IconVer = () => <FaEye style={{ color: "#1976d2" }} />;
+const IconCrear = () => (
+  <span role="img" aria-label="crear">
+    <FaPlus style={{ color: "#388e3c" }} />
+  </span>
+);
+const IconEditar = () => (
+  <span role="img" aria-label="editar">
+    <FaEdit style={{ color: "#1976d2" }} />
+  </span>
+);
+const IconEliminar = () => (
+  <span role="img" aria-label="eliminar">
+    <FaTrash style={{ color: "#e53935" }} />
+  </span>
+);
+const IconRefrescar = () => (
+  <span role="img" aria-label="refrescar">
+    <FaSyncAlt style={{ color: "#ffa000" }} />
+  </span>
+);
+const IconBuscar = () => (
+  <span role="img" aria-label="buscar">
+    <FaSearch style={{ color: "#616161" }} />
+  </span>
+);
+const IconCerrar = () => (
+  <span role="img" aria-label="cerrar">
+    <FaTimes style={{ color: "white" }} />
+  </span>
+);
+const IconPDF = () => (
+  <span role="img" aria-label="pdf">
+    <FaFilePdf style={{ color: "#e53935" }} />
+  </span>
+);
+const IconVer = () => (
+  <span role="img" aria-label="ver">
+    <FaEye style={{ color: "#1976d2" }} />
+  </span>
+);
 
 const initialForm = {
   titulo: "",
@@ -36,7 +59,7 @@ const initialForm = {
   metodo_pago: "",
   monto: "",
   categoria_asociada: "",
-  presupuesto_asociado: "",
+  presupuesto_asociado: ""
 };
 
 const limpiarDatos = (data) => ({
@@ -66,15 +89,7 @@ const validarCampos = (data) => {
   return null;
 };
 
-function TransaccionForm({
-  formData,
-  setFormData,
-  onSubmit,
-  loading,
-  error,
-  presupuestos,
-  categorias,
-}) {
+function TransaccionForm({ formData, setFormData, onSubmit, loading, error, presupuestos, categorias }) {
   return (
     <form onSubmit={onSubmit} className="transacciones-form">
       <div className="form-group">
@@ -100,6 +115,50 @@ function TransaccionForm({
             setFormData((prev) => ({ ...prev, descripcion: e.target.value }))
           }
         ></textarea>
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="presupuesto_asociado">Presupuesto:</label>
+        <select
+          id="presupuesto_asociado"
+          name="presupuesto_asociado"
+          value={formData.presupuesto_asociado}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              presupuesto_asociado: e.target.value || "",
+            }))
+          }
+        >
+          <option value="">Seleccionar Presupuesto</option>
+          {presupuestos.map((pres) => (
+            <option key={pres._id} value={pres._id}>
+              {pres.titulo}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="categoria_asociada">Categoria:</label>
+        <select
+          id="categoria_asociada"
+          name="categoria_asociada"
+          value={formData.categoria_asociada}
+          onChange={(e) =>
+            setFormData((prev) => ({
+              ...prev,
+              categoria_asociada: e.target.value || "",
+            }))
+          }
+        >
+          <option value="">Seleccionar categoría</option>
+              {categorias.map((categoria) => (
+                <option key={categoria._id} value={categoria._id}>
+                  {categoria.titulo}
+                </option>
+          ))}
+        </select>
       </div>
       <div className="form-group">
         <label htmlFor="accion">Acción:</label>
@@ -150,48 +209,9 @@ function TransaccionForm({
           min="0"
         />
       </div>
-      <div className="form-group">
-        <label htmlFor="categoria_asociada">Categoria:</label>
-        <select
-          id="categoria_asociada"
-          name="categoria_asociada"
-          value={formData.categoria_asociada}
-          onChange={(e) =>
-            setFormData((prev) => ({
-              ...prev,
-              categoria_asociada: e.target.value || "",
-            }))
-          }
-        >
-          <option value="">Seleccionar categoria</option>
-          {categorias.map((categoria) => (
-            <option key={categoria._id} value={categoria._id}>
-              {categoria.categoria}{categoria.titulo}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="form-group">
-        <label htmlFor="presupuesto_asociado">Presupuesto:</label>
-        <select
-          id="presupuesto_asociado"
-          name="presupuesto_asociado"
-          value={formData.presupuesto_asociado}
-          onChange={(e) =>
-            setFormData((prev) => ({
-              ...prev,
-              presupuesto_asociado: e.target.value || "",
-            }))
-          }
-        >
-          <option value="">Seleccionar Presupuesto</option>
-          {presupuestos.map((pres) => (
-            <option key={pres._id} value={pres._id}>
-              {pres.titulo}
-            </option>
-          ))}
-        </select>
-      </div>
+
+
+
       <div className="btn-submit-container">
         <button type="submit" className="btn-submit" disabled={loading}>
           {loading ? "Guardando..." : "Guardar"}
@@ -203,12 +223,12 @@ function TransaccionForm({
 }
 
 const Transacciones = () => {
+
   const [transacciones, setTransacciones] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [transaccionSeleccionada, setTransaccionSeleccionada] = useState(null);
   const [categorias, setCategorias] = useState([]);
-  const [presupuestos, setPresupuestos] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("crear");
   const [filtroPresupuesto, setFiltroPresupuesto] = useState("");
@@ -216,70 +236,87 @@ const Transacciones = () => {
   const [paginaActual, setPaginaActual] = useState(1);
   const [busqueda, setBusqueda] = useState("");
   const [formData, setFormData] = useState(initialForm);
+  const [isOpen, setIsOpen] = useState(false);
+const contentRef = useRef(null);
+
+  // Va a almacenar los presupuestos del UseEffect
+  const [presupuestos, setPresupuestos] = useState([]);
+  // Va a almacenar el presupuesto seleccionado
+  const [presupuestoSeleccionado, setPresupuestoSeleccionado] = useState('');
+  // Va a almacenar las categorias
+  const [categoriasFiltradas, setCategoriasFiltradas] = useState([]);
+  // Va a almacenar la categoria seleccionada en el combobox
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
+
 
   const ITEMS_PER_PAGE = 5;
 
   // Fetch transacciones
   const fetchTransacciones = async () => {
-  setLoading(true);
-  setError(null);
-  const token = localStorage.getItem("token");
-  const userId = localStorage.getItem("userId");
-  try {
-    if (!token) throw new Error("No token disponible, inicia sesión.");
-    const response = await fetch(
-      `http://localhost:3000/api/transacciones/${userId}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    if (!response.ok) {
-      const errorMessage = await response.text(); // Esto ayuda a ver si hay HTML o texto de error
-      throw new Error(`Error del servidor: ${response.status} - ${errorMessage}`);
-    }
-    const data = await response.json();
-    setTransacciones(data);
-    setTransaccionSeleccionada(null);
-    
-    // Error: estabas intentando acceder a response.data, pero response es la respuesta fetch
-    // y data ya contiene los datos. Cambia esto por:
-    console.log("Transacciones recibidas:", data.length);
-    
-  } catch (err) {
-    setError(err.message);
-    console.error("Error al cargar transacciones:", err);
-  } finally {
-    setLoading(false);
-  }
-};
-
-  // Fetch presupuestos
-  useEffect(() => {
-  const token = localStorage.getItem("token");
-  const userId = localStorage.getItem("userId");
-
-  const fetchPresupuestos = async () => {
+    setLoading(true);
+    setError(null);
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
     try {
-      const res = await axios.get(
-        `http://localhost:3000/api/presupuestos/${userId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+      if (!token) throw new Error("No token disponible, inicia sesión.");
+      const response = await fetch(
+        `http://localhost:3000/api/transacciones/${userId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
+      if (!response.ok) {
+        const errorMessage = await response.text(); // Esto ayuda a ver si hay HTML o texto de error
+        throw new Error(`Error del servidor: ${response.status} - ${errorMessage}`);
+      }
+      const data = await response.json();
+      setTransacciones(data);
+      setTransaccionSeleccionada(null);
 
-      console.log("📦 Presupuestos recibidos:", res.data);
-      setPresupuestos(res.data);
+      // Error: estabas intentando acceder a response.data, pero response es la respuesta fetch
+      // y data ya contiene los datos. Cambia esto por:
+      console.log("Transacciones recibidas:", data.length);
 
-      // ✅ Obtener nombres de las categorías
-      const nombresCategorias = obtenerNombresCategorias(res.data);
-      console.log("📋 Nombres de categorías extraídas:", nombresCategorias);
-
-    } catch (error) {
-      console.error("❌ Error al obtener presupuestos:", error);
+    } catch (err) {
+      setError(err.message);
+      console.error("Error al cargar transacciones:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  fetchPresupuestos();
-}, []);
+  // Fetch presupuestos
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
 
+    const fetchPresupuestos = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:3000/api/presupuestos/${userId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setPresupuestos(res.data);
+        const nombresCategorias = obtenerNombresCategorias(res.data);
+
+      } catch (error) {
+        console.error("❌ Error al obtener presupuestos:", error);
+      }
+    };
+
+    fetchPresupuestos();
+  }, []);
+
+  useEffect(() => {
+    const presupuestoSeleccionado = presupuestos.find(
+      (p) => p._id === formData.presupuesto_asociado
+    );
+    if (presupuestoSeleccionado) {
+      setCategoriasFiltradas(presupuestoSeleccionado.categorias || []);
+    } else {
+      setCategoriasFiltradas([]);
+    }
+  }, [formData.presupuesto_asociado, presupuestos]);
 
   // Fetch categorias
   useEffect(() => {
@@ -302,33 +339,38 @@ const Transacciones = () => {
 
   useEffect(() => {
     fetchTransacciones();
-    // eslint-disable-next-line
   }, []);
 
-  // Helpers
-  // 🔧 Extrae los nombres de todas las categorías de todos los presupuestos
-const obtenerNombresCategorias = (presupuestos) => {
-  if (!Array.isArray(presupuestos)) return [];
 
-  const nombres = presupuestos.flatMap(p => 
-    Array.isArray(p.categorias) ? p.categorias.map(cat => cat.nombre) : []
-  );
+  // Métodos para extrar el nombre del presupuesto/categoria
+  const obtenerNombresCategorias = (presupuestos) => {
+    if (!Array.isArray(presupuestos)) return [];
 
-  return nombres;
-};
+    const nombres = presupuestos.flatMap(p =>
+      Array.isArray(p.categorias) ? p.categorias.map(cat => cat.titulo) : []
+    );
+
+    return nombres;
+  };
 
   const obtenerNombrePresupuesto = (id) => {
     const presupuesto = presupuestos.find((p) => p._id === id);
     return presupuesto?.titulo || "Sin Presupuesto";
   };
 
-  const obtenerNombreCategoria = (id) => {
-    if (!id) return null;
-    const categoria = categorias.find(
-      (c) => c._id.toString() === id.toString()
-    );
-    return categoria ? categoria.titulo : null;
+  const obtenerNombreCategoria = (categoriaAsociada) => {
+    if (!categoriaAsociada) return "Sin categoría";
+
+    const id =
+      typeof categoriaAsociada === "string"
+        ? categoriaAsociada
+        : categoriaAsociada?._id || categoriaAsociada?.$oid;
+
+    const categoria = categorias.find((cat) => cat._id === id);
+
+    return categoria?.titulo || "Categoría no encontrada";
   };
+
 
   // Modal handlers
   const abrirModalCrear = () => {
@@ -382,53 +424,56 @@ const obtenerNombresCategorias = (presupuestos) => {
     setError(null);
   };
 
+
+
+
   // CRUD handlers
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError(null);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
 
-  const validacion = validarCampos(formData);
-  if (validacion) {
-    setError(validacion);
-    return;
-  }
+    const validacion = validarCampos(formData);
+    if (validacion) {
+      setError(validacion);
+      return;
+    }
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const userId = localStorage.getItem("userId");
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("Token no encontrado. Inicie sesión.");
+    try {
+      const userId = localStorage.getItem("userId");
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Token no encontrado. Inicie sesión.");
 
-    // Usar presupuesto_asociado del formulario como id_presupuesto
-    const cleanData = {
-      ...limpiarDatos(formData),
-      id_presupuesto: formData.presupuesto_asociado || null,
-    };
+      // Usar presupuesto_asociado del formulario como id_presupuesto
+      const cleanData = {
+        ...limpiarDatos(formData),
+        id_presupuesto: formData.presupuesto_asociado || null,
+      };
 
-    await axios.post(
-      `http://localhost:3000/api/transacciones/${userId}`,
-      cleanData,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+      await axios.post(
+        `http://localhost:3000/api/transacciones/${userId}`,
+        cleanData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    await Swal.fire({
-      icon: "success",
-      title: "Transacción creada!",
-      text: "Los datos se guardaron correctamente.",
-      timer: 1500,
-      showConfirmButton: false,
-    });
+      await Swal.fire({
+        icon: "success",
+        title: "Transacción creada!",
+        text: "Los datos se guardaron correctamente.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
 
-    fetchTransacciones();
-    cerrarModal();
+      fetchTransacciones();
+      cerrarModal();
 
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   const handleUpdate = async (e) => {
@@ -518,7 +563,7 @@ const handleSubmit = async (e) => {
       : true;
     const coincideBusqueda = busqueda
       ? t.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
-        t.descripcion?.toLowerCase().includes(busqueda.toLowerCase())
+      t.descripcion?.toLowerCase().includes(busqueda.toLowerCase())
       : true;
     return coincidePresupuesto && coincideCategoria && coincideBusqueda;
   });
@@ -572,7 +617,7 @@ const handleSubmit = async (e) => {
     <div className="transacciones-tabla-container">
       <div>
         <div className="brine-header">
-           <button
+          <button
             onClick={() => (window.location.href = "/home")}
             style={{
               zIndex: 9999,
@@ -594,15 +639,68 @@ const handleSubmit = async (e) => {
         </div>
         {error && <div className="error-message">{error}</div>}
         <div className="brine-intro">
-          <h2>¿Qué puedes hacer aquí?</h2>
-          <p>
-            Esta sección te permite crear nuevas transacciones, organizar tus
-            finanzas y visualizar rápidamente tus registros.
-          </p>
-          <ul>
-            <li>Crear una nueva transaccion personalizada.</li>
-            <li>Gestionar las transacciones que ya creaste.</li>
-          </ul>
+          <h2 onClick={() => setIsOpen(!isOpen)} style={{ cursor: "pointer" }}>
+            ¿Qué puedes hacer aquí?
+            <span
+              style={{
+                display: "inline-block",
+                marginLeft: "8px",
+                transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
+                transition: "transform 0.3s ease"
+              }}
+            >
+              ▶
+            </span>
+          </h2>
+
+                    <div
+            ref={contentRef}
+            className="brine-intro-content"
+            style={{
+              maxHeight: isOpen ? `${contentRef.current?.scrollHeight}px` : "0px",
+              opacity: isOpen ? 1 : 0,
+              overflow: "hidden",
+              transition: "max-height 0.5s ease, opacity 0.4s ease"
+            }}
+          >
+            <div className="intro-box">
+              <p>
+                Esta sección te permite <strong>crear nuevas transacciones</strong>, organizar tus
+                finanzas y visualizar rápidamente tus registros.
+              </p>
+
+              <p>
+                Las transacciones son la forma en que puedes mover dinero entre tus
+                presupuestos o metas de ahorro, generando un <em>gasto</em> o un <em>ingreso</em> según tu necesidad.
+              </p>
+
+              <div className="example-box">
+                <p><strong>Ejemplo:</strong></p>
+                <p>
+                  Supongamos que creas un presupuesto llamado <strong>“Gastos Escolares”</strong> con un
+                  límite de <strong>$1,000 pesos</strong> y un periodo quincenal. Este límite se divide en:
+                </p>
+                <ul>
+                  <li>Transporte: $200</li>
+                  <li>Alimentos: $800</li>
+                </ul>
+                <p>
+                  Si compras comida por <strong>$120</strong>, podrás registrar esa transacción
+                  para saber cuánto te queda disponible en la categoría correspondiente.
+                  Así generas una bitácora financiera precisa.
+                </p>
+              </div>
+
+              <p><strong>En resumen:</strong></p>
+              <ul className="summary-list">
+                <li>Crea transacciones personalizadas que afectan tus presupuestos o metas.</li>
+                <li>Edita transacciones y refleja los cambios automáticamente.</li>
+                <li>Elimina transacciones cuando sea necesario.</li>
+                <li>Gestiona todas tus transacciones a lo largo del tiempo.</li>
+                <li>Exporta tu información a PDF si lo necesitas.</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -612,7 +710,14 @@ const handleSubmit = async (e) => {
           onClick={abrirModalCrear}
           title="Crear"
         >
-          <IconCrear /> Crear
+          <IconCrear /> Presupuestos
+        </button>
+        <button
+          className="btn-icon-crear"
+          onClick={abrirModalCrear}
+          title="Crear"
+        >
+          <IconCrear /> Metas de ahorro
         </button>
         <button
           className="btn-icon-Detalles"
@@ -691,13 +796,10 @@ const handleSubmit = async (e) => {
         <thead>
           <tr>
             <th>Título</th>
-            <th>Descripción</th>
             <th>Accion</th>
-            <th>Metodo de Pago</th>
             <th>Monto</th>
             <th>Presupuesto</th>
             <th>Categoria</th>
-            <th>Fecha</th>
           </tr>
         </thead>
         <tbody>
@@ -716,21 +818,12 @@ const handleSubmit = async (e) => {
                 }}
               >
                 <td>{transaccion.titulo}</td>
-                <td>{transaccion.descripcion}</td>
                 <td>{transaccion.accion}</td>
-                <td>{transaccion.metodo_pago}</td>
                 <td>${Number(transaccion.monto || 0).toFixed(2)}</td>
                 <td>
                   {obtenerNombrePresupuesto(transaccion.presupuesto_asociado)}
                 </td>
-                <td>
-                  {obtenerNombreCategoria(transaccion.categoria_asociada)}
-                </td>
-                <td>
-                  {transaccion.fecha
-                    ? new Date(transaccion.fecha).toLocaleDateString()
-                    : ""}
-                </td>
+                <td>{obtenerNombreCategoria(transaccion?.categoria_asociada)}</td>
               </tr>
             );
           })}
@@ -781,7 +874,7 @@ const handleSubmit = async (e) => {
                   loading={loading}
                   error={error}
                   presupuestos={presupuestos}
-                  categorias={categorias}
+                  categorias={categoriasFiltradas}
                 />
               </>
             )}
@@ -823,18 +916,21 @@ const handleSubmit = async (e) => {
                     <strong>Categoria:</strong>{" "}
                     {transaccionSeleccionada?.categoria_asociada
                       ? obtenerNombreCategoria(
-                          transaccionSeleccionada.categoria_asociada
-                        )
+                        transaccionSeleccionada.categoria_asociada
+                      )
                       : "No asignada"}
                   </p>
                   <p>
                     <strong>Presupuesto:</strong>{" "}
                     {transaccionSeleccionada?.presupuesto_asociado
                       ? obtenerNombrePresupuesto(
-                          transaccionSeleccionada.presupuesto_asociado
-                        )
+                        transaccionSeleccionada.presupuesto_asociado
+                      )
                       : "No asignada"}
                   </p>
+                  <p> <strong> Fecha de Creación: </strong> {transaccionSeleccionada.fecha
+                    ? new Date(transaccionSeleccionada.fecha).toLocaleDateString()
+                    : ""} </p> 
                 </div>
               </>
             )}
