@@ -2,6 +2,7 @@ const Meta = require('../models/MetaAhorro');
 const Usuario = require('../models/Usuarios');
 
 exports.crearMeta = async (req, res) => {
+  
   const idUsuario = req.params.idUsuario;
   const datos = req.body;
 
@@ -88,31 +89,52 @@ exports.obtenerMetaPorId = async (req, res) => {
 };// OBTENER Meta
 
 exports.actualizarMeta = async (req, res) => {
-  const { idUsuario, idMetaAhorro } = req.params; // Corregido aquí
+  const { idUsuario, idMetaAhorro } = req.params;
   const datosActualizados = req.body;
 
   try {
     const usuario = await Usuario.findById(idUsuario);
-    if (!usuario) {
-      return res.status(404).json({ mensaje: 'Usuario no encontrado' });
-    }
+    if (!usuario) return res.status(404).json({ mensaje: 'Usuario no encontrado' });
 
-    const index = usuario.metas_ahorro.findIndex(m => m._id.toString() === idMetaAhorro); // Cambiado idMeta por idMetaAhorro
-
-    if (index === -1) {
-      return res.status(404).json({ mensaje: 'Meta no encontrada' });
-    }
+    const index = usuario.metas_ahorro.findIndex(m => m._id.toString() === idMetaAhorro);
+    if (index === -1) return res.status(404).json({ mensaje: 'Meta no encontrada' });
 
     const metaAntes = { ...usuario.metas_ahorro[index]._doc };
 
-    // Aplicar actualizaciones
-    usuario.metas_ahorro[index].nombre = datosActualizados.nombre ?? usuario.metas_ahorro[index].nombre;
-    usuario.metas_ahorro[index].descripcion = datosActualizados.descripcion ?? usuario.metas_ahorro[index].descripcion;
-    usuario.metas_ahorro[index].objetivo = datosActualizados.objetivo ?? usuario.metas_ahorro[index].objetivo;
-    usuario.metas_ahorro[index].fecha_limite = datosActualizados.fecha_limite ?? usuario.metas_ahorro[index].fecha_limite;
-    usuario.metas_ahorro[index].estado = datosActualizados.estado ?? usuario.metas_ahorro[index].estado;
+    // Validar y actualizar campos
+    if (datosActualizados.nombre !== undefined)
+      usuario.metas_ahorro[index].nombre = datosActualizados.nombre;
 
-    // Agregar historial
+    if (datosActualizados.descripcion !== undefined)
+      usuario.metas_ahorro[index].descripcion = datosActualizados.descripcion;
+
+    if (datosActualizados.objetivo !== undefined)
+      usuario.metas_ahorro[index].objetivo = datosActualizados.objetivo;
+
+    if (datosActualizados.ahorrado !== undefined)
+      usuario.metas_ahorro[index].ahorrado = datosActualizados.ahorrado;
+
+    if (datosActualizados.fecha_limite !== undefined) {
+      const nuevaFecha = new Date(datosActualizados.fecha_limite);
+      if (isNaN(nuevaFecha)) {
+        return res.status(400).json({ mensaje: 'Fecha límite inválida' });
+      }
+      usuario.metas_ahorro[index].fecha_limite = nuevaFecha;
+    }
+
+    if (datosActualizados.fecha !== undefined)
+      usuario.metas_ahorro[index].fecha = datosActualizados.fecha;
+
+    if (datosActualizados.estado !== undefined)
+      usuario.metas_ahorro[index].estado = datosActualizados.estado;
+
+    const metaDespues = usuario.metas_ahorro[index];
+    const sinCambios = JSON.stringify(metaAntes) === JSON.stringify(metaDespues);
+    if (sinCambios) {
+      return res.status(200).json({ mensaje: 'No se realizaron cambios en la meta', meta: metaDespues });
+    }
+
+    // Registrar en historial
     usuario.historial = usuario.historial.filter(item =>
       item.tipo && ['presupuesto', 'transaccion', 'categoria', 'meta_ahorro'].includes(item.tipo)
     );
@@ -120,9 +142,9 @@ exports.actualizarMeta = async (req, res) => {
     usuario.historial.push({
       accion: 'actualizar',
       tipo: 'meta_ahorro',
-      descripcion: `Actualizó la Meta "${usuario.metas_ahorro[index].nombre}"`,
+      descripcion: `Actualizó la Meta "${metaDespues.nombre}"`,
       datos_antes: metaAntes,
-      datos_despues: usuario.metas_ahorro[index],
+      datos_despues: metaDespues,
       fecha: new Date()
     });
 
@@ -132,8 +154,9 @@ exports.actualizarMeta = async (req, res) => {
 
     res.status(200).json({
       mensaje: 'Meta actualizada correctamente',
-      meta: usuario.metas_ahorro[index]
+      meta: metaDespues
     });
+
   } catch (error) {
     res.status(500).json({
       mensaje: 'Error al actualizar Meta',
@@ -141,6 +164,7 @@ exports.actualizarMeta = async (req, res) => {
     });
   }
 };
+
 
 exports.eliminarMeta = async (req, res) => {
   const { idUsuario, idMetaAhorro } = req.params;

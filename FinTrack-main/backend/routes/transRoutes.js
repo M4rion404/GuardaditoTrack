@@ -12,4 +12,9 @@ router.put('/:idUsuario/:idTransaccion/', transController.actualizarTransaccion)
 router.delete('/:idUsuario/:idTransaccion/', transController.eliminarTransaccion);
 
 
+// Metas ahorro
+router.post('meta-ahorro/:idUsuario/', transController.crearTransaccionMetaAhorro);
+router.put('meta-ahorro/:idUsuario/:idMetaAhorro/', transController.actualizarTransaccionMetaAhorro);
+router.delete('meta-ahorro/:idUsuario/:idMetaAhorro/', transController.eliminarTransaccionMetaAhorro);
+
 module.exports = router;
