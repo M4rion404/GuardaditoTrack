@@ -143,21 +143,18 @@ function TransaccionForm({ formData, setFormData, onSubmit, loading, error, pres
         <label htmlFor="categoria_asociada">Categoria:</label>
         <select
           id="categoria_asociada"
-          name="categoria_asociada"
           value={formData.categoria_asociada}
           onChange={(e) =>
-            setFormData((prev) => ({
-              ...prev,
-              categoria_asociada: e.target.value || "",
-            }))
+            setFormData({ ...formData, categoria_asociada: e.target.value })
           }
         >
-          <option value="">Seleccionar categoría</option>
-              {categorias.map((categoria) => (
-                <option key={categoria._id} value={categoria._id}>
-                  {categoria.titulo}
-                </option>
+          <option value="">Selecciona una categoría</option>
+          {categorias.map((d) => (
+            <option key={d.categoria._id} value={d.categoria._id}>
+              {d.categoria.titulo}
+            </option>
           ))}
+
         </select>
       </div>
       <div className="form-group">
@@ -237,7 +234,7 @@ const Transacciones = () => {
   const [busqueda, setBusqueda] = useState("");
   const [formData, setFormData] = useState(initialForm);
   const [isOpen, setIsOpen] = useState(false);
-const contentRef = useRef(null);
+  const contentRef = useRef(null);
 
   // Va a almacenar los presupuestos del UseEffect
   const [presupuestos, setPresupuestos] = useState([]);
@@ -306,6 +303,7 @@ const contentRef = useRef(null);
 
     fetchPresupuestos();
   }, []);
+
 
   useEffect(() => {
     const presupuestoSeleccionado = presupuestos.find(
@@ -423,9 +421,6 @@ const contentRef = useRef(null);
     setTransaccionSeleccionada(null);
     setError(null);
   };
-
-
-
 
   // CRUD handlers
   const handleSubmit = async (e) => {
@@ -613,6 +608,7 @@ const contentRef = useRef(null);
     doc.save("transacciones.pdf");
   };
 
+
   return (
     <div className="transacciones-tabla-container">
       <div>
@@ -640,7 +636,7 @@ const contentRef = useRef(null);
         {error && <div className="error-message">{error}</div>}
         <div className="brine-intro">
           <h2 onClick={() => setIsOpen(!isOpen)} style={{ cursor: "pointer" }}>
-            ¿Qué puedes hacer aquí?
+            ¿Qué puedes en transacciones?
             <span
               style={{
                 display: "inline-block",
@@ -653,7 +649,7 @@ const contentRef = useRef(null);
             </span>
           </h2>
 
-                    <div
+          <div
             ref={contentRef}
             className="brine-intro-content"
             style={{
@@ -712,13 +708,7 @@ const contentRef = useRef(null);
         >
           <IconCrear /> Presupuestos
         </button>
-        <button
-          className="btn-icon-crear"
-          onClick={abrirModalCrear}
-          title="Crear"
-        >
-          <IconCrear /> Metas de ahorro
-        </button>
+
         <button
           className="btn-icon-Detalles"
           onClick={() => abrirModalVer(transaccionSeleccionada)}
@@ -930,7 +920,49 @@ const contentRef = useRef(null);
                   </p>
                   <p> <strong> Fecha de Creación: </strong> {transaccionSeleccionada.fecha
                     ? new Date(transaccionSeleccionada.fecha).toLocaleDateString()
-                    : ""} </p> 
+                    : ""} </p>
+                </div>
+              </>
+            )}
+            {modalMode === "verMeta" && formData && (
+              <>
+                <h2>Detalles de la Transaccion</h2>
+                <div className="detalle-transaccion">
+                  <p>
+                    <strong>Título: </strong> {formData.titulo}
+                  </p>
+                  <p>
+                    <strong>Descripción: </strong> {formData.descripcion}
+                  </p>
+                  <p>
+                    <strong>Accion: </strong> {formData.accion}
+                  </p>
+                  <p>
+                    <strong>Metodo de Pago: </strong> {formData.metodo_pago}
+                  </p>
+                  <p>
+                    <strong>Monto: </strong> $
+                    {Number(formData.monto).toFixed(2)}
+                  </p>
+                  <p>
+                    <strong>Categoria:</strong>{" "}
+                    {transaccionSeleccionada?.categoria_asociada
+                      ? obtenerNombreCategoria(
+                        transaccionSeleccionada.categoria_asociada
+                      )
+                      : "No asignada"}
+                  </p>
+                  <p>
+                    <strong>Presupuesto:</strong>{" "}
+                    {transaccionSeleccionada?.presupuesto_asociado
+                      ? obtenerNombrePresupuesto(
+                        transaccionSeleccionada.presupuesto_asociado
+                      )
+                      : "No asignada"}
+                  </p>
+                  <p> <strong> Fecha de Creación: </strong> {transaccionSeleccionada.fecha
+                    ? new Date(transaccionSeleccionada.fecha).toLocaleDateString()
+                    : ""} </p>
                 </div>
               </>
             )}
