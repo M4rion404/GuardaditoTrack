@@ -31,9 +31,9 @@ const InicioSesion = () => {
       console.log("Respuesta del backend: ", datos)
 
       if (respuesta.ok) {
-        /* localStorage.setItem('token', datos.token);
+        localStorage.setItem('token', datos.token);
         localStorage.setItem('usuario', JSON.stringify(datos.usuario));
-        navigate('/Home'); */
+        navigate('/Home'); 
 
         localStorage.setItem('token', datos.token);
         localStorage.setItem('usuario', JSON.stringify(datos.usuario));

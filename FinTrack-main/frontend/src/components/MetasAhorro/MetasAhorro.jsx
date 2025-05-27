@@ -4,64 +4,20 @@ import Swal from "sweetalert2";
 import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import {
-  FaPlus,
-  FaEdit,
-  FaTrash,
-  FaSyncAlt,
-  FaSearch,
-  FaTimes,
-  FaFilePdf,
-  FaEye,
-  FaTags,
-} from "react-icons/fa";
-import "../Estilos/modalesStyles.css"
-import "../MetasAhorro/MetasAhorro.css"
+import { FaPlus, FaEdit, FaTrash, FaSyncAlt, FaSearch, FaTimes, FaFilePdf, FaEye, FaTags } from "react-icons/fa";
+import "./MetasAhorro.css";
 
 Chart.register(ArcElement, Tooltip, Legend);
 
 // Iconos personalizados
-const IconCrear = () => (
-  <span role="img" aria-label="crear">
-    <FaPlus style={{ color: "#388e3c" }} />
-  </span>
-);
-const IconEditar = () => (
-  <span role="img" aria-label="editar">
-    <FaEdit style={{ color: "#1976d2" }} />
-  </span>
-);
-const IconEliminar = () => (
-  <span role="img" aria-label="eliminar">
-    <FaTrash style={{ color: "#e53935" }} />
-  </span>
-);
-const IconRefrescar = () => (
-  <span role="img" aria-label="refrescar">
-    <FaSyncAlt style={{ color: "#ffa000" }} />
-  </span>
-);
-const IconBuscar = () => (
-  <span role="img" aria-label="buscar">
-    <FaSearch style={{ color: "#616161" }} />
-  </span>
-);
-const IconCerrar = () => (
-  <span role="img" aria-label="cerrar">
-    <FaTimes style={{ color: "white" }} />
-  </span>
-);
-const IconPDF = () => (
-  <span role="img" aria-label="pdf">
-    <FaFilePdf style={{ color: "#e53935" }} />
-  </span>
-);
-const IconVer = () => (
-  <span role="img" aria-label="ver">
-    <FaEye style={{ color: "#1976d2" }} />
-  </span>
-);
-
+const IconCrear = () => <FaPlus style={{ color: "#388e3c" }} />;
+const IconEditar = () => <FaEdit style={{ color: "#1976d2" }} />;
+const IconEliminar = () => <FaTrash style={{ color: "#e53935" }} />;
+const IconRefrescar = () => <FaSyncAlt style={{ color: "#ffa000" }} />;
+const IconBuscar = () => <FaSearch style={{ color: "#616161" }} />;
+const IconCerrar = () => <FaTimes style={{ color: "#757575" }} />;
+const IconPDF = () => <FaFilePdf style={{ color: "#e53935" }} />;
+const IconVer = () => <FaEye style={{ color: "#1976d2" }} />;
 
 const initialForm = {
   nombre: "",
@@ -80,22 +36,28 @@ const limpiarDatos = (data) => ({
 
 const validarCampos = (data) => {
   // Validación de campos requeridos
-  if (!data.nombre || !data.objetivo) {
-    return "Por favor, complete todos los campos obligatorios.";
+  if (!data.nombre || !data.objetivo || !data.fecha_limite) {
+    return "Por favor, complete todos los campos obligatorios (nombre, objetivo y fecha límite).";
   }
+
   // Validar objetivo
-  if (isNaN(Number(data.objetivo)) || Number(data.objetivo) < 0) {
-    return "El objetivo debe ser un número positivo.";
+  if (isNaN(Number(data.objetivo)) || Number(data.objetivo) <= 0) {
+    return "El objetivo debe ser un número positivo mayor a 0.";
   }
+
+  // Validar ahorrado (si se proporciona)
+  if (data.ahorrado && (isNaN(Number(data.ahorrado)) || Number(data.ahorrado) < 0)) {
+    return "El monto ahorrado debe ser un número positivo.";
+  }
+
+  // Validar fecha límite
+  const fechaLimite = new Date(data.fecha_limite);
+  const fechaActual = new Date();
+  if (fechaLimite <= fechaActual) {
+    return "La fecha límite debe ser posterior a la fecha actual.";
+  }
+
   return null;
-
-  // Validar método de pago
-
-  // Validar estado
-  if (!["Ahorrando", "Completada"].includes(data.estado)) {
-    return "Seleccione un estado válido.";
-  }
-  // Validar objetivo
 };
 
 // utils/formatFecha.js
@@ -112,7 +74,7 @@ function MetaAhorroForm({ formData, setFormData, onSubmit, loading, error }) {
   return (
     <form onSubmit={onSubmit} className="metaAhorro-form">
       <div className="form-group">
-        <label htmlFor="nombre">nombre de la meta de ahorro:</label>
+        <label htmlFor="nombre">* Nombre</label>
         <input
           type="text"
           id="nombre"
@@ -121,11 +83,12 @@ function MetaAhorroForm({ formData, setFormData, onSubmit, loading, error }) {
           onChange={(e) =>
             setFormData((prev) => ({ ...prev, nombre: e.target.value }))
           }
+          placeholder="Viaje a Japón"
           required
         />
       </div>
       <div className="form-group">
-        <label htmlFor="descripcion">Descripción:</label>
+        <label htmlFor="descripcion">Descripción</label>
         <textarea
           id="descripcion"
           name="descripcion"
@@ -133,10 +96,12 @@ function MetaAhorroForm({ formData, setFormData, onSubmit, loading, error }) {
           onChange={(e) =>
             setFormData((prev) => ({ ...prev, descripcion: e.target.value }))
           }
+          placeholder={"Vistar el Monte Fuji y las playas de Okinawa, conseguir fotos en el cruce de Shibuya, el Templo Kinkaku-ji y con las estutas de los personajes de One Piece."}
+          style={{ height: '80px' }}
         ></textarea>
       </div>
       <div className="form-group">
-        <label htmlFor="objetivo">Objetivo:</label>
+        <label htmlFor="objetivo">* Objetivo de ahorro</label>
         <input
           type="number"
           id="objetivo"
@@ -149,13 +114,14 @@ function MetaAhorroForm({ formData, setFormData, onSubmit, loading, error }) {
             }))
           }
           required
-          min="0"
+          placeholder="80,000"
+          min="1"
         />
       </div>
       <div className="form-group">
-        <label htmlFor="ahorrado">Ahorrado:</label>
+        <label htmlFor="ahorrado">¿Ya empezaste a ahorrar?</label>
         <input
-          type="number"
+          type="text"
           id="ahorrado"
           name="ahorrado"
           value={formData.ahorrado}
@@ -165,12 +131,11 @@ function MetaAhorroForm({ formData, setFormData, onSubmit, loading, error }) {
               ahorrado: e.target.value,
             }))
           }
-          required
-          min="0"
+          placeholder="10,000"
         />
       </div>
       <div className="form-group">
-        <label htmlFor="fecha_limite">Fecha límite:</label>
+        <label htmlFor="fecha_limite">* Fecha límite para ahorrar</label>
         <input
           type="date"
           id="fecha_limite"
@@ -200,12 +165,12 @@ const MetasAhorro = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [metaAhorroSeleccionada, setmetaAhorroSeleccionada] = useState(null);
-  const [estados, setEstados] = useState([]);
+  const [divisas, setDivisas] = useState([]);
   const [presupuestos, setPresupuestos] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("crear"); // crear | editar | ver
   const [filtroPresupuesto, setFiltroPresupuesto] = useState("");
-  const [filtroEstado, setFiltroEstado] = useState("");
+  const [filtroDivisa, setFiltroDivisa] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
   const [busqueda, setBusqueda] = useState("");
   const [formData, setFormData] = useState(initialForm);
@@ -262,25 +227,36 @@ const MetasAhorro = () => {
 
   const abrirModalEditar = () => {
     if (!metaAhorroSeleccionada) return;
+
+    console.log("Editando meta:", metaAhorroSeleccionada);
+
     setFormData({
+      _id: metaAhorroSeleccionada._id,
       nombre: metaAhorroSeleccionada.nombre || "",
       descripcion: metaAhorroSeleccionada.descripcion || "",
       objetivo: metaAhorroSeleccionada.objetivo || "",
-      fecha_limite:
-        formatearFechaParaInput(metaAhorroSeleccionada.fecha_limite) || "",
+      ahorrado: metaAhorroSeleccionada.ahorrado || "",
+      fecha_limite: formatearFechaParaInput(metaAhorroSeleccionada.fecha_limite) || "",
       estado: metaAhorroSeleccionada.estado || "",
     });
+
     setModalMode("editar");
     setModalOpen(true);
   };
+
 
   const abrirModalVer = (metaAhorro) => {
     if (!metaAhorro) return;
     setmetaAhorroSeleccionada(metaAhorro);
     setFormData({
+      
       nombre: metaAhorro.nombre || "",
       descripcion: metaAhorro.descripcion || "",
+      
+
       objetivo: metaAhorro.objetivo || "",
+      ahorrado: metaAhorro.ahorrado || "",
+
       fecha_limite: metaAhorro.fecha_limite || "",
       estado: metaAhorro.estado || "",
     });
@@ -296,6 +272,7 @@ const MetasAhorro = () => {
   };
 
   // CRUD handlers
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -308,15 +285,31 @@ const MetasAhorro = () => {
 
     setLoading(true);
     const userId = localStorage.getItem("userId");
+
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Token no encontrado. Inicie sesión.");
-      const cleanData = limpiarDatos(formData);
+
+      // Preparar los datos con valores por defecto
+      const dataParaEnviar = {
+        nombre: formData.nombre.trim(),
+        descripcion: formData.descripcion?.trim() || "",
+        objetivo: Number(formData.objetivo),
+        ahorrado: formData.ahorrado ? Number(formData.ahorrado) : 0,
+        fecha_limite: formData.fecha_limite,
+        estado: "Ahorrando", // Estado por defecto
+        divisa_asociada: null,
+        presupuesto_asociado: null
+      };
+
+      console.log("Datos a enviar:", dataParaEnviar); // Para debug
+
       await axios.post(
         `http://localhost:3000/api/metas-ahorro/${userId}`,
-        cleanData,
+        dataParaEnviar, // ← Usar dataParaEnviar en lugar de formData
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       await Swal.fire({
         icon: "success",
         title: "Meta creada",
@@ -324,10 +317,12 @@ const MetasAhorro = () => {
         timer: 1500,
         showConfirmButton: false,
       });
+
       fetchmetaAhorro();
       cerrarModal();
     } catch (err) {
-      setError(err.message);
+      console.error("Error al crear meta:", err);
+      setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
     }
@@ -337,13 +332,11 @@ const MetasAhorro = () => {
     e.preventDefault();
     setError(null);
 
-    if (!metaAhorroSeleccionada) {
-      console.error("No hay transacción seleccionada");
-      setError("Debe seleccionar una transacción para actualizar");
+    if (!formData._id) {
+      console.error("No hay ID de meta para actualizar");
+      setError("Error interno: Falta ID de la meta.");
       return;
     }
-
-    console.log("Transacción seleccionada:", metaAhorroSeleccionada);
 
     const validacion = validarCampos(formData);
     if (validacion) {
@@ -360,13 +353,21 @@ const MetasAhorro = () => {
       if (!token || !userId)
         throw new Error("Sesión inválida. Por favor, inicia sesión.");
 
-      console.log("ID transacción seleccionada:", metaAhorroSeleccionada._id);
+      const dataParaActualizar = {
+        nombre: formData.nombre.trim(),
+        descripcion: formData.descripcion?.trim() || "",
+        objetivo: Number(formData.objetivo),
+        ahorrado: formData.ahorrado ? Number(formData.ahorrado) : 0,
+        fecha_limite: formData.fecha_limite,
+        estado: formData.estado || "Ahorrando",
+      };
 
-      const dataLimpia = limpiarDatos(formData);
+      console.log("Actualizando meta con ID:", formData._id);
+      console.log("Payload:", dataParaActualizar);
 
       await axios.patch(
-        `http://localhost:3000/api/metas-ahorro/${userId}/${metaAhorroSeleccionada._id}`,
-        dataLimpia,
+        `http://localhost:3000/api/metas-ahorro/${userId}/${formData._id}`,
+        dataParaActualizar,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -381,12 +382,13 @@ const MetasAhorro = () => {
       fetchmetaAhorro();
       cerrarModal();
     } catch (err) {
-      console.error(err);
-      setError("Error al actualizar la transacción");
+      console.error("Error al actualizar:", err);
+      setError(err.response?.data?.message || "Error al actualizar la meta");
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleDelete = async () => {
     if (!metaAhorroSeleccionada) return;
@@ -418,26 +420,30 @@ const MetasAhorro = () => {
     setLoading(false);
   };
 
-  /* const presupuestosUsados = presupuestos.filter((p) =>
+  const presupuestosUsados = presupuestos.filter((p) =>
     metaAhorro.some((t) => t.presupuesto_asociado === p._id)
   );
 
-  const estadosUsados = estados.filter((d) =>
-    metaAhorro.some((t) => t.estado === d._id)
-  ); */
-
-  const estadosUsados = [...new Set(metaAhorro.map((m) => m.estado))];
+  const divisasUsadas = divisas.filter((d) =>
+    metaAhorro.some((t) => t.divisa_asociada === d._id)
+  );
 
   // Filtro principal de metaAhorro
   const metaAhorroFiltrados = metaAhorro.filter((t) => {
-    const coincideEstado = filtroEstado ? t.estado === filtroEstado : true;
+    const coincidePresupuesto = filtroPresupuesto
+      ? t.presupuesto_asociado === filtroPresupuesto
+      : true;
+
+    const coincideDivisa = filtroDivisa
+      ? t.divisa_asociada === filtroDivisa
+      : true;
 
     const coincideBusqueda = busqueda
       ? t.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      t.objetivo?.toString().toLowerCase().includes(busqueda.toLowerCase())
+      t.objetivo?.toLowerCase().includes(busqueda.toLowerCase())
       : true;
 
-    return coincideEstado && coincideBusqueda;
+    return coincidePresupuesto && coincideDivisa && coincideBusqueda;
   });
 
   // Paginación
@@ -600,13 +606,27 @@ const MetasAhorro = () => {
         </div>
         <div className="Filtros">
           <select
-            id="filtroEstado"
-            value={filtroEstado}
-            onChange={(e) => setFiltroEstado(e.target.value)}
+            value={filtroPresupuesto}
+            onChange={(e) => setFiltroPresupuesto(e.target.value)}
           >
-            <option value="">Todos los estados</option>
-            <option value="Ahorrando">Ahorrando</option>
-            <option value="Completada">Completada</option>
+            <option value="">Todos los presupuestos</option>
+            {presupuestosUsados.map((p) => (
+              <option key={p._id} value={p._id}>
+                {p.nombre}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={filtroDivisa}
+            onChange={(e) => setFiltroDivisa(e.target.value)}
+          >
+            <option value="">Todas las divisas</option>
+            {divisasUsadas.map((d) => (
+              <option key={d._id} value={d._id}>
+                {d.nombre}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -690,7 +710,7 @@ const MetasAhorro = () => {
             </button>
             {modalMode === "crear" && (
               <>
-                <h2>Crear Meta de Ahorro</h2>
+                <h2>Crear meta de Ahorro</h2>
                 <MetaAhorroForm
                   formData={formData}
                   setFormData={setFormData}
@@ -698,6 +718,7 @@ const MetasAhorro = () => {
                   loading={loading}
                   error={error}
                   presupuestos={presupuestos}
+                  divisas={divisas}
                 />
               </>
             )}
@@ -711,38 +732,34 @@ const MetasAhorro = () => {
                   loading={loading}
                   error={error}
                   presupuestos={presupuestos}
+                  divisas={divisas}
                 />
               </>
             )}
             {modalMode === "ver" && formData && (
               <>
-                <h2>Detalles de la Meta de Ahorro</h2>
+                <h2>Detalles de la meta de Ahorro</h2>
                 <div className="detalle-metaAhorro">
                   <p>
-                    <strong>Título: </strong> {formData.nombre}
+                    <strong>Nombre </strong> {formData.nombre}
                   </p>
                   <p>
-                    <strong>Descripción: </strong> {formData.descripcion}
+                    <strong>Descripción </strong> {formData.objetivo}
                   </p>
                   <p>
-                    <strong>Objetivo: </strong> $
+                    <strong>Objetivo </strong> $
                     {Number(formData.objetivo).toFixed(2)}
                   </p>
                   <p>
-                    <strong> Ahorrado: </strong>
-                    ${Number(metaAhorro.ahorrado || 0).toFixed(2)}
+                    <strong>Ahorrado </strong>$
+                    {Number(formData.ahorrado).toFixed(2)}
                   </p>
                   <p>
-                    <strong>Fechar límite: </strong>{" "}
+                    <strong>Fecha límite de ahorro </strong>{" "}
                     {formatearFechaUTC(formData.fecha_limite)}
                   </p>
                   <p>
-                    <strong>Estado: </strong> {formData.estado}
-                  </p>
-                  <p>
-                    <strong>Fecha: </strong> {metaAhorroSeleccionada.fecha
-                    ? new Date(metaAhorroSeleccionada.fecha).toLocaleDateString()
-                    : ""}
+                    <strong>Estado </strong> {formData.estado}
                   </p>
                 </div>
               </>

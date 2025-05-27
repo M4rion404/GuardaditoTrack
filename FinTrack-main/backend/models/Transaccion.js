@@ -5,6 +5,7 @@ const TransaccionSchema = new mongoose.Schema({
   
   presupuesto_asociado: { type: mongoose.Schema.Types.ObjectId },
   categoria_asociada: { type: mongoose.Schema.Types.ObjectId },
+  meta_asociada: { type: mongoose.Schema.Types.ObjectId },
 
   titulo: { type: String, required: true },
   descripcion: { type: String },

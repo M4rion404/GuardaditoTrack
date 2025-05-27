@@ -53,19 +53,26 @@ const IconVer = () => (
 );
 
 const initialForm = {
+
   titulo: "",
   descripcion: "",
+
   accion: "",
   metodo_pago: "",
   monto: "",
+
+  tipo_transaccion: "",
+  presupuesto_asociado: "",
   categoria_asociada: "",
-  presupuesto_asociado: ""
+  meta_asociada: "",
+
 };
 
 const limpiarDatos = (data) => ({
   ...data,
   categoria_asociada: data.categoria_asociada || null,
   presupuesto_asociado: data.presupuesto_asociado || null,
+  meta_asociada: data.meta_asociada || null
 });
 
 const validarCampos = (data) => {
@@ -89,11 +96,15 @@ const validarCampos = (data) => {
   return null;
 };
 
-function TransaccionForm({ formData, setFormData, onSubmit, loading, error, presupuestos, categorias }) {
+function TransaccionForm({ formData, setFormData, onSubmit, loading, error, presupuestos, categorias, meta_ahorro }) {
   return (
     <form onSubmit={onSubmit} className="transacciones-form">
+
+      {/* TITULO, DESCRIPCIÓN Y TIPO DE TRANSACCIÓN */}
+
       <div className="form-group">
-        <label htmlFor="titulo">Titulo de la Transaccion:</label>
+
+        <label htmlFor="titulo">Titulo de la Transaccion</label>
         <input
           type="text"
           id="titulo"
@@ -103,10 +114,12 @@ function TransaccionForm({ formData, setFormData, onSubmit, loading, error, pres
             setFormData((prev) => ({ ...prev, titulo: e.target.value }))
           }
           required
+          placeholder="Milanesa de pollo rellena"
         />
-      </div>
-      <div className="form-group">
-        <label htmlFor="descripcion">Descripción:</label>
+
+
+
+        <label htmlFor="descripcion">Descripción</label>
         <textarea
           id="descripcion"
           name="descripcion"
@@ -114,98 +127,181 @@ function TransaccionForm({ formData, setFormData, onSubmit, loading, error, pres
           onChange={(e) =>
             setFormData((prev) => ({ ...prev, descripcion: e.target.value }))
           }
+          placeholder="Cafetería del Insituto Tecnológico de Tepic"
         ></textarea>
+
+
+        <label htmlFor="tipo-transaccion">Tipo de transaccion</label>
+        <select
+          id="tipo-transaccion"
+          name="tipo-transaccion"
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, tipo_transaccion: e.target.value }))
+          }
+        >
+          <option value="">Selecciona una opción</option>
+          <option value="meta">Meta de ahorro</option>
+          <option value="presupuesto">Presupuesto</option>
+        </select>
+
+
       </div>
 
-      <div className="form-group">
-        <label htmlFor="presupuesto_asociado">Presupuesto:</label>
-        <select
-          id="presupuesto_asociado"
-          name="presupuesto_asociado"
-          value={formData.presupuesto_asociado}
-          onChange={(e) =>
-            setFormData((prev) => ({
-              ...prev,
-              presupuesto_asociado: e.target.value || "",
-            }))
-          }
-        >
-          <option value="">Seleccionar Presupuesto</option>
-          {presupuestos.map((pres) => (
-            <option key={pres._id} value={pres._id}>
-              {pres.titulo}
-            </option>
-          ))}
-        </select>
-      </div>
 
-      <div className="form-group">
-        <label htmlFor="categoria_asociada">Categoria:</label>
-        <select
-          id="categoria_asociada"
-          value={formData.categoria_asociada}
-          onChange={(e) =>
-            setFormData({ ...formData, categoria_asociada: e.target.value })
-          }
-        >
-          <option value="">Selecciona una categoría</option>
-          {categorias.map((d) => (
-            <option key={d.categoria._id} value={d.categoria._id}>
-              {d.categoria.titulo}
-            </option>
-          ))}
+      {/* 
+          
+          COMPONENTE QUE APARECE SU EL TIPO DE TRANSACCIÓN ES PRESUPUESTO 
+          formData.tipo_transaccion === "presupuesto" && (...)
+      
+          Nano: Esta mafufada se lee de la siguiente manera:
+          Si en el objeto fomartData la propiedad tipo de transacción
+          es exáctamete "presupuestos", entonces te voy a devolver lo 
+          que hay después de &&, si no pues ni modo no te doy nada. 
 
-        </select>
-      </div>
-      <div className="form-group">
-        <label htmlFor="accion">Acción:</label>
-        <select
-          id="accion"
-          name="accion"
-          value={formData.accion}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, accion: e.target.value }))
-          }
-          required
-        >
-          <option value="">Seleccionar acción</option>
-          <option value="Retiro">Retiro</option>
-          <option value="Ingreso">Ingreso</option>
-        </select>
-      </div>
-      <div className="form-group">
-        <label htmlFor="metodo_pago">Método de Pago:</label>
-        <select
-          id="metodo_pago"
-          name="metodo_pago"
-          value={formData.metodo_pago}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, metodo_pago: e.target.value }))
-          }
-          required
-        >
-          <option value="">Seleccionar método</option>
-          <option value="Efectivo">Efectivo</option>
-          <option value="Tarjeta">Tarjeta</option>
-        </select>
-      </div>
-      <div className="form-group">
-        <label htmlFor="monto">Monto:</label>
-        <input
-          type="number"
-          id="monto"
-          name="monto"
-          value={formData.monto}
-          onChange={(e) =>
-            setFormData((prev) => ({
-              ...prev,
-              monto: e.target.value,
-            }))
-          }
-          required
-          min="0"
-        />
-      </div>
+          Es la mamada este lenguaje, se escribe con las patas.
+
+          Actualización: Literalmente es un if ternario
+          <variable que vas a evaluar y su condicion >  " ?"   <Se cumple> : <no se cumple>
+          
+          Puras perras mamadas alch
+          <variable que vas a evaluar y su condicion>   "&&"   <Se cumple> : <no se cumple>
+          
+          Si varias retornan un True hay que ponerlas en parentesis:
+          (<variable que vas a evaluar y su condicion> || <variable que vas a evaluar y su condicion> ) && <Se cumple> : <no se cumple>
+
+      */}
+
+      {formData.tipo_transaccion === "presupuesto" && (
+
+        <div className="form-group">
+
+          <label htmlFor="presupuesto_asociado">Presupuesto</label>
+          <select
+            id="presupuesto_asociado"
+            name="presupuesto_asociado"
+            value={formData.presupuesto_asociado}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                presupuesto_asociado: e.target.value || "",
+              }))
+            }
+          >
+            <option value="">Seleccionar Presupuesto</option>
+            {presupuestos.map((pres) => (
+              <option key={pres._id} value={pres._id}>
+                {pres.titulo}
+              </option>
+            ))}
+          </select>
+
+
+          <label htmlFor="categoria_asociada">Categoria</label>
+          <select
+            id="categoria_asociada"
+            value={formData.categoria_asociada}
+            onChange={(e) =>
+              setFormData({ ...formData, categoria_asociada: e.target.value })
+            }
+          >
+            <option value="">Selecciona una categoría</option>
+            {categorias.map((d) => (
+              <option key={d.categoria._id} value={d.categoria._id}>
+                {d.categoria.titulo}
+              </option>
+            ))}
+
+          </select>
+
+
+        </div>
+
+      )}
+
+      {formData.tipo_transaccion === "meta" && (
+
+        <div className="form-group">
+
+          <label htmlFor="meta_asociada">Meta de ahorro</label>
+          <select
+            id="meta_asociada"
+            name="meta_asociada"
+            value={formData.meta_asociada}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                meta_asociada: e.target.value || "",
+              }))
+            }
+          >
+            <option value="">Seleccionar meta de ahorro</option>
+            {meta_ahorro.map((meta) => (
+              <option key={meta._id} value={meta._id}>
+                {meta.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+
+      )}
+
+
+      {(formData.tipo_transaccion === "presupuesto" || formData.tipo_transaccion === "meta") && (
+
+        <div className="form-group">
+
+
+          <label htmlFor="accion">Acción</label>
+          <select
+            id="accion"
+            name="accion"
+            value={formData.accion}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, accion: e.target.value }))
+            }
+            required
+          >
+            <option value="">Seleccionar acción</option>
+            <option value="Retiro">Retiro</option>
+            <option value="Ingreso">Ingreso</option>
+          </select>
+
+          <label htmlFor="metodo_pago">Método de Pago</label>
+          <select
+            id="metodo_pago"
+            name="metodo_pago"
+            value={formData.metodo_pago}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, metodo_pago: e.target.value }))
+            }
+            required
+          >
+            <option value="">Seleccionar método</option>
+            <option value="Efectivo">Efectivo</option>
+            <option value="Tarjeta">Tarjeta</option>
+          </select>
+
+
+          <label htmlFor="monto">Monto</label>
+          <input
+            type="number"
+            id="monto"
+            name="monto"
+            value={formData.monto}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                monto: e.target.value,
+              }))
+            }
+            required
+            min="0"
+          />
+
+
+        </div>
+
+      )}
 
 
 
@@ -221,91 +317,133 @@ function TransaccionForm({ formData, setFormData, onSubmit, loading, error, pres
 
 const Transacciones = () => {
 
+
+  /*  Almacenar transacciones 
+   *  Obtener la información de la transacción seleccionada en la tabla */
   const [transacciones, setTransacciones] = useState([]);
+  const [transaccionSeleccionada, setTransaccionSeleccionada] = useState(null);
+
+  /*  Almacenar presupuestos
+   *  Filtrar presupuestos del usuario */
+  const [presupuestos, setPresupuestos] = useState([]);
+  const [filtroPresupuesto, setFiltroPresupuesto] = useState("");
+
+  /*  Almacenar categorías 
+   *  Filtrar categorías de un usuario
+   *  Categorías filtradas del presupuesto */
+  const [categorias, setCategorias] = useState([]);
+  const [filtroCategoria, setFiltroCategoria] = useState("");
+  const [categoriasFiltradas, setCategoriasFiltradas] = useState([]);
+
+  /*  Almacenar metas de ahorra */
+  const [meta_ahorro, setMeta_ahorro] = useState([]);
+
+  /*  Animacion de cargar */
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [transaccionSeleccionada, setTransaccionSeleccionada] = useState(null);
-  const [categorias, setCategorias] = useState([]);
+
+  /*  Estado de la ventana modal (abierta:true, cerrada:false) 
+   *  Modo de la modal (Crear/Editar/Ver/Eliminar) */
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("crear");
-  const [filtroPresupuesto, setFiltroPresupuesto] = useState("");
-  const [filtroCategoria, setFiltroCategoria] = useState("");
-  const [paginaActual, setPaginaActual] = useState(1);
-  const [busqueda, setBusqueda] = useState("");
-  const [formData, setFormData] = useState(initialForm);
+
+  /* Controlar el menú <Más información>
+     Es algo para el contenido del menú*/
   const [isOpen, setIsOpen] = useState(false);
   const contentRef = useRef(null);
 
-  // Va a almacenar los presupuestos del UseEffect
-  const [presupuestos, setPresupuestos] = useState([]);
-  // Va a almacenar el presupuesto seleccionado
-  const [presupuestoSeleccionado, setPresupuestoSeleccionado] = useState('');
-  // Va a almacenar las categorias
-  const [categoriasFiltradas, setCategoriasFiltradas] = useState([]);
-  // Va a almacenar la categoria seleccionada en el combobox
-  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
-
-
+  /*  Paginación para la tabla
+   *  Numero de elementos por página*/
+  const [paginaActual, setPaginaActual] = useState(1);
   const ITEMS_PER_PAGE = 5;
 
-  // Fetch transacciones
-  const fetchTransacciones = async () => {
+  /*  Capturar el contenido de la barra de búsqueda */
+  const [busqueda, setBusqueda] = useState("");
+
+  /* Info */
+  const [formData, setFormData] = useState(initialForm);
+
+
+
+  /*  FETCH's para extraer las Transacciones, Categorías y Presupuestos*/
+  const fetchTransacciones = async (userId, token) => {
     setLoading(true);
     setError(null);
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
+
     try {
       if (!token) throw new Error("No token disponible, inicia sesión.");
-      const response = await fetch(
+
+      const res = await axios.get(
         `http://localhost:3000/api/transacciones/${userId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      if (!response.ok) {
-        const errorMessage = await response.text(); // Esto ayuda a ver si hay HTML o texto de error
-        throw new Error(`Error del servidor: ${response.status} - ${errorMessage}`);
-      }
-      const data = await response.json();
-      setTransacciones(data);
+
+      setTransacciones(res.data);
       setTransaccionSeleccionada(null);
-
-      // Error: estabas intentando acceder a response.data, pero response es la respuesta fetch
-      // y data ya contiene los datos. Cambia esto por:
-      console.log("Transacciones recibidas:", data.length);
-
+      console.log("Transacciones recibidas:", res.data.length);
     } catch (err) {
-      setError(err.message);
       console.error("Error al cargar transacciones:", err);
+      setError(err.response?.data?.mensaje || err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch presupuestos
+  const fetchCategorias = async (userId, token) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/categorias/${userId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setCategorias(res.data);
+      console.log("Categorias recibidas: ", res.data);
+    } catch (error) {
+      // No error visible aquí
+    }
+  };
+
+  const fetchPresupuestos = async (userId, token) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/presupuestos/${userId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setPresupuestos(res.data);
+      const nombresCategorias = obtenerNombresCategorias(res.data);
+
+    } catch (error) {
+      console.error("❌ Error al obtener presupuestos:", error);
+    }
+  };
+
+  const fetchMetas = async (userId, token) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/api/metas-ahorro/${userId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setMeta_ahorro(res.data);
+      console.log("Metas recibidas:", res.data);
+    } catch (error) {
+      console.error("Error al obtener metas:", error);
+    }
+  };
+
+  // Aquí se ejecutan todos los Fetch's
   useEffect(() => {
+
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userId");
 
-    const fetchPresupuestos = async () => {
-      try {
-        const res = await axios.get(
-          `http://localhost:3000/api/presupuestos/${userId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setPresupuestos(res.data);
-        const nombresCategorias = obtenerNombresCategorias(res.data);
+    fetchMetas(userId, token);
+    fetchPresupuestos(userId, token);
+    fetchTransacciones(userId, token);
+    fetchCategorias(userId, token);
 
-      } catch (error) {
-        console.error("❌ Error al obtener presupuestos:", error);
-      }
-    };
-
-    fetchPresupuestos();
   }, []);
 
-
   useEffect(() => {
+
     const presupuestoSeleccionado = presupuestos.find(
       (p) => p._id === formData.presupuesto_asociado
     );
@@ -314,31 +452,8 @@ const Transacciones = () => {
     } else {
       setCategoriasFiltradas([]);
     }
+
   }, [formData.presupuesto_asociado, presupuestos]);
-
-  // Fetch categorias
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
-    const fetchCategorias = async () => {
-      try {
-        const res = await axios.get(
-          `http://localhost:3000/api/categorias/${userId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setCategorias(res.data);
-        console.log("Categorias recibidas: ", res.data);
-      } catch (error) {
-        // No error visible aquí
-      }
-    };
-    fetchCategorias();
-  }, []);
-
-  useEffect(() => {
-    fetchTransacciones();
-  }, []);
-
 
   // Métodos para extrar el nombre del presupuesto/categoria
   const obtenerNombresCategorias = (presupuestos) => {
@@ -349,11 +464,23 @@ const Transacciones = () => {
     );
 
     return nombres;
-  };
+  }; // OBTENER NOMBRE DE LAS CATEGORIAS DE UN PRESUPUESTO
 
   const obtenerNombrePresupuesto = (id) => {
     const presupuesto = presupuestos.find((p) => p._id === id);
-    return presupuesto?.titulo || "Sin Presupuesto";
+    return presupuesto?.titulo;
+  };// OBTENER NOMBRE DE LOS PRESUPUESTOS
+
+  const obtenerNombreMetaAhorro = (metaAsociada) => {
+    if (!metaAsociada) return "Meta no asignada";
+
+    const id = typeof metaAsociada === "string"
+      ? metaAsociada
+      : metaAsociada?._id || metaAsociada?.$oid;
+
+    const meta = meta_ahorro.find((m) => m._id === id);
+
+    return meta?.nombre || "Meta no encontrada";
   };
 
   const obtenerNombreCategoria = (categoriaAsociada) => {
@@ -367,19 +494,23 @@ const Transacciones = () => {
     const categoria = categorias.find((cat) => cat._id === id);
 
     return categoria?.titulo || "Categoría no encontrada";
-  };
-
+  };// OBTENER NOMBRE DE LAS CATEGORIAS
 
   // Modal handlers
   const abrirModalCrear = () => {
+
     setFormData(initialForm);
     setTransaccionSeleccionada(null);
     setModalMode("crear");
     setModalOpen(true);
-  };
+
+  }; // ABRIR MODAL
 
   const abrirModalEditar = () => {
-    if (!transaccionSeleccionada) return;
+
+    if (!transaccionSeleccionada)
+      return;
+
     setFormData({
       titulo: transaccionSeleccionada.titulo || "",
       descripcion: transaccionSeleccionada.descripcion || "",
@@ -388,42 +519,61 @@ const Transacciones = () => {
       monto: transaccionSeleccionada.monto || "",
       categoria_asociada: transaccionSeleccionada.categoria_asociada || "",
       presupuesto_asociado: transaccionSeleccionada.presupuesto_asociado || "",
+      meta_asociada: transaccionSeleccionada.meta_asociada || ""
     });
     setModalMode("editar");
     setModalOpen(true);
-  };
+
+  }; // MODAL EDITAR
 
   const abrirModalVer = (transaccion) => {
-    if (!transaccion) return;
+    if (!transaccion)
+      return;
+
     setTransaccionSeleccionada(transaccion);
+
     setFormData({
+
       titulo: transaccion.titulo || "",
       descripcion: transaccion.descripcion || "",
       accion: transaccion.accion || "",
       metodo_pago: transaccion.metodo_pago || "",
       monto: transaccion.monto || "",
+
       categoria_asociada:
         transaccion.categoria_asociada?._id ||
         transaccion.categoria_asociada ||
         "",
+
       presupuesto_asociado:
         transaccion.presupuesto_asociado?._id ||
         transaccion.presupuesto_asociado ||
         "",
+
+      meta_asociada:
+        transaccion.meta_asociada?._id ||
+        transaccion.meta_asociada || "",
+
+      tipo_transaccion: transaccion.tipo_transaccion
+
     });
+
     setModalMode("ver");
     setModalOpen(true);
   };
 
   const cerrarModal = () => {
+
     setModalOpen(false);
     setFormData(initialForm);
     setTransaccionSeleccionada(null);
     setError(null);
+
   };
 
   // CRUD handlers
   const handleSubmit = async (e) => {
+
     e.preventDefault();
     setError(null);
 
@@ -452,6 +602,8 @@ const Transacciones = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      console.log("Información para el backend: ", cleanData);
+
       await Swal.fire({
         icon: "success",
         title: "Transacción creada!",
@@ -460,16 +612,23 @@ const Transacciones = () => {
         showConfirmButton: false,
       });
 
-      fetchTransacciones();
+      const updatedUserId = localStorage.getItem("userId");
+      const updatedToken = localStorage.getItem("token");
+
+      fetchTransacciones(updatedUserId, updatedToken);
       cerrarModal();
 
     } catch (err) {
       setError(err.message);
+      console.error("Error al crear transacción:", err);
+      console.log("Respuesta del servidor:", err.response?.data);
+      setError(err.response?.data?.mensaje || err.message);
+
+
     } finally {
       setLoading(false);
     }
   };
-
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -502,7 +661,10 @@ const Transacciones = () => {
         timer: 1500,
         showConfirmButton: false,
       });
-      fetchTransacciones();
+      const updatedUserId = localStorage.getItem("userId");
+      const updatedToken = localStorage.getItem("token");
+
+      fetchTransacciones(updatedUserId, updatedToken);
       cerrarModal();
     } catch (err) {
       setError("Error al actualizar la transacción");
@@ -532,7 +694,10 @@ const Transacciones = () => {
           `http://localhost:3000/api/transacciones/${userId}/${transaccionSeleccionada._id}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        fetchTransacciones();
+        const updatedUserId = localStorage.getItem("userId");
+        const updatedToken = localStorage.getItem("token");
+
+        fetchTransacciones(updatedUserId, updatedToken);
         cerrarModal();
       } catch (err) {
         setError("Error al eliminar la transaccion");
@@ -587,18 +752,24 @@ const Transacciones = () => {
       "Monto",
       "Categoria Asociada",
       "Presupuesto Asociado",
+      "Meta de ahorro Asociada",
       "Fecha",
     ];
     const filas = transaccionesFiltrados.map((t) => [
+
       t.titulo || "",
       t.descripcion || "",
       t.accion || "",
       t.metodo_pago || "",
       `$${Number(t.monto || 0).toFixed(2)}`,
+
       obtenerNombreCategoria(t.categoria_asociada) || "",
       obtenerNombrePresupuesto(t.presupuesto_asociado) || "",
+      obtenerNombreMetaAhorro(t.meta_asociada) || "",
       t.fecha ? new Date(t.fecha).toLocaleDateString() : "",
+
     ]);
+
     doc.text("Listado de transacciones", 14, 15);
     autoTable(doc, {
       startY: 20,
@@ -610,8 +781,12 @@ const Transacciones = () => {
 
 
   return (
+
     <div className="transacciones-tabla-container">
       <div>
+
+        {/* ENCABEZADO Y BOTÓN DE REGRESAR */}
+
         <div className="brine-header">
           <button
             onClick={() => (window.location.href = "/home")}
@@ -633,7 +808,12 @@ const Transacciones = () => {
             personales
           </p>
         </div>
+
+
         {error && <div className="error-message">{error}</div>}
+
+        {/* MENÚ DESPLEGABLE ¿QUÉ PUEDES HACER EN ESTA SECCIÓN? */}
+
         <div className="brine-intro">
           <h2 onClick={() => setIsOpen(!isOpen)} style={{ cursor: "pointer" }}>
             ¿Qué puedes en transacciones?
@@ -698,7 +878,11 @@ const Transacciones = () => {
             </div>
           </div>
         </div>
+
       </div>
+
+
+      {/* CRUD, BARRA DE BÚSQUEDA Y FILTROS */}
 
       <div className="acciones-superiores">
         <button
@@ -706,7 +890,7 @@ const Transacciones = () => {
           onClick={abrirModalCrear}
           title="Crear"
         >
-          <IconCrear /> Presupuestos
+          <IconCrear /> Crear
         </button>
 
         <button
@@ -717,6 +901,7 @@ const Transacciones = () => {
         >
           <IconVer /> Detalles
         </button>
+
         <button
           className="btn-icon-Editar"
           onClick={abrirModalEditar}
@@ -725,6 +910,7 @@ const Transacciones = () => {
         >
           <IconEditar /> Editar
         </button>
+
         <button
           className="btn-icon-Eliminar"
           onClick={handleDelete}
@@ -733,6 +919,7 @@ const Transacciones = () => {
         >
           <IconEliminar /> Eliminar
         </button>
+
         <button
           className="btn-icon-Refrescar"
           onClick={fetchTransacciones}
@@ -740,6 +927,7 @@ const Transacciones = () => {
         >
           <IconRefrescar /> Refrescar
         </button>
+
         <button
           className="btn-icon-PDF"
           onClick={exportarPDF}
@@ -747,6 +935,7 @@ const Transacciones = () => {
         >
           <IconPDF /> PDF
         </button>
+
         <div className="buscador-container">
           <IconBuscar />
           <input
@@ -756,6 +945,7 @@ const Transacciones = () => {
             onChange={(e) => setBusqueda(e.target.value)}
           />
         </div>
+
         <div className="Filtros">
           <select
             value={filtroPresupuesto}
@@ -780,7 +970,10 @@ const Transacciones = () => {
             ))}
           </select>
         </div>
+
       </div>
+
+      {/* TABLA */}
 
       <table className="transacciones-table">
         <thead>
@@ -788,8 +981,8 @@ const Transacciones = () => {
             <th>Título</th>
             <th>Accion</th>
             <th>Monto</th>
-            <th>Presupuesto</th>
-            <th>Categoria</th>
+            <th>Nombre entidad </th>
+            <th>Tipo</th>
           </tr>
         </thead>
         <tbody>
@@ -811,16 +1004,21 @@ const Transacciones = () => {
                 <td>{transaccion.accion}</td>
                 <td>${Number(transaccion.monto || 0).toFixed(2)}</td>
                 <td>
-                  {obtenerNombrePresupuesto(transaccion.presupuesto_asociado)}
+                  {transaccion.presupuesto_asociado
+                    ? obtenerNombrePresupuesto(transaccion.presupuesto_asociado)
+                    : obtenerNombreMetaAhorro(transaccion.meta_asociada)}
                 </td>
-                <td>{obtenerNombreCategoria(transaccion?.categoria_asociada)}</td>
+
+                <td> {transaccion.presupuesto_asociado ? "Presupuesto" : "Meta de ahorro"} </td>
               </tr>
             );
           })}
         </tbody>
       </table>
 
-      {/* Controles de paginación */}
+
+      {/* PAGINACIÓN */}
+
       <div className="pagination">
         <button
           onClick={() => irAPagina(paginaActual - 1)}
@@ -848,12 +1046,16 @@ const Transacciones = () => {
         </button>
       </div>
 
+      {/* MODALES */}
+
       {modalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
             <button className="modal-close" onClick={cerrarModal}>
               <IconCerrar />
             </button>
+
+
             {modalMode === "crear" && (
               <>
                 <h2>Crear Transaccion</h2>
@@ -865,9 +1067,12 @@ const Transacciones = () => {
                   error={error}
                   presupuestos={presupuestos}
                   categorias={categoriasFiltradas}
+                  meta_ahorro={meta_ahorro}
                 />
               </>
             )}
+
+
             {modalMode === "editar" && (
               <>
                 <h2>Editar Transaccion</h2>
@@ -879,9 +1084,12 @@ const Transacciones = () => {
                   error={error}
                   presupuestos={presupuestos}
                   categorias={categorias}
+                  meta_ahorro={meta_ahorro}
                 />
               </>
             )}
+
+
             {modalMode === "ver" && formData && (
               <>
                 <h2>Detalles de la Transaccion</h2>
@@ -924,6 +1132,8 @@ const Transacciones = () => {
                 </div>
               </>
             )}
+
+
             {modalMode === "verMeta" && formData && (
               <>
                 <h2>Detalles de la Transaccion</h2>
@@ -969,8 +1179,10 @@ const Transacciones = () => {
           </div>
         </div>
       )}
+
+
     </div>
-  );
+  )
 };
 
 export default Transacciones;

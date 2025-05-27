@@ -58,34 +58,38 @@ const initialForm = {
   accion: "",
   metodo_pago: "",
   monto: "",
-  meta_ahorro_asociada: "",
+  categoria_asociada: "",
+  presupuesto_asociado: ""
 };
 
 const limpiarDatos = (data) => ({
   ...data,
-  meta_ahorro_asociada: data.meta_ahorro_asociada || null,
-  presupuesto_asociado: null,
-  categoria_asociada: null
+  categoria_asociada: data.categoria_asociada || null,
+  presupuesto_asociado: data.presupuesto_asociado || null,
 });
 
 const validarCampos = (data) => {
-  
-  if ( !data.titulo || !data.accion || !data.metodo_pago || !data.monto) 
+  if (
+    !data.titulo ||
+    !data.accion ||
+    !data.metodo_pago ||
+    !data.monto
+  ) {
     return "Por favor, complete todos los campos obligatorios.";
-  
-  if (!["Ingreso", "Retiro"].includes(data.accion)) 
+  }
+  if (!["Ingreso", "Retiro"].includes(data.accion)) {
     return "La acción debe ser 'Ingreso' o 'Retiro'.";
-  
-  if (!["Efectivo", "Tarjeta"].includes(data.metodo_pago)) 
+  }
+  if (!["Efectivo", "Tarjeta"].includes(data.metodo_pago)) {
     return "Seleccione un método de pago válido.";
-  
-  if (isNaN(Number(data.monto)) || Number(data.monto) < 0) 
+  }
+  if (isNaN(Number(data.monto)) || Number(data.monto) < 0) {
     return "El monto debe ser un número positivo.";
-  
+  }
   return null;
 };
 
-function TransaccionForm({ formData, setFormData, onSubmit, loading, error, metas_ahorro }) {
+function TransaccionForm({ formData, setFormData, onSubmit, loading, error, presupuestos, categorias }) {
   return (
     <form onSubmit={onSubmit} className="transacciones-form">
       <div className="form-group">
@@ -114,24 +118,43 @@ function TransaccionForm({ formData, setFormData, onSubmit, loading, error, meta
       </div>
 
       <div className="form-group">
-        <label htmlFor="meta_ahorro_asociada">Meta de Ahorro</label>
+        <label htmlFor="presupuesto_asociado">Presupuesto:</label>
         <select
-          id="meta_ahorro_asociada"
-          name="meta_ahorro_asociada"
-          value={formData.meta_ahorro_asociada}
+          id="presupuesto_asociado"
+          name="presupuesto_asociado"
+          value={formData.presupuesto_asociado}
           onChange={(e) =>
             setFormData((prev) => ({
               ...prev,
-              meta_ahorro_asociada: e.target.value || "",
+              presupuesto_asociado: e.target.value || "",
             }))
           }
         >
-          <option value="">Seleccionar Meta de Ahorro</option>
-          {metas_ahorro && metas_ahorro.map((meta) => (
-            <option key={meta._id} value={meta._id}>
-              {meta.titulo}
+          <option value="">Seleccionar Presupuesto</option>
+          {presupuestos.map((pres) => (
+            <option key={pres._id} value={pres._id}>
+              {pres.titulo}
             </option>
           ))}
+        </select>
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="categoria_asociada">Categoria:</label>
+        <select
+          id="categoria_asociada"
+          value={formData.categoria_asociada}
+          onChange={(e) =>
+            setFormData({ ...formData, categoria_asociada: e.target.value })
+          }
+        >
+          <option value="">Selecciona una categoría</option>
+          {categorias.map((d) => (
+            <option key={d.categoria._id} value={d.categoria._id}>
+              {d.categoria.titulo}
+            </option>
+          ))}
+
         </select>
       </div>
       <div className="form-group">
@@ -181,9 +204,11 @@ function TransaccionForm({ formData, setFormData, onSubmit, loading, error, meta
           }
           required
           min="0"
-          step="0.01"
         />
       </div>
+
+
+
       <div className="btn-submit-container">
         <button type="submit" className="btn-submit" disabled={loading}>
           {loading ? "Guardando..." : "Guardar"}
@@ -194,105 +219,156 @@ function TransaccionForm({ formData, setFormData, onSubmit, loading, error, meta
   );
 }
 
-const TransaccionesAhorros = () => {
+const TransaccionesPresupuestos = () => {
 
-  // UseState's para el control de las transacciones
-  const [transaccionSeleccionada, setTransaccionSeleccionada] = useState(null);
   const [transacciones, setTransacciones] = useState([]);
-  
-  // UseState para metas de ahorro
-  const [metas_ahorro, setMetas] = useState([]);
-  const [filtroMeta, setFiltroMeta] = useState("");
-
-  // UseState's para animaciones de carga y error 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [isOpen, setIsOpen] = useState(false);
-
-  // UseState's para el estado de las modales
+  const [transaccionSeleccionada, setTransaccionSeleccionada] = useState(null);
+  const [categorias, setCategorias] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("crear");
-  
-  // UseState para la barra de busqueda
-  const [busqueda, setBusqueda] = useState("");
-  
-  // UseState que inicializa los campos de formulario modal
-  const [formData, setFormData] = useState(initialForm);
-  
-  // UseState's para controlar la paginación
+  const [filtroPresupuesto, setFiltroPresupuesto] = useState("");
+  const [filtroCategoria, setFiltroCategoria] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
-  const ITEMS_PER_PAGE = 5; // Variable que limita el número de elementos en la tabla
-
+  const [busqueda, setBusqueda] = useState("");
+  const [formData, setFormData] = useState(initialForm);
+  const [isOpen, setIsOpen] = useState(false);
   const contentRef = useRef(null);
 
-  // Cargar datos al montar el componente
-  useEffect(() => {
-    fetchTransacciones();
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
-    if (token && userId) {
-      fetchMetas(token, userId);
-    }
-  }, []);
+  // Va a almacenar los presupuestos del UseEffect
+  const [presupuestos, setPresupuestos] = useState([]);
+  // Va a almacenar el presupuesto seleccionado
+  const [presupuestoSeleccionado, setPresupuestoSeleccionado] = useState('');
+  // Va a almacenar las categorias
+  const [categoriasFiltradas, setCategoriasFiltradas] = useState([]);
+  // Va a almacenar la categoria seleccionada en el combobox
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
 
-  // Trae todas las transacciones hechas a las metas de ahorro
+
+  const ITEMS_PER_PAGE = 5;
+
+  // Fetch transacciones
   const fetchTransacciones = async () => {
-    
     setLoading(true);
     setError(null);
-    
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userId");
-    
     try {
-
       if (!token) throw new Error("No token disponible, inicia sesión.");
-      
       const response = await fetch(
-        `http://localhost:3000/api/transacciones/meta-ahorro/${userId}`,
-        { headers: { Authorization: `Bearer ${token}` }, }
+        `http://localhost:3000/api/transacciones/${userId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
-
       if (!response.ok) {
-        const errorMessage = await response.text();
+        const errorMessage = await response.text(); // Esto ayuda a ver si hay HTML o texto de error
         throw new Error(`Error del servidor: ${response.status} - ${errorMessage}`);
       }
-
       const data = await response.json();
       setTransacciones(data);
       setTransaccionSeleccionada(null);
 
+      // Error: estabas intentando acceder a response.data, pero response es la respuesta fetch
+      // y data ya contiene los datos. Cambia esto por:
       console.log("Transacciones recibidas:", data.length);
 
     } catch (err) {
       setError(err.message);
-      console.error("Error al cargar transacciones de meta de ahorros:", err);
+      console.error("Error al cargar transacciones:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Trae todas las metas de ahorro
-  const fetchMetas = async (token, userId) => {
-      
-    try {
-        const res = await axios.get( 
-          `http://localhost:3000/api/metas-ahorro/${userId}`,
+  // Fetch presupuestos
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+
+    const fetchPresupuestos = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:3000/api/presupuestos/${userId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        setMetas(res.data);
-        console.log("<< METAS DE AHORRO >> Se han recuperado los siguientes datos: ", res.data);
+        setPresupuestos(res.data);
+        const nombresCategorias = obtenerNombresCategorias(res.data);
+
       } catch (error) {
-        console.error("<< METAS DE AHORRO >> Ha ocurrido un error al obtener los datos:", error);
+        console.error("❌ Error al obtener presupuestos:", error);
       }
     };
 
-  const obtenerNombreMeta = (metaId) => {
-    // .find(): Buscar en el arreglo 
-    // La variable dentro es un alias para cada elemento del arreglo
-    const meta = metas_ahorro.find( (ahorro) => ahorro._id === metaId );
-    return meta?.titulo || "Sin meta de ahorro";
+    fetchPresupuestos();
+  }, []);
+
+
+  useEffect(() => {
+    const presupuestoSeleccionado = presupuestos.find(
+      (p) => p._id === formData.presupuesto_asociado
+    );
+    if (presupuestoSeleccionado) {
+      setCategoriasFiltradas(presupuestoSeleccionado.categorias || []);
+    } else {
+      setCategoriasFiltradas([]);
+    }
+  }, [formData.presupuesto_asociado, presupuestos]);
+
+  // Fetch categorias
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+    const fetchCategorias = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:3000/api/categorias/${userId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setCategorias(res.data);
+        console.log("Categorias recibidas: ", res.data);
+      } catch (error) {
+        // No error visible aquí
+      }
+    };
+    fetchCategorias();
+  }, []);
+
+  useEffect(() => {
+    fetchTransacciones();
+  }, []);
+
+
+  // Métodos para extrar el nombre del presupuesto/categoria
+  const obtenerNombresCategorias = (presupuestos) => {
+    if (!Array.isArray(presupuestos)) return [];
+
+    const nombres = presupuestos.flatMap(p =>
+      Array.isArray(p.categorias) ? p.categorias.map(cat => cat.titulo) : []
+    );
+
+    return nombres;
   };
+
+  const obtenerNombrePresupuesto = (id) => {
+    const presupuesto = presupuestos.find((p) => p._id === id);
+    return presupuesto?.titulo || "Sin Presupuesto";
+  };
+
+  const obtenerNombreCategoria = (categoriaAsociada) => {
+    if (!categoriaAsociada) return "Sin categoría";
+
+    const id =
+      typeof categoriaAsociada === "string"
+        ? categoriaAsociada
+        : categoriaAsociada?._id || categoriaAsociada?.$oid;
+
+    const categoria = categorias.find((cat) => cat._id === id);
+
+    return categoria?.titulo || "Categoría no encontrada";
+  };
+
 
   // Modal handlers
   const abrirModalCrear = () => {
@@ -303,7 +379,6 @@ const TransaccionesAhorros = () => {
   };
 
   const abrirModalEditar = () => {
-    
     if (!transaccionSeleccionada) return;
     setFormData({
       titulo: transaccionSeleccionada.titulo || "",
@@ -311,11 +386,11 @@ const TransaccionesAhorros = () => {
       accion: transaccionSeleccionada.accion || "",
       metodo_pago: transaccionSeleccionada.metodo_pago || "",
       monto: transaccionSeleccionada.monto || "",
-      meta_ahorro_asociada: transaccionSeleccionada.meta_ahorro_asociada || "",
+      categoria_asociada: transaccionSeleccionada.categoria_asociada || "",
+      presupuesto_asociado: transaccionSeleccionada.presupuesto_asociado || "",
     });
     setModalMode("editar");
     setModalOpen(true);
-
   };
 
   const abrirModalVer = (transaccion) => {
@@ -327,9 +402,13 @@ const TransaccionesAhorros = () => {
       accion: transaccion.accion || "",
       metodo_pago: transaccion.metodo_pago || "",
       monto: transaccion.monto || "",
-      meta_ahorro_asociada:
-        transaccion.meta_ahorro_asociada?._id ||
-        transaccion.meta_ahorro_asociada ||
+      categoria_asociada:
+        transaccion.categoria_asociada?._id ||
+        transaccion.categoria_asociada ||
+        "",
+      presupuesto_asociado:
+        transaccion.presupuesto_asociado?._id ||
+        transaccion.presupuesto_asociado ||
         "",
     });
     setModalMode("ver");
@@ -361,10 +440,11 @@ const TransaccionesAhorros = () => {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Token no encontrado. Inicie sesión.");
 
+      // Usar presupuesto_asociado del formulario como id_presupuesto
       const cleanData = {
         ...limpiarDatos(formData),
-        meta_ahorro_asociada: formData.meta_ahorro_asociada || null,
-      }
+        id_presupuesto: formData.presupuesto_asociado || null,
+      };
 
       await axios.post(
         `http://localhost:3000/api/transacciones/${userId}`,
@@ -389,6 +469,7 @@ const TransaccionesAhorros = () => {
       setLoading(false);
     }
   };
+
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -460,20 +541,26 @@ const TransaccionesAhorros = () => {
     setLoading(false);
   };
 
-  const metasAhorrosUsadas = metas_ahorro.filter((meta) =>
-    transacciones.some((t) => t.meta_ahorro_asociada === meta._id)
+  const presupuestosUsados = presupuestos.filter((p) =>
+    transacciones.some((t) => t.presupuesto_asociado === p._id)
+  );
+  const categoriasUsadas = categorias.filter((d) =>
+    transacciones.some((t) => t.categoria_asociada === d._id)
   );
 
   // Filtro principal de transacciones
   const transaccionesFiltrados = transacciones.filter((t) => {
-    const coincideMetaAhorro = filtroMeta
-      ? t.meta_ahorro_asociada === filtroMeta
+    const coincidePresupuesto = filtroPresupuesto
+      ? t.presupuesto_asociado === filtroPresupuesto
+      : true;
+    const coincideCategoria = filtroCategoria
+      ? t.categoria_asociada === filtroCategoria
       : true;
     const coincideBusqueda = busqueda
       ? t.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
       t.descripcion?.toLowerCase().includes(busqueda.toLowerCase())
       : true;
-    return coincideMetaAhorro && coincideBusqueda;
+    return coincidePresupuesto && coincideCategoria && coincideBusqueda;
   });
 
   // Paginación
@@ -498,7 +585,8 @@ const TransaccionesAhorros = () => {
       "Accion",
       "Metodo de Pago",
       "Monto",
-      "Meta de ahorro asociada",
+      "Categoria Asociada",
+      "Presupuesto Asociado",
       "Fecha",
     ];
     const filas = transaccionesFiltrados.map((t) => [
@@ -507,28 +595,30 @@ const TransaccionesAhorros = () => {
       t.accion || "",
       t.metodo_pago || "",
       `$${Number(t.monto || 0).toFixed(2)}`,
-      obtenerNombreMeta(t.meta_ahorro_asociada) || "",
+      obtenerNombreCategoria(t.categoria_asociada) || "",
+      obtenerNombrePresupuesto(t.presupuesto_asociado) || "",
       t.fecha ? new Date(t.fecha).toLocaleDateString() : "",
     ]);
-    doc.text("Listado de transacciones de metas de ahorro", 14, 15);
+    doc.text("Listado de transacciones", 14, 15);
     autoTable(doc, {
       startY: 20,
       head: [columnas],
       body: filas,
     });
-    doc.save("transacciones_metas_ahorro.pdf");
+    doc.save("transacciones.pdf");
   };
 
 
   return (
     <div>
+
       <div className="acciones-superiores">
         <button
           className="btn-icon-crear"
           onClick={abrirModalCrear}
           title="Crear"
         >
-          <IconCrear /> Transacción
+          <IconCrear /> Presupuestos
         </button>
 
         <button
@@ -580,13 +670,24 @@ const TransaccionesAhorros = () => {
         </div>
         <div className="Filtros">
           <select
-            value={filtroMeta}
-            onChange={(e) => setFiltroMeta(e.target.value)}
+            value={filtroPresupuesto}
+            onChange={(e) => setFiltroPresupuesto(e.target.value)}
           >
-            <option value="">Todas las metas de ahorro</option>
-            {metasAhorrosUsadas.map((meta) => (
-              <option key={meta._id} value={meta._id}>
-                {meta.titulo}
+            <option value="">Todos los presupuestos</option>
+            {presupuestosUsados.map((p) => (
+              <option key={p._id} value={p._id}>
+                {p.titulo}
+              </option>
+            ))}
+          </select>
+          <select
+            value={filtroCategoria}
+            onChange={(e) => setFiltroCategoria(e.target.value)}
+          >
+            <option value="">Todas las categorias</option>
+            {categoriasUsadas.map((d) => (
+              <option key={d._id} value={d._id}>
+                {d.titulo}
               </option>
             ))}
           </select>
@@ -599,12 +700,13 @@ const TransaccionesAhorros = () => {
             <th>Título</th>
             <th>Accion</th>
             <th>Monto</th>
-            <th>Meta de Ahorro</th>
-            <th>Método de Pago</th>
+            <th>Presupuesto</th>
+            <th>Categoria</th>
           </tr>
         </thead>
         <tbody>
           {transaccionesPaginadas.map((transaccion) => {
+
             return (
               <tr
                 key={transaccion._id}
@@ -621,9 +723,9 @@ const TransaccionesAhorros = () => {
                 <td>{transaccion.accion}</td>
                 <td>${Number(transaccion.monto || 0).toFixed(2)}</td>
                 <td>
-                  {obtenerNombreMeta(transaccion.meta_ahorro_asociada)}
+                  {obtenerNombrePresupuesto(transaccion.presupuesto_asociado)}
                 </td>
-                <td>{transaccion.metodo_pago}</td>
+                <td>{obtenerNombreCategoria(transaccion?.categoria_asociada)}</td>
               </tr>
             );
           })}
@@ -666,33 +768,35 @@ const TransaccionesAhorros = () => {
             </button>
             {modalMode === "crear" && (
               <>
-                <h2>Crear Transacción de Meta de Ahorro</h2>
+                <h2>Crear Transaccion</h2>
                 <TransaccionForm
                   formData={formData}
                   setFormData={setFormData}
                   onSubmit={handleSubmit}
                   loading={loading}
                   error={error}
-                  metas_ahorro={metas_ahorro}
+                  presupuestos={presupuestos}
+                  categorias={categoriasFiltradas}
                 />
               </>
             )}
             {modalMode === "editar" && (
               <>
-                <h2>Editar Transacción de Meta de Ahorro</h2>
+                <h2>Editar Transaccion</h2>
                 <TransaccionForm
                   formData={formData}
                   setFormData={setFormData}
                   onSubmit={handleUpdate}
                   loading={loading}
                   error={error}
-                  metas_ahorro={metas_ahorro}
+                  presupuestos={presupuestos}
+                  categorias={categorias}
                 />
               </>
             )}
             {modalMode === "ver" && formData && (
               <>
-                <h2>Detalles de la Transacción</h2>
+                <h2>Detalles de la Transaccion</h2>
                 <div className="detalle-transaccion">
                   <p>
                     <strong>Título: </strong> {formData.titulo}
@@ -711,19 +815,66 @@ const TransaccionesAhorros = () => {
                     {Number(formData.monto).toFixed(2)}
                   </p>
                   <p>
-                    <strong>Meta de Ahorro:</strong>{" "}
-                    {transaccionSeleccionada?.meta_ahorro_asociada
-                      ? obtenerNombreMeta(
-                        transaccionSeleccionada.meta_ahorro_asociada
+                    <strong>Categoria:</strong>{" "}
+                    {transaccionSeleccionada?.categoria_asociada
+                      ? obtenerNombreCategoria(
+                        transaccionSeleccionada.categoria_asociada
                       )
                       : "No asignada"}
                   </p>
-                  <p> 
-                    <strong> Fecha de Creación: </strong> 
-                    {transaccionSeleccionada.fecha
-                      ? new Date(transaccionSeleccionada.fecha).toLocaleDateString()
-                      : ""} 
+                  <p>
+                    <strong>Presupuesto:</strong>{" "}
+                    {transaccionSeleccionada?.presupuesto_asociado
+                      ? obtenerNombrePresupuesto(
+                        transaccionSeleccionada.presupuesto_asociado
+                      )
+                      : "No asignada"}
                   </p>
+                  <p> <strong> Fecha de Creación: </strong> {transaccionSeleccionada.fecha
+                    ? new Date(transaccionSeleccionada.fecha).toLocaleDateString()
+                    : ""} </p>
+                </div>
+              </>
+            )}
+            {modalMode === "verMeta" && formData && (
+              <>
+                <h2>Detalles de la Transaccion</h2>
+                <div className="detalle-transaccion">
+                  <p>
+                    <strong>Título: </strong> {formData.titulo}
+                  </p>
+                  <p>
+                    <strong>Descripción: </strong> {formData.descripcion}
+                  </p>
+                  <p>
+                    <strong>Accion: </strong> {formData.accion}
+                  </p>
+                  <p>
+                    <strong>Metodo de Pago: </strong> {formData.metodo_pago}
+                  </p>
+                  <p>
+                    <strong>Monto: </strong> $
+                    {Number(formData.monto).toFixed(2)}
+                  </p>
+                  <p>
+                    <strong>Categoria:</strong>{" "}
+                    {transaccionSeleccionada?.categoria_asociada
+                      ? obtenerNombreCategoria(
+                        transaccionSeleccionada.categoria_asociada
+                      )
+                      : "No asignada"}
+                  </p>
+                  <p>
+                    <strong>Presupuesto:</strong>{" "}
+                    {transaccionSeleccionada?.presupuesto_asociado
+                      ? obtenerNombrePresupuesto(
+                        transaccionSeleccionada.presupuesto_asociado
+                      )
+                      : "No asignada"}
+                  </p>
+                  <p> <strong> Fecha de Creación: </strong> {transaccionSeleccionada.fecha
+                    ? new Date(transaccionSeleccionada.fecha).toLocaleDateString()
+                    : ""} </p>
                 </div>
               </>
             )}
@@ -734,4 +885,4 @@ const TransaccionesAhorros = () => {
   );
 };
 
-export default TransaccionesAhorros;
+export default TransaccionesPresupuestos;

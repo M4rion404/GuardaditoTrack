@@ -4,9 +4,22 @@ import Swal from "sweetalert2";
 import PresupuestoResumen from "./PresupuestoResumen";
 import axios from "axios";
 import { Doughnut } from "react-chartjs-2";
-import { Chart, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from "chart.js";
+import {
+  Chart,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  LineController,
+  LineElement,
+  PointElement,
+} from "chart.js";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Bar } from "react-chartjs-2";
 import "../Estilos/modalesStyles.css"
 
@@ -17,7 +30,11 @@ Chart.register(
   CategoryScale,
   LinearScale,
   BarElement,
-  Title
+  Title,
+  LineController,
+  LineElement,
+  PointElement,
+  ChartDataLabels
 );
 
 // Iconos personalizados
@@ -695,66 +712,212 @@ const Presupuestos = () => {
   };
 
   // Gráfico
-  const dataGraph = {
-    labels: ["Disponible", "Gastado"],
+  const dataGraph = React.useMemo(() => {
+  if (
+    !presupuestoSeleccionado ||
+    !Array.isArray(presupuestoSeleccionado.categorias)
+  ) {
+    return {
+      labels: [],
+      datasets: [],
+    };
+  }
+
+  const presupuestoTotal = Number(presupuestoSeleccionado.limite || 0);
+  const dineroDisponibleTotal = Number(presupuestoSeleccionado.dinero_disponible || 0);
+  const dineroGastadoTotal = Math.max(0, presupuestoTotal - dineroDisponibleTotal);
+
+  // Categorías y sus datos disponibles
+  const categoriaLabels = [];
+  const categoriaData = [];
+
+  presupuestoSeleccionado.categorias.forEach((cat) => {
+    const titulo = cat?.categoria?.titulo || "Sin título";
+    const disponible = Number(cat?.dinero_disponible || 0);
+
+    categoriaLabels.push(titulo);
+    categoriaData.push(disponible);
+  });
+
+  const sumaDisponibleEnCategorias = categoriaData.reduce((a, b) => a + b, 0);
+
+  const restoPresupuesto = Math.max(0, dineroDisponibleTotal - sumaDisponibleEnCategorias);
+
+  // Construir datos finales
+  const labels = [...categoriaLabels];
+  const data = [...categoriaData];
+
+  if (restoPresupuesto > 0) {
+    labels.push("Resto del presupuesto");
+    data.push(restoPresupuesto);
+  }
+
+  if (dineroGastadoTotal > 0) {
+    labels.push("Gastado");
+    data.push(dineroGastadoTotal);
+  }
+
+  const backgroundColors = [
+    "#4caf50",
+    "#2196f3",
+    "#ff9800",
+    "#e91e63",
+    "#9c27b0",
+    "#00bcd4",
+    "#cddc39",
+    "#9e9e9e", // Resto
+    "#f44336", // Gastado
+  ];
+
+  return {
+    labels,
     datasets: [
       {
-        label: "Estado del ahorro",
-        data: [
-          Number(presupuestoSeleccionado?.dinero_disponible || 0),
-          Math.max(
-            0,
-            Number(presupuestoSeleccionado?.limite || 0) -
-            Number(presupuestoSeleccionado?.dinero_disponible || 0)
-          ),
-        ],
-        backgroundColor: ["#4caf50", "#f44336"],
+        label: "Distribución del Presupuesto",
+        data,
+        backgroundColor: backgroundColors.slice(0, data.length),
         borderWidth: 1,
       },
     ],
   };
+}, [presupuestoSeleccionado]);
+
+
+const optionsDona = {
+  plugins: {
+    datalabels: {
+      color: "#fff",
+      font: {
+        weight: "bold",
+        size: 14,
+      },
+      formatter: (value) => `$${value.toLocaleString()}`,
+    },
+    legend: {
+      display: true,
+      position: "bottom",
+    },
+  },
+};
+
 
   const dataGraph2 = React.useMemo(() => {
-    if (
-      !presupuestoSeleccionado ||
-      !Array.isArray(presupuestoSeleccionado.categorias)
-    ) {
-      return {
-        labels: [],
-        datasets: [],
-      };
-    }
-
-    const labels = presupuestoSeleccionado.categorias.map(
-      (cat) => cat?.categoria?.titulo || "Sin título"
-    );
-
-    const data = presupuestoSeleccionado.categorias.map((cat) =>
-      Number(cat?.limite || 0)
-    );
-
-    const backgroundColors = [
-      "#4caf50",
-      "#2196f3",
-      "#ff9800",
-      "#e91e63",
-      "#9c27b0",
-      "#00bcd4",
-      "#cddc39",
-    ];
-
+  if (
+    !presupuestoSeleccionado ||
+    !Array.isArray(presupuestoSeleccionado.categorias)
+  ) {
     return {
-      labels,
-      datasets: [
-        {
-          label: "Distribución por Categoría",
-          data,
-          backgroundColor: backgroundColors.slice(0, data.length),
-          borderWidth: 1,
-        },
-      ],
+      labels: [],
+      datasets: [],
     };
-  }, [presupuestoSeleccionado]);
+  }
+
+  const dineroDisponibleTotal = Number(presupuestoSeleccionado.dinero_disponible || 0);
+  const presupuestoTotal = Number(presupuestoSeleccionado.limite || 0);
+  const dineroGastado = Math.max(0, presupuestoTotal - dineroDisponibleTotal);
+
+  const categoriaLabels = [];
+  const categoriaData = [];
+
+  presupuestoSeleccionado.categorias.forEach((cat) => {
+    const titulo = cat?.categoria?.titulo || "Sin título";
+    const disponible = Number(cat?.dinero_disponible || 0);
+
+    categoriaLabels.push(titulo);
+    categoriaData.push(disponible);
+  });
+
+  const sumaDisponibleEnCategorias = categoriaData.reduce((a, b) => a + b, 0);
+  const restoDisponible = Math.max(0, dineroDisponibleTotal - sumaDisponibleEnCategorias);
+
+  const labels = [...categoriaLabels];
+  const data = [...categoriaData];
+
+  if (restoDisponible > 0) {
+    labels.push("Resto del presupuesto");
+    data.push(restoDisponible);
+  }
+
+  if (dineroGastado > 0) {
+    labels.push("Gastado");
+    data.push(dineroGastado);
+  }
+
+  const backgroundColors = [
+    "#4caf50",
+    "#2196f3",
+    "#ff9800",
+    "#e91e63",
+    "#9c27b0",
+    "#00bcd4",
+    "#cddc39",
+    "#9e9e9e", // Resto
+    "#f44336", // Gastado
+  ];
+
+  return {
+    labels,
+    datasets: [
+      {
+        label: "Dinero Disponible por Categoría",
+        data,
+        backgroundColor: backgroundColors.slice(0, data.length),
+        borderWidth: 1,
+      },
+    ],
+  };
+}, [presupuestoSeleccionado]);
+
+
+const options = {
+  scales: {
+    x: {
+      ticks: {
+        display: true, // Oculta etiquetas del eje X
+      },
+      grid: {
+        display: false,
+      },
+    },
+    y: {
+  beginAtZero: true,
+  max: Number(presupuestoSeleccionado?.limite || 0) * 1,
+  ticks: {
+    display: true,
+  },
+  grid: {
+    display: true,
+  },
+  title: {
+    display: true,
+    text: "Límite del presupuesto",
+    color: "#666",      // Opcional: color de la etiqueta
+    font: {
+      size: 14,
+      weight: "bold",
+    },
+  },
+},
+  },
+  plugins: {
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      enabled: true,
+    },
+    datalabels: {
+      color: "#000",
+      anchor: "end",
+      align: "top",
+      font: {
+        weight: "bold",
+        size: 12,
+      },
+      formatter: (value) => value,
+    },
+  },
+};
 
   const exportarPDF = () => {
     const doc = new jsPDF();
@@ -1138,7 +1301,7 @@ const Presupuestos = () => {
                     {presupuestoSeleccionado && (
                       <div className="grafico-ahorro">
                         <h3>Estado del Presupuesto</h3>
-                        <Doughnut data={dataGraph} />
+                        <Doughnut data={dataGraph} options={optionsDona}/>
                       </div>
                     )}
                   </div>
@@ -1146,7 +1309,7 @@ const Presupuestos = () => {
                     {presupuestoSeleccionado && (
                       <div className="grafico-ahorro">
                         <h3>Distribución por Categorias</h3>
-                        <Bar data={dataGraph2} />
+                        <Bar data={dataGraph2} options={options}/>
                       </div>
                     )}
                   </div>

@@ -448,6 +448,7 @@
   justify-content: space-between;
   font-size: 1.25rem;
   transition: color 0.2s ease;
+  transform: translateY(13px);
 }
 
 .brine-intro h2:hover {

@@ -41,14 +41,8 @@ exports.crearUsuario = async (req, res) => {
 
     const nuevoUsuario = new Usuario(req.body);
     await nuevoUsuario.save();
+    await enviarCorreo(email, "Bienvenido a Fintrack" , nombre_usuario);
     
-    // if(verificacion == "sms"){
-    //   await enviarSMS(numero_telefono, nombre_usuario);
-    //   console.log('Enviando SMS a:', numero_telefono, nombre_usuario);
-    // }else {
-    //   await enviarCorreo(email, "Bienvenido a Fintrack" ,nombre_usuario);
-    //   console.log('Enviando Email:', numero_telefono, nombre_usuario);
-    // }
     
     res.status(201).json(nuevoUsuario);
   
@@ -58,11 +52,12 @@ exports.crearUsuario = async (req, res) => {
 }; // CREAR USUARIO
 
 exports.iniciarSesion = async (req, res) => {
+  
   const { email, contraseña } = req.body;
 
   try {
+    
     const usuario = await Usuario.findOne({ email });
-
     const esValida = usuario ? await bcrypt.compare(contraseña, usuario.contraseña) : false;
 
     if (!usuario || !esValida)
@@ -76,7 +71,11 @@ exports.iniciarSesion = async (req, res) => {
     const usuarioSinContraseña = usuario.toObject(); // Convierte a objeto plano
     delete usuarioSinContraseña.contraseña;
 
-    res.json({ mensaje: 'Inicio de sesión exitoso', usuario: usuarioSinContraseña });
+    res.json({ 
+      mensaje: 'Inicio de sesión exitoso', 
+      usuario: usuarioSinContraseña, 
+      token: token 
+    });
 
   } catch (err) {
     res.status(500).json({ error: err.message });

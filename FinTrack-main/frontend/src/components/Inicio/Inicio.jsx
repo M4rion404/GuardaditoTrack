@@ -93,54 +93,50 @@ const handleCerrarSesion = () => {
     <div className="fintrack-homepage">
       {/* Navegación */}
         <nav className="barra-navegacion">
-          <div className="barra-navegacion-izquierda">
-            <div className="logo">
-          <img
-            className="logo-fintrack"
-            src={logoFintrack}
-            alt="Logo Fintrack"
-          />
-            </div>
-            <ul className="barra-navegacion-lista">
-          <li>
-            <Link to="/presupuestos">Presupuestos</Link>
-          </li>
-          <li>
-            <Link to="/transacciones">Transacciones</Link>
-          </li>
-          <li>
-            <Link to="/metasAhorro">Metas y ahorros</Link>
-          </li>
-          <li>
-            <Link to="/saludFinanciera">Salud Financiera</Link>
-          </li>
-          <li>
-            <Link to="/categorias">Categorías</Link>
-          </li>
-            </ul>
-          </div>
-          <div className="barra-navegacion-derecha">
-            <FaUser className="icono-usuario" />
-            <span>{usuario?.nombres || usuario?.email || "Usuario-Fintrack"}</span>
-            <Power
-          className="icono-cerrar-sesion"
-          onClick={handleCerrarSesion}
-          title="Cerrar sesión"
-          style={{ 
-            cursor: "pointer", 
-            marginLeft: "15px", 
-            color: "#FF3B30", // Rojo típico de botón de apagado/encendido
-            fontSize: "1.2rem"
-          }}
-            />
-          </div>
-        </nav>
+  <div className="barra-navegacion-izquierda">
+    <div className="logo">
+      <img className="logo-fintrack" src={logoFintrack} alt="Logo Fintrack" />
+    </div>
+
+    {/* Botón hamburguesa para móvil */}
+    <button
+      className="menu-toggle"
+      aria-label="Toggle menu"
+      onClick={() => {
+        const menu = document.querySelector(".barra-navegacion-lista");
+        menu.classList.toggle("activo");
+      }}
+    >
+      ☰
+    </button>
+
+    <ul className="barra-navegacion-lista">
+      <li><Link to="/presupuestos">Presupuestos</Link></li>
+      <li><Link to="/transacciones">Transacciones</Link></li>
+      <li><Link to="/metasAhorro">Metas y ahorros</Link></li>
+      <li><Link to="/saludFinanciera">Salud Financiera</Link></li>
+      <li><Link to="/categorias">Categorías</Link></li>
+    </ul>
+  </div>
+
+  <div className="barra-navegacion-derecha">
+    <FaUser className="icono-usuario" />
+    <span>{usuario?.nombres || usuario?.email || "Usuario-Fintrack"}</span>
+    <Power
+      className="icono-cerrar-sesion"
+      onClick={handleCerrarSesion}
+      title="Cerrar sesión"
+      style={{ cursor: "pointer", marginLeft: "15px", color: "#FF3B30", fontSize: "1.2rem" }}
+    />
+  </div>
+</nav>
+
         <ColorHoverEffect />
 
         {/* Hero Section */}
       <section className="hero-section bg-gradient-to-b from-cyan-500 to-blue-600 text-white py-20">
         <div className="mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+          <h1 className="Titulo-Home">
             Toma el control de tus finanzas personales
           </h1>
           <p className="text-xl md:text-2xl mb-10 max-w-3xl mx-auto">

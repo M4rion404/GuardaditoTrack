@@ -450,12 +450,13 @@
 .brine-intro h2 {
   cursor: pointer;
   color: #2563eb;
-  font-weight: 600;
+  font-weight: 400;
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 1.25rem;
   transition: color 0.2s ease;
+  transform: translateY(13px);
 }
 
 .brine-intro h2:hover {
@@ -479,4 +480,24 @@
   padding-left: 1.5rem;
   list-style-type: disc;
   color: #333;
+}
+
+.transacciones-menu {
+  display: flex;
+  gap: 15px;
+  margin: 30px 0;
+}
+
+.transacciones-menu button {
+  padding: 10px 20px;
+  border: none;
+  background-color: #eee;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.transacciones-menu button.activo {
+  background-color: #007bff;
+  color: white;
 }

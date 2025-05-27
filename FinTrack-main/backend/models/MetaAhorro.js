@@ -13,20 +13,23 @@ const MetaAhorroSchema = new mongoose.Schema({
 
     estado: { type: String, enum: ['Ahorrando', 'Completada'], default: "Ahorrando" },
     
-    // etiquetas: [
-    //     {
-    //         nombre_etiqueta: { type: String } // Viaje, Gaming, Moto, Salida, Cine, Billar, etc
-    //     }
-    // ],
-    
-    // historial_ingresos:[
-    //     { 
-    //         transaccion_asociada: { type: String },
-    //         accion: { type: String }, // Retiro / Ingreso
-    //         monto: { type: Number },
-    //         descripcion: { type: String }, 
-    //     }
-    // ]
+
+    // Las únicamente es un texto con el nombre de una categoría
+    etiquetas: [
+        {
+            nombre_etiqueta: { type: String } 
+        }
+    ],
+
+    // Historial de ingresos
+    historial_ingresos:[
+        { 
+            transaccion_asociada: { type: String },
+            accion: { type: String }, 
+            monto: { type: Number },
+            descripcion: { type: String }, 
+        }
+    ]
 
 });
 
