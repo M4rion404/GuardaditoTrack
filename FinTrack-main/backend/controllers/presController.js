@@ -180,7 +180,6 @@ exports.actualizarPresupuesto = async (req, res) => {
 }; // ACTUALIZAR PRESUPUESTO
 
 exports.eliminarPresupuesto = async (req, res) => {
-  
   const { idUsuario, idPresupuesto } = req.params;
 
   try {
@@ -203,31 +202,36 @@ exports.eliminarPresupuesto = async (req, res) => {
       return res.status(404).json({ mensaje: 'Presupuesto no encontrado' });
     }
 
+    // 🧹 Eliminar transacciones relacionadas con ese presupuesto
+    const transaccionesAntes = usuario.transacciones.length;
+    usuario.transacciones = usuario.transacciones.filter(
+      t => t.presupuesto_asociado?.toString() !== idPresupuesto
+    );
+    const transaccionesEliminadas = transaccionesAntes - usuario.transacciones.length;
+
     // Limpiar historial para evitar errores de validación
     usuario.historial = usuario.historial.filter(item =>
-      item.tipo &&
-      ['presupuesto', 'transaccion', 'categoria', 'meta_ahorro'].includes(item.tipo)
+      item.tipo && ['presupuesto', 'transaccion', 'categoria', 'meta_ahorro'].includes(item.tipo)
     );
 
     // Agregar entrada al historial
     usuario.historial.push({
       accion: 'Eliminacion de Presupuesto',
       tipo: 'presupuesto',
+      descripcion: `Se eliminó el presupuesto "${presupuestoEliminado.titulo}" con ${transaccionesEliminadas} transacciones asociadas.`,
       datos_antes: presupuestoEliminado,
       datos_despues: {},
       fecha: new Date()
     });
 
-    // Ordenar historial por fecha descendente y limitar a los últimos 150
     usuario.historial = usuario.historial
       .sort((a, b) => b.fecha - a.fecha)
       .slice(0, 150);
 
-    // Guardar cambios en usuario
     await usuario.save();
 
     res.status(200).json({
-      mensaje: 'Presupuesto eliminado correctamente',
+      mensaje: `Presupuesto y ${transaccionesEliminadas} transacciones asociadas eliminadas correctamente.`,
       presupuesto_eliminado: presupuestoEliminado
     });
   } catch (error) {

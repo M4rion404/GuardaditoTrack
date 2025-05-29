@@ -165,7 +165,6 @@ exports.actualizarMeta = async (req, res) => {
   }
 };
 
-
 exports.eliminarMeta = async (req, res) => {
   const { idUsuario, idMetaAhorro } = req.params;
 
@@ -182,26 +181,35 @@ exports.eliminarMeta = async (req, res) => {
 
     usuario.metas_ahorro = usuario.metas_ahorro.filter(m => m._id.toString() !== idMetaAhorro);
 
+    // 🧹 Eliminar transacciones relacionadas con esa meta
+    const transAntes = usuario.transacciones.length;
+    usuario.transacciones = usuario.transacciones.filter(
+      t => t.meta_asociada?.toString() !== idMetaAhorro
+    );
+    const transEliminadas = transAntes - usuario.transacciones.length;
+
     // Registrar en historial
     usuario.historial = usuario.historial.filter(item =>
       item.tipo && ['presupuesto', 'transaccion', 'categoria', 'meta_ahorro'].includes(item.tipo)
     );
 
     usuario.historial.push({
-      accion: 'eliminar',
+      accion: 'Eliminación de Meta de Ahorro',
       tipo: 'meta_ahorro',
-      descripcion: `Eliminó la Meta "${metaEliminada.nombre}"`,
+      descripcion: `Se eliminó la meta "${metaEliminada.nombre}" con ${transEliminadas} transacciones asociadas.`,
       datos_antes: metaEliminada,
       datos_despues: {},
       fecha: new Date()
     });
 
-    usuario.historial = usuario.historial.sort((a, b) => b.fecha - a.fecha).slice(0, 150);
+    usuario.historial = usuario.historial
+      .sort((a, b) => b.fecha - a.fecha)
+      .slice(0, 150);
 
     await usuario.save();
 
     res.status(200).json({
-      mensaje: 'Meta eliminada correctamente',
+      mensaje: `Meta de ahorro y ${transEliminadas} transacciones asociadas eliminadas correctamente.`,
       meta_eliminada: metaEliminada
     });
   } catch (error) {

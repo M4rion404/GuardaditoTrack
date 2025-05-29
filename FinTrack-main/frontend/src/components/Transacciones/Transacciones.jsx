@@ -135,6 +135,8 @@ function TransaccionForm({ formData, setFormData, onSubmit, loading, error, pres
         <select
           id="tipo-transaccion"
           name="tipo-transaccion"
+          value={formData.tipo_transaccion}
+          disabled={formData.tipo_transaccion !== ""} 
           onChange={(e) =>
             setFormData((prev) => ({ ...prev, tipo_transaccion: e.target.value }))
           }
@@ -143,6 +145,7 @@ function TransaccionForm({ formData, setFormData, onSubmit, loading, error, pres
           <option value="meta">Meta de ahorro</option>
           <option value="presupuesto">Presupuesto</option>
         </select>
+
 
 
       </div>
@@ -507,9 +510,13 @@ const Transacciones = () => {
   }; // ABRIR MODAL
 
   const abrirModalEditar = () => {
+    if (!transaccionSeleccionada) return;
 
-    if (!transaccionSeleccionada)
-      return;
+    const tipo_transaccion = transaccionSeleccionada.meta_asociada
+      ? "meta"
+      : transaccionSeleccionada.presupuesto_asociado
+        ? "presupuesto"
+        : "";
 
     setFormData({
       titulo: transaccionSeleccionada.titulo || "",
@@ -519,11 +526,12 @@ const Transacciones = () => {
       monto: transaccionSeleccionada.monto || "",
       categoria_asociada: transaccionSeleccionada.categoria_asociada || "",
       presupuesto_asociado: transaccionSeleccionada.presupuesto_asociado || "",
-      meta_asociada: transaccionSeleccionada.meta_asociada || ""
+      meta_asociada: transaccionSeleccionada.meta_asociada || "",
+      tipo_transaccion, // <- ahora lo fuerzas correctamente
     });
+
     setModalMode("editar");
     setModalOpen(true);
-
   }; // MODAL EDITAR
 
   const abrirModalVer = (transaccion) => {
@@ -1049,7 +1057,14 @@ const Transacciones = () => {
       {/* MODALES */}
 
       {modalOpen && (
-        <div className="modal-overlay">
+        <div className="modal-overlay"
+        onClick={(e) => {
+      // Si haces clic exactamente en el overlay (no en el contenido)
+      if (e.target.classList.contains("modal-overlay")) {
+        cerrarModal();
+      }
+    }}
+        >
           <div className="modal-content">
             <button className="modal-close" onClick={cerrarModal}>
               <IconCerrar />
@@ -1083,7 +1098,7 @@ const Transacciones = () => {
                   loading={loading}
                   error={error}
                   presupuestos={presupuestos}
-                  categorias={categorias}
+                  categorias={categoriasFiltradas}
                   meta_ahorro={meta_ahorro}
                 />
               </>
