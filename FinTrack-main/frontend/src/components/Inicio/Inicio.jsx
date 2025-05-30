@@ -17,11 +17,9 @@ import { FaUser, FaCog } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import Footer from "../Footer/Footer";
 import Swal from "sweetalert2";
-
+import { Bell } from 'lucide-react';
 import logoFintrack from "../../assets/FintrackBlanco.png";
-import seccionAzul from "../../assets/seccionazul.png";
 import VentanaConfiguracion from "../VentanaConfiguracion/VentanaConfiguracion";
 import "./Inicio.css";
 import PerroMelon from "../../assets/perro-melon.png";
@@ -38,6 +36,7 @@ const Inicio = () => {
   const [mostrarVentana, setMostrarVentana] = useState(false);
   const navigate = useNavigate();
 
+// Función para cerrar sesión
 const handleCerrarSesion = () => {
   Swal.fire({
     title: "¿Estás seguro?",
@@ -54,6 +53,60 @@ const handleCerrarSesion = () => {
       
       // Navegar a la página de inicio
       navigate("/");
+    }
+  });
+};
+
+const handleNotificaciones = () => {
+  Swal.fire({
+    title: "Notificaciones",
+    html: `
+      <div style="text-align: left; max-height: 300px; overflow-y: auto;">
+        <div style="padding: 10px; border-bottom: 1px solid #eee; margin-bottom: 10px;">
+          <strong>Nueva transacción registrada</strong>
+          <p style="margin: 5px 0; color: #666; font-size: 14px;">Se ha registrado un nuevo ingreso por $500.00</p>
+          <small style="color: #999;">Hace 2 horas</small>
+        </div>
+        <div style="padding: 10px; border-bottom: 1px solid #eee; margin-bottom: 10px;">
+          <strong>Recordatorio de presupuesto</strong>
+          <p style="margin: 5px 0; color: #666; font-size: 14px;">Has alcanzado el 80% de tu presupuesto mensual</p>
+          <small style="color: #999;">Hace 1 día</small>
+        </div>
+        <div style="padding: 10px; border-bottom: 1px solid #eee; margin-bottom: 10px;">
+          <strong>Meta alcanzada</strong>
+          <p style="margin: 5px 0; color: #666; font-size: 14px;">¡Felicidades! Has alcanzado tu meta de ahorro</p>
+          <small style="color: #999;">Hace 3 días</small>
+        </div>
+        <div style="padding: 10px;">
+          <strong>Bienvenido a Fintrack</strong>
+          <p style="margin: 5px 0; color: #666; font-size: 14px;">Gracias por unirte a nuestra plataforma</p>
+          <small style="color: #999;">Hace 1 semana</small>
+        </div>
+      </div>
+    `,
+    icon: "info",
+    showCancelButton: true,
+    confirmButtonText: "Marcar como leídas",
+    cancelButtonText: "Cerrar",
+    confirmButtonColor: "#007AFF",
+    cancelButtonColor: "#6c757d",
+    width: '500px',
+    customClass: {
+      popup: 'notificaciones-popup'
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Aquí puedes agregar la lógica para marcar notificaciones como leídas
+      Swal.fire({
+        title: "¡Listo!",
+        text: "Todas las notificaciones han sido marcadas como leídas",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false
+      });
+      
+      // Aquí podrías actualizar el estado de notificaciones
+      // setNotificacionesNoLeidas(0);
     }
   });
 };
@@ -93,50 +146,70 @@ const handleCerrarSesion = () => {
     <div className="fintrack-homepage">
       {/* Navegación */}
         <nav className="barra-navegacion">
-  <div className="barra-navegacion-izquierda">
-    <div className="logo">
-      <img className="logo-fintrack" src={logoFintrack} alt="Logo Fintrack" />
-    </div>
-
-    {/* Botón hamburguesa para móvil */}
-    <button
-      className="menu-toggle"
-      aria-label="Toggle menu"
-      onClick={() => {
-        const menu = document.querySelector(".barra-navegacion-lista");
-        menu.classList.toggle("activo");
-      }}
-    >
-      ☰
-    </button>
-
-    <ul className="barra-navegacion-lista">
-      <li><Link to="/presupuestos">Presupuestos</Link></li>
-      <li><Link to="/transacciones">Transacciones</Link></li>
-      <li><Link to="/metasAhorro">Metas y ahorros</Link></li>
-      <li><Link to="/saludFinanciera">Salud Financiera</Link></li>
-      <li><Link to="/categorias">Categorías</Link></li>
-    </ul>
-  </div>
-
-  <div className="barra-navegacion-derecha">
-    <FaUser className="icono-usuario" />
-    <span>{usuario?.nombres || usuario?.email || "Usuario-Fintrack"}</span>
-    <Power
-      className="icono-cerrar-sesion"
-      onClick={handleCerrarSesion}
-      title="Cerrar sesión"
-      style={{ cursor: "pointer", marginLeft: "15px", color: "#FF3B30", fontSize: "1.2rem" }}
-    />
-  </div>
-</nav>
-
+          <div className="barra-navegacion-izquierda">
+            <div className="logo">
+          <img
+            className="logo-fintrack"
+            src={logoFintrack}
+            alt="Logo Fintrack"
+          />
+            </div>
+            <ul className="barra-navegacion-lista">
+          <li>
+            <Link to="/presupuestos">Presupuestos</Link>
+          </li>
+          <li>
+            <Link to="/metasAhorro">Metas y ahorros</Link>
+          </li>
+          <li>
+            <Link to="/categorias">Categorías</Link>
+          </li>
+          <li>
+            <Link to="/transacciones">Transacciones</Link>
+          </li>
+          
+          <li>
+            <Link to="/saludFinanciera">Salud Financiera</Link>
+          </li>
+          
+            </ul>
+          </div>
+          <div className="barra-navegacion-derecha">
+            <FaUser className="icono-usuario" />
+            <span>{usuario?.nombres || usuario?.email || "Usuario-Fintrack"}</span>
+            
+            {/* Botón de notificaciones */}
+            <Bell
+              className="icono-notificaciones"
+              onClick={handleNotificaciones}
+              title="Notificaciones"
+              style={{ 
+                cursor: "pointer", 
+                marginLeft: "15px",
+                color: "#007AFF", // Azul para notificaciones
+                fontSize: "1.2rem"
+              }}
+            />
+            
+            <Power
+              className="icono-cerrar-sesion"
+              onClick={handleCerrarSesion}
+              title="Cerrar sesión"
+              style={{ 
+                cursor: "pointer", 
+                marginLeft: "15px", 
+                color: "#FF3B30", // Rojo típico de botón de apagado/encendido
+                fontSize: "1.2rem"
+              }}
+            />
+          </div>
+        </nav>
         <ColorHoverEffect />
 
         {/* Hero Section */}
       <section className="hero-section bg-gradient-to-b from-cyan-500 to-blue-600 text-white py-20">
         <div className="mx-auto px-4 text-center">
-          <h1 className="Titulo-Home">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
             Toma el control de tus finanzas personales
           </h1>
           <p className="text-xl md:text-2xl mb-10 max-w-3xl mx-auto">
@@ -443,79 +516,17 @@ const handleCerrarSesion = () => {
             </div>
 
             <div>
-              <h4 className="text-lg font-bold mb-4">Producto</h4>
-              <ul className="space-y-2">
-                <li>
-                  <a href="#" className="text-gray-300 hover:text-white">
-                    Características
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-300 hover:text-white">
-                    Planes y precios
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-300 hover:text-white">
-                    Integraciones
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-300 hover:text-white">
-                    Novedades
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-lg font-bold mb-4">Recursos</h4>
-              <ul className="space-y-2">
-                <li>
-                  <a href="#" className="text-gray-300 hover:text-white">
-                    Blog
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-300 hover:text-white">
-                    Guías y tutoriales
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-300 hover:text-white">
-                    Webinars
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-300 hover:text-white">
-                    Calculadoras
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div>
               <h4 className="text-lg font-bold mb-4">Empresa</h4>
               <ul className="space-y-2">
                 <li>
-                  <a href="#" className="text-gray-300 hover:text-white">
-                    Sobre nosotros
-                  </a>
+                  <Link to="/Acerca" className="text-gray-300 hover:text-white">
+                    Sobre nosotros 
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-300 hover:text-white">
-                    Contacto
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-300 hover:text-white">
-                    Términos de servicio
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-300 hover:text-white">
-                    Política de privacidad
-                  </a>
+                  <Link to="/Terminos" className="text-gray-300 hover:text-white">
+                    Términos de servicio 
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -539,4 +550,3 @@ const handleCerrarSesion = () => {
 }
 
 export default Inicio;
-

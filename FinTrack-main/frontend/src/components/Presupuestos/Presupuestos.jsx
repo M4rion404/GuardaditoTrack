@@ -100,6 +100,36 @@ const validarCampos = (data) => {
   if (isNaN(limite) || limite < 0)
     return "El limite de presupuesto debe ser un número mayor o igual a 0.";
 
+
+  if (data.categorias && data.categorias.length > 0) {
+    // Filtrar solo categorías que tienen algún dato (no completamente vacías)
+    const categoriasConDatos = data.categorias.filter(cat =>
+      cat.categoria?._id || Number(cat.limite) > 0
+    );
+
+    if (categoriasConDatos.length > 0) {
+      // Verificar que todas las categorías con datos estén completas
+      const categoriasSinSeleccionar = categoriasConDatos.some(cat => !cat.categoria || !cat.categoria._id);
+      if (categoriasSinSeleccionar) {
+        return "Todas las categorías deben estar seleccionadas. Elimina las filas vacías o selecciona una categoría.";
+      }
+
+      const idsCategoriasSeleccionadas = categoriasConDatos.map(cat => cat.categoria._id);
+      const categoriasUnicas = new Set(idsCategoriasSeleccionadas);
+      if (idsCategoriasSeleccionadas.length !== categoriasUnicas.size) {
+        return "No puedes seleccionar la misma categoría más de una vez.";
+      }
+
+      const limitesInvalidos = categoriasConDatos.some(cat => {
+        const limite = Number(cat.limite);
+        return isNaN(limite) || limite <= 0;
+      });
+      if (limitesInvalidos) {
+        return "Todos los límites de categorías deben ser números válidos mayores que 0.";
+      }
+    }
+  }
+
   return null;
 };
 
@@ -111,6 +141,7 @@ function PresupuestoForm({
   loading,
   error,
   categorias,
+  esFormularioValido
 }) {
   return (
     <form onSubmit={onSubmit} className="presupuestos-form">
@@ -176,101 +207,176 @@ function PresupuestoForm({
       </div>
 
       <div className="form-group">
-        <label>Categorías y límites:</label>
-        {formData.categorias.map((cat, index) => (
-          <div
-            key={index}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+          <label>Categorías y límites:</label>
+          <button
+            type="button"
+            onClick={() => {
+              setFormData(prev => ({
+                ...prev,
+                categorias: [...prev.categorias, { categoria: null, limite: 0 }]
+              }));
+            }}
             style={{
-              display: "flex",
-              gap: "20px",
-              marginBottom: "0.5rem",
-              alignItems: "center",
+              backgroundColor: "#4caf50",
+              color: "white",
+              border: "none",
+              padding: "0.5rem 1rem",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "0.9rem"
             }}
           >
-            <select
-              value={cat.categoria?._id || ""}
-              onChange={(e) => {
-                const nuevaCategoria = categorias.find(
-                  (c) => c._id === e.target.value
-                );
-                const nuevasCategorias = [...formData.categorias];
-                nuevasCategorias[index].categoria = nuevaCategoria;
-                setFormData({ ...formData, categorias: nuevasCategorias });
-              }}
-              style={{ flex: 2 }}
-            >
-              <option value="">Seleccionar categoría</option>
-              {categorias.map((categoria) => (
-                <option key={categoria._id} value={categoria._id}>
-                  {categoria.titulo}
-                </option>
-              ))}
-            </select>
+            + Agregar Categoría
+          </button>
+        </div>
 
-            <input
-              type="number"
-              placeholder="Límite"
-              min={0}
-              value={cat.limite}
-              onChange={(e) => {
-                const nuevasCategorias = [...formData.categorias];
-                nuevasCategorias[index].limite = Number(e.target.value);
-                setFormData({ ...formData, categorias: nuevasCategorias });
-              }}
-              style={{ flex: 1 }}
-            />
+        {formData.categorias.map((cat, index) => {
+          // Solo marcar como duplicada si la categoría está seleccionada
+          const esDuplicada = cat.categoria?._id && formData.categorias.some((otraCat, otroIndex) =>
+            otroIndex !== index &&
+            otraCat.categoria?._id &&
+            cat.categoria._id === otraCat.categoria._id
+          );
 
-            <button
-              type="button"
-              onClick={() => {
-                const nuevasCategorias = formData.categorias.filter(
-                  (_, i) => i !== index
-                );
-                setFormData({ ...formData, categorias: nuevasCategorias });
-              }}
+          // Solo mostrar bordes rojos si hay un problema real, no en categorías vacías nuevas
+          const tieneProblemas = cat.categoria?._id && (
+            esDuplicada ||
+            (cat.limite !== '' && (isNaN(Number(cat.limite)) || Number(cat.limite) <= 0))
+          );
+
+          return (
+            <div
+              key={index}
               style={{
-                backgroundColor: "#e57373",
-                border: "none",
-                color: "white",
-                padding: "0.4rem 0.6rem",
-                borderRadius: "4px",
-                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                marginBottom: "1rem",
+                padding: "1rem",
+                border: tieneProblemas ? "2px solid #f44336" : "1px solid #ddd",
+                borderRadius: "8px",
+                backgroundColor: tieneProblemas ? "#ffebee" : "transparent"
               }}
             >
-              ✕
-            </button>
-          </div>
-        ))}
+              <div
+                style={{
+                  display: "flex",
+                  gap: "20px",
+                  alignItems: "center",
+                }}
+              >
+                <select
+                  value={cat.categoria?._id || ""}
+                  onChange={(e) => {
+                    const nuevaCategoria = categorias.find(
+                      (c) => c._id === e.target.value
+                    );
+                    const nuevasCategorias = [...formData.categorias];
+                    nuevasCategorias[index].categoria = nuevaCategoria;
+                    setFormData({ ...formData, categorias: nuevasCategorias });
+                  }}
+                  style={{
+                    flex: 2,
+                    borderColor: esDuplicada ? "#f44336" : "#ddd",
+                    borderWidth: esDuplicada ? "2px" : "1px"
+                  }}
+                >
+                  <option value="">Seleccionar categoría</option>
+                  {categorias.map((categoria) => (
+                    <option key={categoria._id} value={categoria._id}>
+                      {categoria.titulo}
+                    </option>
+                  ))}
+                </select>
 
-        <button
-          type="button"
-          onClick={() =>
-            setFormData({
-              ...formData,
-              categorias: [
-                ...formData.categorias,
-                { categoria: {}, limite: 0 },
-              ],
-            })
-          }
-          style={{
-            marginTop: "10px",
-            backgroundColor: "#2e7d32",
-            color: "white",
-            border: "none",
-            padding: "0.5rem 1rem",
-            borderRadius: "6px",
-            cursor: "pointer",
-          }}
-        >
-          + Agregar categoría
-        </button>
+                <input
+                  type="number"
+                  placeholder="Límite"
+                  min={0}
+                  step="0.01"
+                  value={cat.limite}
+                  onChange={(e) => {
+                    const nuevasCategorias = [...formData.categorias];
+                    nuevasCategorias[index].limite = Number(e.target.value);
+                    setFormData({ ...formData, categorias: nuevasCategorias });
+                  }}
+                  style={{
+                    flex: 1,
+                    borderColor: (cat.limite !== '' && (isNaN(Number(cat.limite)) || Number(cat.limite) <= 0)) ? "#f44336" : "#ddd"
+                  }}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nuevasCategorias = formData.categorias.filter(
+                      (_, i) => i !== index
+                    );
+                    setFormData({ ...formData, categorias: nuevasCategorias });
+                  }}
+                  style={{
+                    backgroundColor: "#f44336",
+                    border: "none",
+                    color: "white",
+                    padding: "0.4rem 0.6rem",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div style={{ marginTop: "0.5rem" }}>
+                {/* Solo mostrar errores si la categoría tiene algún dato */}
+                {cat.categoria?._id && esDuplicada && (
+                  <span style={{ color: "#f44336", fontSize: "0.8rem", display: "block" }}>
+                    Esta categoría ya está seleccionada en otra fila.
+                  </span>
+                )}
+
+                {cat.categoria?._id && cat.limite !== '' && (isNaN(Number(cat.limite)) || Number(cat.limite) <= 0) && (
+                  <span style={{ color: "#f44336", fontSize: "0.8rem", display: "block" }}>
+                    El límite debe ser un número mayor que 0.
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
       </div>
 
+
       <div className="btn-submit-container">
-        <button type="submit" className="btn-submit" disabled={loading}>
+        <button
+          type="submit"
+          className="btn-submit"
+          disabled={loading || !esFormularioValido()}
+          style={{
+            opacity: (!esFormularioValido() || loading) ? 0.6 : 1,
+            cursor: (!esFormularioValido() || loading) ? "not-allowed" : "pointer"
+          }}
+        >
           {loading ? "Guardando..." : "Guardar"}
         </button>
+
+        {/* Mensaje de ayuda */}
+        {!esFormularioValido() && formData.categorias.length > 0 && (
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <p
+              style={{
+                color: "#f44336",
+                fontSize: "0.9rem",
+                marginTop: "0.5rem",
+                textAlign: "center",
+              }}
+            >
+              Completa todos los campos de categorías antes de guardar
+            </p>
+          </div>
+        )}
+
       </div>
       {error && <p className="error-message">{error}</p>}
     </form>
@@ -307,6 +413,46 @@ const Presupuestos = () => {
   // Fetch presupuestos
 
   const [categoriasDePresupuestos, setCategoriasDePresupuestos] = useState([]);
+
+
+  const esFormularioValido = () => {
+    // Validaciones básicas del formulario (título, límite, etc.)
+    if (!formData.titulo || !formData.limite || !formData.periodo) {
+      return false;
+    }
+
+    // Si no hay categorías, el formulario es válido
+    if (!formData.categorias || formData.categorias.length === 0) {
+      return true;
+    }
+
+    // Solo validar categorías que tienen al menos algo seleccionado
+    // (no validar las que están completamente vacías)
+    const categoriasConDatos = formData.categorias.filter(cat =>
+      cat.categoria?._id || cat.limite > 0
+    );
+
+    if (categoriasConDatos.length === 0) {
+      return true; // Si no hay categorías con datos, está bien
+    }
+
+    // Validar solo las categorías que tienen algún dato
+    const todasSeleccionadas = categoriasConDatos.every(cat => cat.categoria?._id);
+
+    const limitesValidos = categoriasConDatos.every(cat => {
+      const limite = Number(cat.limite);
+      return !isNaN(limite) && limite > 0;
+    });
+
+    // Verificar no duplicadas solo en las categorías con datos
+    const idsCategoriasSeleccionadas = categoriasConDatos
+      .map(cat => cat.categoria?._id)
+      .filter(Boolean);
+    const categoriasUnicas = new Set(idsCategoriasSeleccionadas);
+    const noDuplicadas = idsCategoriasSeleccionadas.length === categoriasUnicas.size;
+
+    return todasSeleccionadas && limitesValidos && noDuplicadas;
+  };
 
   useEffect(() => {
     fetchPresupuestosAnidados();
@@ -1221,6 +1367,7 @@ const options = {
                   error={error}
                   categorias={categorias}
                   divisas={divisas}
+                  esFormularioValido={esFormularioValido}
                 />
               </>
             )}
@@ -1235,6 +1382,7 @@ const options = {
                   error={error}
                   categorias={categorias}
                   divisas={divisas}
+                  esFormularioValido={esFormularioValido}
                 />
               </>
             )}

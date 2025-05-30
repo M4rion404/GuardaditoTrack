@@ -440,7 +440,8 @@ const MetasAhorro = () => {
 
     const coincideBusqueda = busqueda
       ? t.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      t.objetivo?.toLowerCase().includes(busqueda.toLowerCase())
+      t.descripcion?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      t.estado?.toLowerCase().includes(busqueda.toLowerCase()) 
       : true;
 
     return coincidePresupuesto && coincideDivisa && coincideBusqueda;
@@ -475,6 +476,7 @@ const MetasAhorro = () => {
       t.nombre || "",
       t.descripcion || "",
       `$${Number(t.objetivo || 0).toFixed(2)}`,
+      `$${Number(t.ahorrado || 0).toFixed(2)}`,
       t.fecha_limite ? formatearFechaUTC(t.fecha_limite) : "",
       t.estado || "",
       t.fecha ? formatearFechaUTC(t.fecha) : "",
@@ -604,31 +606,7 @@ const MetasAhorro = () => {
             onChange={(e) => setBusqueda(e.target.value)}
           />
         </div>
-        <div className="Filtros">
-          <select
-            value={filtroPresupuesto}
-            onChange={(e) => setFiltroPresupuesto(e.target.value)}
-          >
-            <option value="">Todos los presupuestos</option>
-            {presupuestosUsados.map((p) => (
-              <option key={p._id} value={p._id}>
-                {p.nombre}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={filtroDivisa}
-            onChange={(e) => setFiltroDivisa(e.target.value)}
-          >
-            <option value="">Todas las divisas</option>
-            {divisasUsadas.map((d) => (
-              <option key={d._id} value={d._id}>
-                {d.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
+        
       </div>
 
       <table className="metaahorro-table">
@@ -640,7 +618,6 @@ const MetasAhorro = () => {
             <th>Ahorrado</th>
             <th>Fecha Limite</th>
             <th>Estado</th>
-            <th>Fecha</th>
           </tr>
         </thead>
         <tbody>
@@ -663,11 +640,6 @@ const MetasAhorro = () => {
                 <td>${Number(metaAhorro.ahorrado || 0).toFixed(2)}</td>
                 <td>{formatearFechaUTC(metaAhorro.fecha_limite)}</td>
                 <td>{metaAhorro.estado}</td>
-                <td>
-                  {metaAhorro.fecha
-                    ? new Date(metaAhorro.fecha).toLocaleDateString()
-                    : ""}
-                </td>
               </tr>
             );
           })}

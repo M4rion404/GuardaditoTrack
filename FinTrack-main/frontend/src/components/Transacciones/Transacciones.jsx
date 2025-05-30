@@ -369,9 +369,12 @@ const Transacciones = () => {
 
 
   /*  FETCH's para extraer las Transacciones, Categorías y Presupuestos*/
-  const fetchTransacciones = async (userId, token) => {
+  const fetchTransacciones = async () => {
     setLoading(true);
     setError(null);
+
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
 
     try {
       if (!token) throw new Error("No token disponible, inicia sesión.");
@@ -420,6 +423,7 @@ const Transacciones = () => {
   };
 
   const fetchMetas = async (userId, token) => {
+    
     try {
       const res = await axios.get(
         `http://localhost:3000/api/metas-ahorro/${userId}`,
@@ -952,31 +956,6 @@ const Transacciones = () => {
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
-        </div>
-
-        <div className="Filtros">
-          <select
-            value={filtroPresupuesto}
-            onChange={(e) => setFiltroPresupuesto(e.target.value)}
-          >
-            <option value="">Todos los presupuestos</option>
-            {presupuestosUsados.map((p) => (
-              <option key={p._id} value={p._id}>
-                {p.titulo}
-              </option>
-            ))}
-          </select>
-          <select
-            value={filtroCategoria}
-            onChange={(e) => setFiltroCategoria(e.target.value)}
-          >
-            <option value="">Todas las categorias</option>
-            {categoriasUsadas.map((d) => (
-              <option key={d._id} value={d._id}>
-                {d.titulo}
-              </option>
-            ))}
-          </select>
         </div>
 
       </div>

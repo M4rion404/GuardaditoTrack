@@ -1,10 +1,8 @@
-//InicioSesion.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { FaEnvelope, FaLock, FaAngleLeft } from 'react-icons/fa';
 import auditoriaLogin from '../../assets/AuditoriaFinancieraLogin.jpg';
-import axios from "axios";
-import { motion } from "framer-motion";
+import Swal from "sweetalert2";
 import '../InicioSesion/InicioSesion.css';
 
 const InicioSesion = () => {
@@ -12,107 +10,130 @@ const InicioSesion = () => {
 
   const [email, setEmail] = useState('');
   const [contraseña, setContraseña] = useState('');
+  const [recordar, setRecordar] = useState(false);
 
   const manejadorInicioSesion = async (e) => {
     e.preventDefault();
 
-
-
     try {
-      const respuesta = await fetch("http://localhost:3000/api/usuarios/login", {  // Ajusta el puerto si es necesario
+      const respuesta = await fetch("http://localhost:3000/api/usuarios/login", {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, contraseña })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, contraseña }),
       });
 
       const datos = await respuesta.json();
-      console.log("Respuesta del backend: ", datos)
 
       if (respuesta.ok) {
         localStorage.setItem('token', datos.token);
         localStorage.setItem('usuario', JSON.stringify(datos.usuario));
-        navigate('/Home'); 
-
-        localStorage.setItem('token', datos.token);
-        localStorage.setItem('usuario', JSON.stringify(datos.usuario));
-        localStorage.setItem('userId', datos.usuario._id);
         if (datos.usuario && datos.usuario._id) {
-          localStorage.setItem('userId', datos.usuario._id); // ← Esto es CLAVE
+          localStorage.setItem('userId', datos.usuario._id);
+        }
+        if (recordar) {
+          localStorage.setItem('recordarSesion', 'true');
         } else {
-          console.warn("El ID del usuario no se encontró en la respuesta");
+          localStorage.removeItem('recordarSesion');
         }
 
+        Swal.fire({
+          icon: 'success',
+          title: '¡Bienvenido!',
+          text: `Hola ${datos.usuario.nombre_usuario || ''}`,
+          timer: 1500,
+          showConfirmButton: false,
+        });
+
         navigate('/Home');
-
       } else {
-        alert(datos.mensaje || 'Error al iniciar sesión');
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: datos.mensaje || 'Credenciales inválidas',
+          timer: 2000,
+          showConfirmButton: false,
+        });
       }
-
     } catch (error) {
       console.error('Error:', error);
-      alert('Error de conexión');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de conexión',
+        text: 'No se pudo conectar con el servidor',
+        timer: 2000,
+        showConfirmButton: false,
+      });
     }
   };
 
-
   return (
-    <div className="container">
-      <div className="left-panel">
-        <div className="illustration">
-          <img src={auditoriaLogin} alt="LoginImg" />
+    <div className="containerLogin"> 
+      <div className="left-panelLogin">
+        <div className="illustrationLogin">
+          <img 
+            src={auditoriaLogin} 
+            alt="Auditoría Financiera" 
+          />
         </div>
       </div>
 
-      <div className="right-panel">
-        <div className="right-panel-titulo">
-          <div className="titulo-header">
-            <Link to="/" className="boton-clase"> <FaAngleLeft /></Link>
+      <div className="right-panelLogin">
+        <div className="right-panel-tituloLogin">
+          <div className="titulo-headerLogin">
+            <Link to="/" className="botonLogin-clase">
+              <FaAngleLeft />
+            </Link>
             <h1>FinTrack</h1>
           </div>
-          <a> Aprende, ahorra y crece</a>
+          <p>Aprende, ahorra y crece</p>
         </div>
 
-        <form className="form" onSubmit={manejadorInicioSesion}>
-          <div className='bienvenido'>
+        <form className="formLogin" onSubmit={manejadorInicioSesion}>
+          <div className="bienvenidoLogin">
             <h2>¡Bienvenido de nuevo!</h2>
           </div>
 
-          <div className="input-group">
-            <FaEnvelope className="icon" />
+          <div className="input-groupLogin">
+            <FaEnvelope className="iconLogin" />
             <input
               type="email"
               placeholder="Correo electrónico"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="username"
             />
           </div>
 
-          <div className="input-group">
-            <FaLock className="icon" />
+          <div className="input-groupLogin">
+            <FaLock className="iconLogin" />
             <input
               type="password"
               placeholder="Contraseña"
               value={contraseña}
               onChange={(e) => setContraseña(e.target.value)}
               required
+              autoComplete="current-password"
             />
           </div>
 
-          <div className="checkbox-group">
-            <input type="checkbox" id="remember" />
+          <div className="checkbox-groupLogin">
+            <input
+              type="checkbox"
+              id="remember"
+              checked={recordar}
+              onChange={() => setRecordar(!recordar)}
+            />
             <label htmlFor="remember">Recordar contraseña</label>
           </div>
 
-          <button type="submit" className="login-button">
+          <button type="submit" className="Login-button">
             Iniciar sesión
           </button>
 
-          <div className="links">
+          <div className="linksLogin">
             <Link to="/SignUp">¿Todavía no tienes una cuenta? Regístrate</Link><br />
-            <Link to="/ResetPassword">¿Olvidó su contraseña?</Link><br />
+            <Link to="/ResetPassword">¿Olvidó su contraseña?</Link>
           </div>
         </form>
       </div>

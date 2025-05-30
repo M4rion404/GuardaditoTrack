@@ -5,7 +5,6 @@ import RegistroImg from "../../assets/RegistroImagen.avif";
 import "../RegistroUsuario/RegistroUsuario.css";
 import Swal from "sweetalert2";
 
-// Proceso para registrar un nuevo usuario
 const RegistroUsuario = () => {
   const [nombre_usuario, setNombre_usuario] = useState("");
   const [numero_telefono, setNumero_Telefono] = useState("");
@@ -18,14 +17,13 @@ const RegistroUsuario = () => {
   const manejadorRegistro = async (e) => {
     e.preventDefault();
 
-    // Validar que las contraseñas coincidan
     if (contraseña !== confirmarContraseña) {
       Swal.fire({
         icon: "error",
         title: "Error",
         text: "Las contraseñas no coinciden.",
         timer: 2000,
-        showConfirmButton: false
+        showConfirmButton: false,
       });
       return;
     }
@@ -82,10 +80,16 @@ const RegistroUsuario = () => {
 
   return (
     <div className="containerReg">
-      <div className="right-panelReg">
-        <div className="illustrationReg">
-          <img src={RegistroImg} alt="RegistroImg" />
-        </div>
+      <div
+        className="right-panelReg"
+        style={{
+          backgroundImage: `url(${RegistroImg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        {/* Eliminamos el img porque el fondo ya está en el div */}
       </div>
 
       <div className="left-panelReg">
@@ -101,7 +105,7 @@ const RegistroUsuario = () => {
 
         <form className="formReg" onSubmit={manejadorRegistro}>
           <div className="bienvenidoReg">
-            <h2>¡Registrate Ahora!</h2>
+            <h2>¡Regístrate ahora!</h2>
           </div>
 
           <div className="input-groupReg">
@@ -111,6 +115,17 @@ const RegistroUsuario = () => {
               placeholder="Nombre completo"
               value={nombre_usuario}
               onChange={(e) => setNombre_usuario(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="input-groupReg">
+            <FaPhone className="iconReg" />
+            <input
+              type="tel"
+              placeholder="Teléfono"
+              value={numero_telefono}
+              onChange={(e) => setNumero_Telefono(e.target.value)}
               required
             />
           </div>

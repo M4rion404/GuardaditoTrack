@@ -1,122 +1,95 @@
+/* Reset básico */
 html, body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
   height: 100%;
+  font-family: 'Poppins', sans-serif;
+  background-color: #f0f4f8;
 }
 
+/* Contenedor principal */
 .containerReg {
   display: flex;
+  flex-direction: row;
   height: 100vh;
   width: 100%;
-  font-family: "Poppins", sans-serif;
-  overflow: hidden;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
 }
 
+/* Panel izquierdo: Formulario */
 .left-panelReg {
-  flex: 0 0 40%;
-  width: 40%;
-  max-width: 40%;
-  background-color: white;
+  flex: 1;
+  background-color: #ffffff;
   display: flex;
   flex-direction: column;
-  padding: 20px;
-  height: 100vh;
-  overflow: hidden;
-  position: relative;
-  order: 1;
-}
-
-.right-panelReg {
-  flex: 0 0 60%;
-  width: 60%;
-  background-color: #7ac6f8;
-  display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
-  overflow: hidden;
-  order: 2; 
+  padding: 40px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
+/* Título y subtítulo */
 .left-panel-tituloReg {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-bottom: 15px;
-  flex-shrink: 0; 
+  text-align: center;
+  margin-bottom: 30px;
 }
 
 .titulo-headerReg {
   display: flex;
   align-items: center;
-  width: 100%;
-  position: relative;
-  margin-bottom: 10px;
+  justify-content: center;
+  gap: 10px;
 }
 
+.titulo-headerReg h1 {
+  font-size: 32px;
+  color: #2278b5;
+  margin: 0;
+}
+
+.left-panel-tituloReg p {
+  font-size: 16px;
+  color: #555555;
+  margin-top: 10px;
+}
+
+/* Botón de regreso */
 .botonReg-clase {
-  padding: 8px 16px;
   background-color: #2278b5;
-  color: white;
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 6px;
   text-decoration: none;
-  border-radius: 8px;
   transition: background-color 0.3s ease;
-  font-size: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .botonReg-clase:hover {
-  background-color: #2258b5;
+  background-color: #1c639c;
 }
 
-h1 {
-  text-align: center;
-  font-size: 28px;
-  margin: 0 auto;
-  transform: translateX(-20px);
-}
-
+/* Formulario */
 .formReg {
   width: 100%;
   max-width: 400px;
-  margin: 0 auto;
-  padding-bottom: 20px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  height: calc(100% - 80px);
-  scrollbar-width: thin;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.formReg::-webkit-scrollbar {
-  width: 6px;
-}
-
-.formReg::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
-}
-
-.bienvenidoReg {
-  text-align: center;
+.bienvenidoReg h2 {
+  font-size: 24px;
+  color: #333333;
   margin-bottom: 20px;
-  flex-shrink: 0;
+  text-align: center;
 }
 
+/* Grupos de entrada */
 .input-groupReg {
   display: flex;
   align-items: center;
-  margin-bottom: 15px;
-  border-bottom: 1px solid #ccc;
-  padding: 8px 0;
-  width: 100%;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  padding: 10px;
+  background-color: #f9f9f9;
 }
 
 .input-groupReg input {
@@ -125,44 +98,23 @@ h1 {
   flex: 1;
   margin-left: 10px;
   font-size: 16px;
-  width: 100%;
+  background-color: transparent;
 }
 
 .iconReg {
-  color: #666;
-  flex-shrink: 0;
-}
-
-.illustrationReg {
-  width: 70%;
-  max-width: 500px;
-  height: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-  background-color: white;
-  aspect-ratio: 1/1;
-}
-
-.illustrationReg img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.Register-button {
-  width: 100%;
-  background-color: #2278b5;
-  color: white;
+  color: #2278b5;
   font-size: 18px;
+}
+
+/* Botón de registro */
+.Register-button {
+  background-color: #2278b5;
+  color: #ffffff;
+  font-size: 16px;
   padding: 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  margin-bottom: 20px;
   transition: background-color 0.3s ease;
 }
 
@@ -170,76 +122,66 @@ h1 {
   background-color: #1c639c;
 }
 
+/* Texto de inicio de sesión */
 .ya-tienes-cuenta {
   text-align: center;
   font-size: 14px;
-  margin-top: 15px;
+  color: #555555;
+  margin-top: 20px;
 }
 
-@media screen and (max-width: 1024px) {
-  .left-panelReg {
-    flex: 0 0 40%;
-    width: 40%;
-  }
-  
-  .right-panelReg {
-    flex: 0 0 60%;
-    width: 60%;
-  }
+.ya-tienes-cuenta a {
+  color: #2278b5;
+  text-decoration: none;
+  margin-left: 5px;
 }
 
-@media screen and (max-width: 768px) {
+.ya-tienes-cuenta a:hover {
+  text-decoration: underline;
+}
+
+/* Panel derecho: Imagen */
+.right-panelReg {
+  flex: 1;
+  background-color: #2278b5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.illustrationReg {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.illustrationReg img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Responsividad */
+@media (max-width: 1024px) {
   .containerReg {
     flex-direction: column;
-    position: fixed;
   }
-  
-  .left-panelReg {
-    flex: 1;
-    max-width: 100%;
-    width: 100%;
-    order: 2;
-    height: 70vh;
-    min-height: 70vh;
-  }
-  
-  .formReg {
-    height: calc(100% - 60px);
-    max-height: 65vh;
-  }
-  
-  .right-panelReg {
-    flex: 0 0 30vh;
-    width: 100%;
-    order: 1;
-    max-height: 30vh;
-  }
-  
-  .illustrationReg {
-    width: 50%;
-    max-width: 200px;
-  }
-}
 
-@media screen and (max-width: 480px) {
-  .left-panelReg {
-    padding: 15px;
+  .left-panelReg, .right-panelReg {
+    flex: none;
+    width: 100%;
+    height: auto;
   }
-  
-  .input-groupReg {
-    margin-bottom: 10px;
+
+  .right-panelReg {
+    order: -1;
   }
-  
-  h1 {
-    font-size: 24px;
-  }
-  
-  .Register-button {
-    font-size: 16px;
-    padding: 10px;
-  }
-  
+
   .illustrationReg {
-    width: 70%;
+    max-width: 300px;
+    margin: 0 auto;
   }
 }
